@@ -1,0 +1,76 @@
+#--------------------------------
+# app.fabform.app - SPA with fallback
+# --------------------------------
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name app.fabform.app;
+
+    root /var/www/html/dist;  # Your SPA build directory
+    index index.html;
+
+    location / {
+        # This fallback is critical to serve SPA routes on refresh
+        try_files $uri $uri/ /index.html;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/fabform.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fabform.app/privkey.pem;
+
+    include common.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name app.fabform.app;
+    return 301 https://$host$request_uri;
+}
+
+# --------------------------------
+# fabform.app - static + proxy for SPA routes
+# --------------------------------
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name fabform.app www.fabform.app;
+
+    root /var/www/fabform-static-site/dist;  # Static site root
+    index index.html;
+
+
+    location /v/ {
+        proxy_pass https://app.fabform.app/v/;
+        proxy_set_header Host app.fabform.app;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+         proxy_ssl_server_name on;
+         proxy_ssl_verify off;  # For testing ONLY; remove in production
+ 
+   }
+
+  location /assets/ {
+        root /var/www/html/dist;  # adjust path to where your assets live
+        try_files $uri =404;
+    }
+
+
+    # Static site root
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+
+    ssl_certificate /etc/letsencrypt/live/fabform.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/fabform.app/privkey.pem;
+
+    include common.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name fabform.app www.fabform.app;
+    return 301 https://$host$request_uri;
+}

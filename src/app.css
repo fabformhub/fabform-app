@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    @apply h-full overflow-hidden;
+  }
+}
+
+
+/* src/styles/global.css */
+@keyframes tada {
+  0% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  20% {
+    transform: scale(1.1) rotate(3deg);
+  }
+  30% {
+    transform: scale(1.1) rotate(-3deg);
+  }
+  40% {
+    transform: scale(1.1) rotate(3deg);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-tada {
+  animation: tada 1s ease-out;
+}
