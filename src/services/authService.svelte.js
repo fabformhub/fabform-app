@@ -4,16 +4,16 @@ export const authService = (() => {
     loading: false,
     error: null,
     message: null,
-    lastAction: null // 'login' or 'signup'
+    lastAction: null,    // 'login' or 'signup'
+    lastProvider: null   // 'email' or 'google'
   });
-
-  // ... keep existing methods but update them like this:
 
   const createUser = async (email, password) => {
     state.loading = true;
     state.error = null;
     state.message = null;
     state.lastAction = 'signup';
+    state.lastProvider = 'email';
 
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -44,6 +44,7 @@ export const authService = (() => {
     state.error = null;
     state.message = null;
     state.lastAction = 'login';
+    state.lastProvider = 'email';
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -69,6 +70,7 @@ export const authService = (() => {
     state.error = null;
     state.message = null;
     state.lastAction = 'login';
+    state.lastProvider = 'google';
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -82,7 +84,7 @@ export const authService = (() => {
         return false;
       }
 
-      // OAuth redirects away, no immediate success message here.
+      // No immediate success message here; OAuth redirect occurs
       return true;
     } catch (err) {
       state.error = err.message;
@@ -91,7 +93,7 @@ export const authService = (() => {
     }
   };
 
-  // rest unchanged...
+  // logout unchanged...
 
   return {
     state,
@@ -99,6 +101,6 @@ export const authService = (() => {
     createUser,
     loginWithEmail,
     loginWithGoogle,
-    logout,
+    logout
   };
 })();
