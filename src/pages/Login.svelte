@@ -8,6 +8,12 @@
   let password = '';
 
   const handleEmailLogin = async () => {
+    if (!email || !password) {
+      state.error = 'Please enter both email and password.';
+      return;
+    }
+    state.error = null; // clear previous errors
+
     const success = await loginWithEmail(email, password);
     if (success) {
       goto('/dashboard');
@@ -15,8 +21,13 @@
   };
 
   const handleGoogleLogin = async () => {
-    // This will redirect the user away, so no immediate success here.
-    await loginWithGoogle();
+    state.error = null; // clear previous errors
+    const success = await loginWithGoogle();
+    if (!success) {
+      // Reset loading so user can try again
+      state.loading = false;
+    }
+    // OAuth will redirect on success, no further action needed here
   };
 </script>
 
@@ -27,7 +38,8 @@
       class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mb-6"
       disabled={state.loading}
     >
-      {state.loading && state.lastAction === 'login' ? 'Logging in with Google…' : 'Login with Google'}
+      {state.loading && state.lastAction === 'login' && state.lastProvider === 'google' 
+        ? 'Logging in with Google…' : 'Login with Google'}
     </button>
 
     <h2 class="text-3xl font-bold text-center text-gray-900">Sign into my account</h2>
@@ -51,7 +63,8 @@
         class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         disabled={state.loading}
       >
-        {state.loading && state.lastAction === 'login' ? 'Logging in…' : 'Login with Email'}
+        {state.loading && state.lastAction === 'login' && state.lastProvider === 'email' 
+          ? 'Logging in…' : 'Login with Email'}
       </button>
     </div>
 

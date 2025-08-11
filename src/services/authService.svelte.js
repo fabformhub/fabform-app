@@ -102,7 +102,7 @@ export const authService = (() => {
         return false;
       }
 
-      // OAuth flow redirects, no immediate success message
+      // OAuth flow redirects; no immediate message here
       return true;
     } catch (err) {
       state.error = err.message;
