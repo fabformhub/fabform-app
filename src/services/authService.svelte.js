@@ -1,34 +1,19 @@
-// services/authService.svelte.js
-import { supabase } from '../lib/supabaseClient';
-
 export const authService = (() => {
   const state = $state({
     user: null,
     loading: false,
-    error: null
+    error: null,
+    message: null,
+    lastAction: null // 'login' or 'signup'
   });
 
-  // Get current session/user
-  const getUser = async () => {
-    state.loading = true;
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw new Error(error.message);
-      state.user = session?.user || null;
-    } catch (err) {
-      state.error = err.message;
-      state.user = null;
-    } finally {
-      state.loading = false;
-    }
+  // ... keep existing methods but update them like this:
 
-    return state.user;
-  };
-
-  // Sign up with email and password
   const createUser = async (email, password) => {
     state.loading = true;
     state.error = null;
+    state.message = null;
+    state.lastAction = 'signup';
 
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -38,13 +23,13 @@ export const authService = (() => {
         return false;
       }
 
-      // Handle email confirmation flow
       if (!data.session || !data.user) {
-        state.error = "Check your email to confirm your account.";
+        state.message = "Check your email to confirm your account.";
         return false;
       }
 
       state.user = data.user;
+      state.message = "Signup successful! Redirecting...";
       return true;
     } catch (err) {
       state.error = err.message;
@@ -54,10 +39,11 @@ export const authService = (() => {
     }
   };
 
-  // Login with email/password
   const loginWithEmail = async (email, password) => {
     state.loading = true;
     state.error = null;
+    state.message = null;
+    state.lastAction = 'login';
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -68,6 +54,7 @@ export const authService = (() => {
       }
 
       state.user = data.user;
+      state.message = "Login successful! Redirecting...";
       return true;
     } catch (err) {
       state.error = err.message;
@@ -77,42 +64,34 @@ export const authService = (() => {
     }
   };
 
-  // Login with Google OAuth
   const loginWithGoogle = async () => {
     state.loading = true;
     state.error = null;
+    state.message = null;
+    state.lastAction = 'login';
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
+        options: { redirectTo: window.location.origin }
       });
 
       if (error) {
         state.error = error.message;
+        state.loading = false;
         return false;
       }
 
-      supabase.auth.onAuthStateChange((event, session) => {
-        state.user = session?.user || null;
-      });
-
+      // OAuth redirects away, no immediate success message here.
       return true;
     } catch (err) {
       state.error = err.message;
-      return false;
-    } finally {
       state.loading = false;
+      return false;
     }
   };
 
-  // Logout
-  const logout = async () => {
-    await supabase.auth.signOut();
-    state.user = null;
-  };
+  // rest unchanged...
 
   return {
     state,
@@ -120,6 +99,6 @@ export const authService = (() => {
     createUser,
     loginWithEmail,
     loginWithGoogle,
-    logout
+    logout,
   };
 })();
