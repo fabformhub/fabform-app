@@ -1,12 +1,30 @@
+import { supabase } from '../lib/supabaseClient';
+
 export const authService = (() => {
   const state = $state({
     user: null,
     loading: false,
     error: null,
     message: null,
-    lastAction: null,    // 'login' or 'signup'
-    lastProvider: null   // 'email' or 'google'
+    lastAction: null,
+    lastProvider: null,
   });
+
+  const getUser = async () => {
+    state.loading = true;
+    state.error = null;
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw new Error(error.message);
+      state.user = session?.user || null;
+    } catch (err) {
+      state.error = err.message;
+      state.user = null;
+    } finally {
+      state.loading = false;
+    }
+    return state.user;
+  };
 
   const createUser = async (email, password) => {
     state.loading = true;
@@ -75,7 +93,7 @@ export const authService = (() => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin }
+        options: { redirectTo: window.location.origin },
       });
 
       if (error) {
@@ -84,7 +102,7 @@ export const authService = (() => {
         return false;
       }
 
-      // No immediate success message here; OAuth redirect occurs
+      // OAuth flow redirects, no immediate success message
       return true;
     } catch (err) {
       state.error = err.message;
@@ -93,7 +111,10 @@ export const authService = (() => {
     }
   };
 
-  // logout unchanged...
+  const logout = async () => {
+    await supabase.auth.signOut();
+    state.user = null;
+  };
 
   return {
     state,
@@ -101,6 +122,6 @@ export const authService = (() => {
     createUser,
     loginWithEmail,
     loginWithGoogle,
-    logout
+    logout,
   };
 })();
