@@ -17,6 +17,7 @@
   import { Navbar } from '../components/layouts';
   import { blockTemplates } from '../templates/blockTemplates';
   import { createBlock } from '../services/blockService';
+  import { APP_URL } from '../utils/global.js';
   
   let forms = [];
   let formResponseCounts = {};
@@ -119,7 +120,7 @@ async function createNewForm() {
 }
 
   function copyFormLink(id) {
-    const link = `/v/${id}`;
+    const link = APP_URL + `/v/${id}`;
     navigator.clipboard.writeText(link);
   }
 

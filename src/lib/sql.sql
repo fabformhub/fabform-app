@@ -1,7 +1,27 @@
+CREATE OR REPLACE FUNCTION gen_uid(length integer)
+RETURNS text AS $$
+DECLARE
+  chars TEXT := '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  result TEXT := '';
+  i INTEGER := 0;
+BEGIN
+  IF length < 1 THEN
+    RAISE EXCEPTION 'Length must be positive';
+  END IF;
+
+  FOR i IN 1..length LOOP
+    result := result || substr(chars, floor(random() * length(chars) + 1)::int, 1);
+  END LOOP;
+
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql STRICT;
+
 CREATE TABLE public.forms (
-  id TEXT PRIMARY KEY DEFAULT gen_uid(12),  -- generates a 12-character ID by default
+  id TEXT PRIMARY KEY DEFAULT gen_uid(12),
   user_id UUID NOT NULL,
   name TEXT NOT NULL,
+  meta JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT now(),
   CONSTRAINT forms_user_id_fkey FOREIGN KEY (user_id)
     REFERENCES auth.users(id) ON DELETE CASCADE
@@ -19,6 +39,8 @@ CREATE TABLE public.blocks (
     REFERENCES forms(id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_blocks_form_id ON public.blocks (form_id);
+
 CREATE TABLE public.responses (
   id TEXT PRIMARY KEY DEFAULT gen_uid(12),
   form_id TEXT NOT NULL,
@@ -28,6 +50,4 @@ CREATE TABLE public.responses (
     REFERENCES forms(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_forms_user_id ON public.forms (user_id);
-CREATE INDEX idx_blocks_form_id ON public.blocks (form_id);
 CREATE INDEX idx_responses_form_id ON public.responses (form_id);
