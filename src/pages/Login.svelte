@@ -33,6 +33,8 @@
 
 <div class="min-h-screen flex justify-center items-center bg-gray-100">
   <div class="w-full max-w-sm bg-white p-8 space-y-6 rounded-xl shadow-lg">
+<!--
+
     <button
       on:click={handleGoogleLogin}
       class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 mb-6"
@@ -41,7 +43,7 @@
       {state.loading && state.lastAction === 'login' && state.lastProvider === 'google' 
         ? 'Logging in with Google…' : 'Login with Google'}
     </button>
-
+-->
     <h2 class="text-3xl font-bold text-center text-gray-900">Sign into my account</h2>
     <p class="text-sm text-center text-gray-500">Please sign in to your FabForm account</p>
 
