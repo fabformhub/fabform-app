@@ -1,5 +1,5 @@
 import { Button, Label, Input, TextArea, Checkbox, Dropdown, } from '../components/ui';
-import { Welcome, ShortText, LongText, Select, DatePicker, DropdownBlock, OpinionScale, StarRating, Signature, Number, PhoneNumber, Statement, ThankYou, Website, Scheduler, FileUploader, Email, YesNo, CheckboxBlock } from '../blocks';
+import { Welcome, ShortText, LongText, Select, DatePicker, DropdownBlock, OpinionScale, StarRating, Signature, Number, PhoneNumber, Statement, ThankYou, Website, Scheduler, FileUploader, Email, YesNo, CheckboxBlock, MoodMeter } from '../blocks';
 
 export function getComponent(componentName) {
   const components = {
@@ -31,7 +31,8 @@ export function getComponent(componentName) {
     FileUploader,
     Email,
     YesNo,
-    CheckboxBlock
+    CheckboxBlock,
+    MoodMeter
   };
   return components[componentName] || null;
 }

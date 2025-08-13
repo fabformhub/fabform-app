@@ -323,6 +323,23 @@ export let blockTemplates = [{
     },
 	'bgColor' : bgColors[17]
 },
+{
+	'blockTypeId': 19,	
+	'label': 'MoodMeter', 
+	'question': 'How did we make you feel?', 
+	'description': '',
+	'component' : 'MoodMeter',
+	'buttonText' : 'Next',
+	'validation': {
+		'required': false
+	},
+	
+    'coverImageProps': {
+	'coverImage': '',
+	'layout' : ''
+    },
+	'bgColor' : bgColors[18]
+},
 
 
 

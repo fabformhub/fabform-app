@@ -93,7 +93,7 @@ export const authService = (() => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}/login` },
       });
 
       if (error) {
@@ -102,7 +102,7 @@ export const authService = (() => {
         return false;
       }
 
-      // OAuth flow redirects; no immediate message here
+      // OAuth will redirect to /login
       return true;
     } catch (err) {
       state.error = err.message;

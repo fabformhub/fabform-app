@@ -5,8 +5,12 @@
 
   let { formMode = false } = $props();
   let fileInput;
-  let uploadedFiles = $state([]);
+  let uploadedFiles = [];
   let currentUserId = '';
+
+  // Progress bar state
+  let progress = 0;
+  let uploading = false;
 
   authService.getUser().then(async (user) => {
     if (user) {
@@ -48,19 +52,47 @@
     if (file) await handleFileUpload(file);
   }
 
+  // Simulated progress uploader
   async function handleFileUpload(file) {
     if (!formMode || !currentUserId) return;
+
+    progress = 0;
+    uploading = true;
+
+    // Start simulated progress
+    const fileSize = file.size;
+    // Adjust speed: bigger files progress slower
+    const increment = 2 + (1000000 / fileSize);
+    const interval = 100;
+
+    const timer = setInterval(() => {
+      if (progress < 90) {
+        progress = Math.min(progress + increment, 90);
+      }
+    }, interval);
 
     const path = `users/${currentUserId}/${file.name}`;
     const { error } = await supabase.storage.from('user-files').upload(path, file, {
       upsert: true
     });
 
+    clearInterval(timer);
+
     if (error) {
+      uploading = false;
+      progress = 0;
       alert(`Upload failed: ${error.message}`);
-    } else {
-      await listUserFiles();
+      return;
     }
+
+    // Upload complete: show 100% and then hide progress bar shortly after
+    progress = 100;
+    await listUserFiles();
+
+    setTimeout(() => {
+      uploading = false;
+      progress = 0;
+    }, 700);
   }
 
   async function deleteFile(fileName) {
@@ -100,6 +132,16 @@
       on:change={handleFileChange}
       disabled={!formMode}
     />
+
+    {#if uploading}
+      <div class="w-full bg-gray-200 rounded-full h-3 mt-4 overflow-hidden">
+        <div
+          class="bg-blue-500 h-3 rounded-full transition-all duration-300 ease-in-out"
+          style="width: {progress}%;"
+        ></div>
+      </div>
+      <p class="text-blue-600 mt-1 font-semibold">{Math.floor(progress)}%</p>
+    {/if}
   </div>
 </div>
 

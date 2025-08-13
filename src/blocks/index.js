@@ -17,3 +17,5 @@ export { default as FileUploader } from './FileUploader.svelte';
 export { default as Email } from './ShortText.svelte';
 export { default as YesNo } from './YesNo.svelte';
 export { default as CheckboxBlock } from './CheckboxBlock.svelte';
+export { default as MoodMeter } from './MoodMeter.svelte';
+
