@@ -22,20 +22,28 @@
     let formId;
     let uiMeta = $state();
 
+function getFormIdFromUrl() {
+  const path = window.location.pathname;  // e.g., "/v/PoVD341OsaSJ"
+  const segments = path.split('/').filter(Boolean); // ["v", "PoVD341OsaSJ"]
 
-   onMount(async () => {
+  // Look for "v" segment and take the next one
+  const vIndex = segments.indexOf('v');
+  if (vIndex !== -1 && segments[vIndex + 1]) {
+    return segments[vIndex + 1];
+  }
+
+  return null; // not found
+}
+
+onMount(async () => {
+  formId = getFormIdFromUrl();
+
+  if (!formId) {
+    errorMessage = 'Form ID not found in URL.';
+    return;
+  }
+
   try {
-    // window.location.pathname might be "/v/PoVD341OsaSJ"
-    const path = window.location.pathname;
-    const match = path.match(/\/v\/([^\/]+)$/); // match the ID after /v/
-    if (!match) {
-      errorMessage = 'Form ID not found in URL.';
-      return;
-    }
-
-    formId = match[1]; // the actual ID
-    console.log('Final formId:', formId);
-
     const formRes = await getFormById(formId);
     uiMeta = formRes.data.form.meta;
 
@@ -47,6 +55,8 @@
     console.error(err);
   }
 });
+
+
     setTimeout(() => { showSplash = false; }, 4000);
 
     const positions = { top: -500, bottom: 500 };
