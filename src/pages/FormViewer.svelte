@@ -24,12 +24,17 @@
 
 
 onMount(async () => {
-  // Get pathname segments
-  const segments = window.location.pathname.split('/').filter(Boolean);
+  // Try router first (normal mode)
+  formId = route?.result?.path?.params?.id;
 
-  // Expecting '/v/<formId>'
-  const vIndex = segments.indexOf('v');
-  formId = vIndex !== -1 ? segments[vIndex + 1] : null;
+  // If router didn't work (embed mode), grab from /v/<id>
+  if (!formId) {
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const vIndex = segments.indexOf('v');
+    if (vIndex !== -1 && segments[vIndex + 1]) {
+      formId = segments[vIndex + 1];
+    }
+  }
 
   if (!formId) {
     errorMessage = 'Form ID not found in URL.';
@@ -37,6 +42,7 @@ onMount(async () => {
   }
 
   try {
+    console.log("Final formId:", formId);
     const formRes = await getFormById(formId);
     uiMeta = formRes.data.form.meta;
 
