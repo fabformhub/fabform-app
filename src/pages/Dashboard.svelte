@@ -143,7 +143,8 @@ async function createNewForm() {
   }
 
   function openFormLink(id) {
-    goto(`/v/${id}`);
+ const link = APP_URL + `/v/${id}`;
+    goto(`link);
   }
 
   async function duplicateForm(formId) {
