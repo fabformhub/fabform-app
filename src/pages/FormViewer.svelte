@@ -141,7 +141,7 @@
         {/if}
       </div>
       <a 
-        href="{APP_URL}"
+        href="https://fabform.io"
         target="_blank" 
         class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
       >
