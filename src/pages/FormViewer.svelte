@@ -24,21 +24,52 @@
 
 
     onMount(async () => {
- let formId = route?.result?.path?.params?.id;
+  console.log("Route param ID:", route?.result?.path?.params?.id);
 
-if (!formId) { // runs if null, undefined, or empty string
-  const url = new URL(window.location.href);
-  const pathSegments = url.pathname.split('/').filter(Boolean);
-  formId = pathSegments[pathSegments.length - 1];
-}
-        const formRes = await getFormById(formId);
-        uiMeta = formRes.data.form.meta;      
-        const res = await getBlocksByFormId(formId);
+  // Router param
+  formId = route?.result?.path?.params?.id;
 
-        blocks = res.data.blocks;
-        blockNo = 0;
-    
-    });
+  // Query param fallback
+  if (!formId) {
+    const searchParams = new URLSearchParams(window.location.search);
+    formId = searchParams.get('id');
+  }
+
+  // Path segment fallback
+  if (!formId) {
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    formId = pathSegments[pathSegments.length - 1];
+  }
+
+  console.log("Final formId:", formId);
+
+  if (!formId) {
+    errorMessage = 'Form ID not found in URL.';
+    console.error(errorMessage);
+    return;
+  }
+
+  try {
+    console.log("Fetching form data...");
+    const formRes = await getFormById(formId);
+    console.log("Form response:", formRes);
+
+    uiMeta = formRes.data.form.meta;
+
+    console.log("Fetching blocks...");
+    const res = await getBlocksByFormId(formId);
+    console.log("Blocks response:", res);
+
+    blocks = res.data.blocks;
+    console.log("Blocks loaded:", blocks);
+
+    blockNo = 0;
+  } catch (err) {
+    errorMessage = 'Failed to load form. Please check the link.';
+    console.error("Form loading error:", err);
+  }
+});
+
 
     setTimeout(() => { showSplash = false; }, 4000);
 
