@@ -20,5 +20,5 @@ export default [
   { path: 'responses/(?<id>.*)', component: FormResponses, hooks: { pre: requireAuth } },
   { path: 'form/(?<mode>[^/]+)/(?<id>[^/]+)', component: FormBuilder, hooks: { pre: requireAuth } },
   { path: 'v/(?<id>.*)', component: FormViewer, },
-  { path: 'test', component: Test, hooks: { pre: requireAuth } }
+  { path: 'test', component: Test,  }
 ];
