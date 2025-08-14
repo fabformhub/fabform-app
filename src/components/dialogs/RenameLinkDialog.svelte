@@ -4,7 +4,7 @@
   
   <input
     bind:value={props.name}
-    placeholder="Rename form name"
+    placeholder="Enter Link id"
     class="border p-2 w-full"
   />
   

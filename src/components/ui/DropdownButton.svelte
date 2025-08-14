@@ -13,6 +13,7 @@
     Duplicate: Copy,
     Delete: Trash,
     Rename: SquarePen,
+    RenameLink: SquarePen,
     OpenForm: ExternalLink,
     CopyLink: Link,
   };

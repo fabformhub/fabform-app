@@ -74,6 +74,24 @@
     }
   }
 
+async function renameFormLink(formId) {
+    const result = await openDialog(
+      'Rename link',
+      '',
+      'Cancel',
+      'Rename Link',
+      RenameLinkDialog,
+      { name: '' }
+    );
+
+    if (result && result.name) {
+      const response = await updateForm({ id: formId, form_id: result.name });
+      if (response.success) {
+        fetchForms();
+      }
+    }
+  }
+
   async function deleteForm(formId) {
     const result = await openDialog(
       'Delete Confirmation',
@@ -177,6 +195,7 @@ async function createNewForm() {
           onOpen={() => openFormLink(form.id)}
           onCopy={() => copyFormLink(form.id)}
           onRename={() => renameForm(form.id)}
+          onRenameLink={() => renameLink(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
         />

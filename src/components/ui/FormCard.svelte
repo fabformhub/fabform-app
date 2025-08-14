@@ -8,6 +8,7 @@
     onOpen,
     onCopy,
     onRename,
+    onRenameFormLink,
     onDuplicate,
     onDelete
   } = $props();
@@ -48,7 +49,8 @@
         dropdownItems={[
           { label: 'Open Form', icon: 'OpenForm', onClick: onOpen },
           { label: 'Copy Form Link', icon: 'CopyLink', onClick: onCopy },
-          { label: 'Rename', icon: 'Rename', onClick: onRename },
+          { label: 'Rename Form', icon: 'Rename', onClick: onRename },
+          { label: 'Rename Link', icon: 'CopyLink', onClick: onRenameFormLink },
           { label: 'Duplicate', icon: 'Duplicate', onClick: onDuplicate },
           { label: 'Delete', icon: 'Delete', onClick: onDelete }
         ]}

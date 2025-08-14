@@ -25,7 +25,11 @@
   $inspect(blocks);
 
   onMount(async () => {
-    formId = route.result.path.params.id;
+    //formId = route.result.path.params.id;
+
+  const segments = window.location.pathname.split("/").filter(Boolean);
+  formId = segments[segments.length - 1];
+
       const formRes = await getFormById(formId);
       uiMeta = formRes.data.form.meta;      
       const res = await getBlocksByFormId(formId);
