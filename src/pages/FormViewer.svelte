@@ -22,29 +22,14 @@
     let formId;
     let uiMeta = $state();
 
-function getFormId() {
-  // 1️⃣ Try router param (works in normal render)
-  let formId = route?.result?.path?.params?.id;
-  if (formId) return formId;
-
-  // 2️⃣ Fallback: parse URL path (works in iframe)
-  try {
-    const segments = window.location.pathname.split('/').filter(Boolean);
-    const vIndex = segments.indexOf('v');
-    if (vIndex !== -1 && segments[vIndex + 1]) {
-      return segments[vIndex + 1];
-    }
-  } catch (err) {
-    console.error('Error parsing formId from URL:', err);
-  }
-
-  return null;
-}
-
-
 
 onMount(async () => {
-  formId = getFormIdFromUrl();
+  // Get pathname segments
+  const segments = window.location.pathname.split('/').filter(Boolean);
+
+  // Expecting '/v/<formId>'
+  const vIndex = segments.indexOf('v');
+  formId = vIndex !== -1 ? segments[vIndex + 1] : null;
 
   if (!formId) {
     errorMessage = 'Form ID not found in URL.';
