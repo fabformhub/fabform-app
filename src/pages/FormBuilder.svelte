@@ -1,4 +1,4 @@
-<script>
+  <script>
   import { FormView } from '../components/form-builder';
   import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById } from '../services/blockService';
   import { getFormById, updateForm } from "../services/formService.js";
@@ -170,13 +170,7 @@
           {updateBlockPositions}
         />
 
-         <Sidebar
-          bind:blockNo={blockNo}
-          bind:blocks={blocksThankYou}
-          {changeBlock}
-          {deleteBlock}
-          {updateBlockPositions}
-        />
+        
       
       </div>
 
