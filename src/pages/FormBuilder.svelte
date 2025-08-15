@@ -170,8 +170,7 @@
           {updateBlockPositions}
         />
 
-        
-      
+    
       </div>
 
       <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
