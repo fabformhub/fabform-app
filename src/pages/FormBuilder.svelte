@@ -19,7 +19,9 @@
   let showBlockPicker = $state(false);
   let showDesignPanel = $state(true);
 
-  let blocks = $state([]);
+  let blocks            = $state([]);
+  let blocksThankYou    = $state([]);
+  
   let blockNo = $state(0);
 
   let uiMeta = $state({});
@@ -38,11 +40,17 @@
       uiMeta = form.meta;
 
       const res = await getBlocksByFormId(formId);
-      blocks = res.data.blocks;
+      const filteredBlocks = res.data.blocks.filter(b => +b.meta.blockTypeId !== 20);
+      const thankyouBlocks = res.data.blocks.filter(b => +b.meta.blockTypeId === 20);
+    
+      blocks = filteredBlocks;
+      blocksThankYou = thankyouBlocks;
+
       isLoaded = true;
     } catch (error) {
       console.error("Error fetching form or blocks:", error);
     }
+    
   }
 
   onMount(fetchData);
@@ -161,6 +169,15 @@
           {deleteBlock}
           {updateBlockPositions}
         />
+
+         <Sidebar
+          bind:blockNo={blockNo}
+          bind:blocks={blocksThankYou}
+          {changeBlock}
+          {deleteBlock}
+          {updateBlockPositions}
+        />
+      
       </div>
 
       <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">

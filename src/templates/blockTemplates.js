@@ -340,6 +340,40 @@ export let blockTemplates = [{
     },
 	'bgColor' : bgColors[18]
 },
+{
+	'blockTypeId': 20,
+	'label': 'Stripe',
+	'title': 'Stripe', 
+	'description': 'Stripe',
+	'embed': '',
+	
+	'component': 'Stripe',
+	'textAlign' : 'center',
+	'coverImageProps': {
+	'coverImage': '',
+	'layout' : ''
+    },
+	'bgColor' : bgColors[19]
+
+},
+
+{
+	'blockTypeId': 21,
+	'label': 'ThankYou',
+	'title': 'Thanks 😀', 
+	'description': 'Thanks',
+	'embed': '',
+	
+	'component': 'ThankYou',
+	'textAlign' : 'center',
+	'coverImageProps': {
+	'coverImage': '',
+	'layout' : ''
+    },
+	'bgColor' : bgColors[20]
+
+},
+
 
 
 

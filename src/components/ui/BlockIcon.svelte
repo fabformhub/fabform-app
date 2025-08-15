@@ -1,8 +1,8 @@
 <script>
   let { blockId = 0 } = $props();  // Destructuring blockId with a default value of 0
-  import { Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck, Smile } from 'lucide-svelte';
+  import { Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck, Smile,CreditCard } from 'lucide-svelte';
 
-  const icons = [Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck,Smile];
+  const icons = [Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck,Smile,CreditCard];
   const totalIcons = icons.length;
 
   // Ensure blockId is within the valid range

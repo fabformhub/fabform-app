@@ -129,12 +129,15 @@ async function createNewForm() {
 
     if (blockTemplates[0]) {
       await createBlock(formId, blockTemplates[0]);
+      await createBlock(formId, blockTemplates[19]);
+  
     } else {
       console.warn("blockTemplates[0] is undefined.");
     }
   } else {
     console.error("Failed to create form:", res.error);
   }
+
 }
 
   function copyFormLink(id) {
