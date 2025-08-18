@@ -29,8 +29,10 @@
       const formRes = await getFormById(formId);
       uiMeta = formRes.data.form.meta;      
       const res = await getBlocksByFormId(formId);
-
-      blocks = res.data.blocks;
+  
+    blocks = res.data.blocks.slice().sort(
+  (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+);
       blockNo = 0;
    
   });
