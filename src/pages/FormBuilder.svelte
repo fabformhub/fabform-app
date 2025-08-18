@@ -5,6 +5,7 @@
   import { AddBlockButton } from '../components/ui';
   import { BlockPicker } from '../components/form-builder';
   import { Sidebar } from '../components/layouts';
+  
   import { Dialog } from '../components/dialogs';
   import { DefaultLayout } from '../components/layouts';
   import { openDialog } from '../utils/dialog.svelte.js';
@@ -21,7 +22,8 @@
 
   let blocks            = $state([]);
   let blocksThankYou    = $state([]);
-  
+  let block = $state();
+
   let blockNo = $state(0);
 
   let uiMeta = $state({});
@@ -40,11 +42,11 @@
       uiMeta = form.meta;
 
       const res = await getBlocksByFormId(formId);
-      const filteredBlocks = res.data.blocks.filter(b => +b.meta.blockTypeId !== 20);
-      const thankyouBlocks = res.data.blocks.filter(b => +b.meta.blockTypeId === 20);
-    
-      blocks = filteredBlocks;
-      blocksThankYou = thankyouBlocks;
+      
+     
+      blocks = res.data.blocks.slice().sort(
+  (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+);
 
       isLoaded = true;
     } catch (error) {
@@ -66,7 +68,6 @@
       console.error("Failed to save block:", error);
     }
   }
-
 
 
   const debouncedSaveBlock = debounce(saveToDatabase, 2000);
@@ -162,6 +163,8 @@
         <div class="flex justify-end mb-2">
           <AddBlockButton clickHandler={() => showBlockPicker = true} />
         </div>
+
+
         <Sidebar
           bind:blockNo={blockNo}
           bind:blocks={blocks}
@@ -169,8 +172,6 @@
           {deleteBlock}
           {updateBlockPositions}
         />
-
-    
       </div>
 
       <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
