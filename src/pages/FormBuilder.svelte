@@ -108,7 +108,7 @@
   async function createBlockPick(i) {
     await createBlock(formId, blockTemplates[i]);
     await fetchData();
-    blockNo = blocks.length - 1;
+    blockNo = blockNo + 1;
   }
 
   async function updateBlockPositions() {

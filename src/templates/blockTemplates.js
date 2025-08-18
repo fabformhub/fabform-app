@@ -63,7 +63,7 @@ export let blockTemplates = [{
 		'required': false
 	},
 	'props': {
-		'choices': ['Ireland', 'France', 'Germany', 'United States'],
+		'choices': [],
 		'multiple': false
 	},
     'coverImageProps': {
@@ -206,8 +206,8 @@ export let blockTemplates = [{
 {
 	'blockTypeId': 12,	
 	'label': 'Statement', 
-	'title': '', 
-	'description': '',
+	'title': 'This is The Statement Block', 
+	'description': 'This is where you would put your statement text here',
 	'component' : 'Statement',
 	'buttonText' : 'Next',
 	'props': {},
