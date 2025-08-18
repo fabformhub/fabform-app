@@ -217,7 +217,8 @@ export let blockTemplates = [{
     },
 	'bgColor' : bgColors[11]
 },
-{
+
+/* {
 	'blockTypeId': 13,	
 	'label': 'Signature', 
 	'question': '', 
@@ -234,7 +235,7 @@ export let blockTemplates = [{
     },
 	'bgColor' : bgColors[12]
 },
-{
+ */{
 	'blockTypeId': 14,	
 	'label': 'Website URL', 
 	'question': 'Please enter a URL', 
