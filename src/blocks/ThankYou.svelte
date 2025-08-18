@@ -11,7 +11,7 @@
   <p class="text-lg mb-8">{subtext}</p>
 
   <a 
-    href={formMode ? "https//fabform.io" : "#"} 
+    href={formMode ? "https://fabform.io" : "#"} 
     target="_blank" 
     class="text-sm px-6 py-3 rounded-md bg-black text-white hover:bg-gray-800 
            {formMode ? '' : 'opacity-50 pointer-events-none'}"
