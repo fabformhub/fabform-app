@@ -105,11 +105,20 @@
     activeMenuLabel = showDesignPanel ? "Design" : "Build";
   });
 
-  async function createBlockPick(i) {
-    await createBlock(formId, blockTemplates[i]);
-    await fetchData();
-    blockNo = blockNo + 1;
+
+async function createBlockPick(i) {
+  await createBlock(formId, blockTemplates[i]);
+  await fetchData();
+
+  // Find first empty slot, excluding the last reserved one
+  blockNo = blocks.findIndex((item, index) => item == null && index < blocks.length - 1);
+
+  // If none found, use the second last item (the one just added)
+  if (blockNo === -1) {
+    blockNo = Math.max(0, blocks.length - 2);
   }
+}
+
 
   async function updateBlockPositions() {
     try {
