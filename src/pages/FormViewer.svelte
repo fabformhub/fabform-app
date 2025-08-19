@@ -101,8 +101,7 @@
         <FormView uiMeta={uiMeta} formMode={true} bind:block={blocks[blockNo]} {errorMessage} {nextBlock} />
       </div>
     {/if}
-  {/if}
-
+  
   {#if !submitted && !errorMessage && blocks.length > 0}
     <div class="fixed bottom-4 right-4 z-10 flex gap-4 items-center touch-none">
       <div class="flex gap-2 items-center">
