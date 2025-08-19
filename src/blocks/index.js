@@ -7,7 +7,7 @@ export { default as Number } from './Number.svelte';
 export { default as OpinionScale } from './OpinionScale.svelte';
 export { default as PhoneNumber } from './PhoneNumber.svelte';
 export { default as Select } from './Select.svelte';
-export { default as Signature } from './Signature.svelte';
+//export { default as Signature } from './Signature.svelte';
 export { default as StarRating } from './StarRating.svelte';
 export { default as Statement } from './Statement.svelte';
 export { default as ThankYou } from './ThankYou.svelte';

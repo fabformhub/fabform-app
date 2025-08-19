@@ -1,5 +1,5 @@
 <script>
-  import { Copy, Trash, SquarePen, Link, ExternalLink, MoreVertical as Dots } from 'lucide-svelte';
+  import { Copy, Trash, SquarePen, Link, ExternalLink, MoreVertical as Dots,QrCode } from 'lucide-svelte';
 
   export let dropdownItems = [];
 
@@ -16,6 +16,7 @@
     RenameLink: SquarePen,
     OpenForm: ExternalLink,
     CopyLink: Link,
+    QRCode: QrCode
   };
 
   let hoverTimeout;

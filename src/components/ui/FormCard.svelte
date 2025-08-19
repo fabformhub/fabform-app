@@ -10,7 +10,8 @@
     onRename,
     onRenameFormLink,
     onDuplicate,
-    onDelete
+    onDelete,
+    onQRCode
   } = $props();
 </script>
 
@@ -52,7 +53,8 @@
           { label: 'Rename Form', icon: 'Rename', onClick: onRename },
           { label: 'Rename Link', icon: 'CopyLink', onClick: onRenameFormLink },
           { label: 'Duplicate', icon: 'Duplicate', onClick: onDuplicate },
-          { label: 'Delete', icon: 'Delete', onClick: onDelete }
+          { label: 'Delete', icon: 'Delete', onClick: onDelete },
+          { label: 'Create QR Code', icon: 'QRCode', onClick: onQRCode }
         ]}
       />
     </div>

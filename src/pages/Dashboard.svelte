@@ -1,169 +1,92 @@
 <script>
   import { onMount } from 'svelte';
+  import { authService } from '../services/authService.svelte.js';
   import {
-    createForm,
     getFormsByUserId,
-    deleteFormById,
+    createForm,
     updateForm,
+    deleteFormById,
     duplicateFormById
   } from '../services/formService.js';
-  import { authService } from '../services/authService.svelte.js';
-  import { goto } from '@mateothegreat/svelte5-router';
-  import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
-  import { FormCard } from '../components/ui';
-  import { Dialog, RenameDialog } from '../components/dialogs';
-  import { openDialog } from '../utils/dialog.svelte.js';
-  import { Navbar } from '../components/layouts';
+  import { createBlock } from '../services/blockService.js';
   import { blockTemplates } from '../templates/blockTemplates';
-  import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
-  
+  import { goto } from '@mateothegreat/svelte5-router';
+  import { QRModal } from '../components/ui';
+  import { Navbar} from '../components/layouts';
+  import { FormCard} from '../components/ui';
+  import { Dialog } from '../components/dialogs';
+
+  // user info
+  const user = authService.state.user || {};
+  const userId = user.id;
+
+  // form data
   let forms = [];
   let formResponseCounts = {};
-  const { state } = authService;
 
-  const uiMeta = {
-  backgroundImage: '',
-  backgroundColor: '#f9fafb',         // Light gray (soft, modern base)
-  questionColor: '#1f2937',           // Slate-900 – deep readable gray
-  answerColor: '#374151',             // Slate-700 – subtle but clear
-  buttonColor: '#2563eb',             // Blue-600 – modern call-to-action
-  buttonTextColor: '#ffffff',         // White – best contrast on blue
-  starRatingColor: '#facc15',         // Amber-400 – warm, vibrant star
-  font: 'Inter',                      // Clean sans-serif font
-  logo: null,
-  roundedCorner: true,
-  fontSize: 'Medium'
-};
+  // QR Modal state
+  let qrOpen = false;
+  let qrText = "";
 
-  onMount(fetchForms);
+  const qrModalOnClose = () => qrOpen = false;
 
+  // fetch forms and response counts
   async function fetchForms() {
-    const userId = state.user?.id;
     if (!userId) return;
-
     const res = await getFormsByUserId(userId);
     forms = res.success ? res.data.forms : [];
 
     for (let form of forms) {
-      await getResponseCountForForm(form.id);
+      const { success, data } = await countResponsesByFormId(form.id);
+      formResponseCounts[form.id] = success ? data.count : 0;
     }
   }
 
-  async function getResponseCountForForm(formId) {
-    const { success, data } = await countResponsesByFormId(formId);
-    formResponseCounts[formId] = success ? data.count : 0;
-  }
+  onMount(fetchForms);
 
-  async function renameForm(formId) {
-    const result = await openDialog(
-      'Rename form',
-      '',
-      'Cancel',
-      'Rename',
-      RenameDialog,
-      { name: 'Untitled' }
-    );
+  // form actions
+  async function createNewForm() {
+    if (!userId) return console.error("User ID missing");
 
-    if (result && result.name) {
-      const response = await updateForm({ id: formId, name: result.name });
-      if (response.success) {
-        fetchForms();
-      }
-    }
-  }
+    const formData = { name: "Untitled Form", user_id: userId, meta: {} };
+    const res = await createForm(formData);
 
-async function renameFormLink(formId) {
-    const result = await openDialog(
-      'Rename link',
-      '',
-      'Cancel',
-      'Rename Link',
-      RenameLinkDialog,
-      { name: '' }
-    );
+    if (res.success) {
+      await fetchForms();
+      const formId = res.data.id;
 
-    if (result && result.name) {
-      const response = await updateForm({ id: formId, form_id: result.name });
-      if (response.success) {
-        fetchForms();
+      if (blockTemplates[0]) {
+        await createBlock(formId, blockTemplates[0]);
+        await createBlock(formId, blockTemplates[19]);
       }
     }
   }
 
   async function deleteForm(formId) {
-    const result = await openDialog(
-      'Delete Confirmation',
-      'Are you sure you want to delete this form?',
-      'No, keep it',
-      'Yes, delete it'
-    );
-    if (result) {
-      const res = await deleteFormById(formId);
-      if (res.success) {
-        await fetchForms();
-      }
-    }
-  }
-
-async function createNewForm() {
-  const userId = state.user?.id;
-
-  if (!userId) {
-    console.error("User ID is missing");
-    return;
-  }
-
-  const formData = {
-    name: "Untitled Form",
-    user_id: userId,
-    meta: { ...uiMeta },
-  };
-
-  const res = await createForm(formData);
-
-  if (res.success) {
-    await fetchForms();
-    const formId = res.data.id;
-
-    if (blockTemplates[0]) {
-      await createBlock(formId, blockTemplates[0]);
-      await createBlock(formId, blockTemplates[19]);
-  
-    } else {
-      console.warn("blockTemplates[0] is undefined.");
-    }
-  } else {
-    console.error("Failed to create form:", res.error);
-  }
-
-}
-
-  function copyFormLink(id) {
-    const link = APP_URL + `/v/${id}`;
-    navigator.clipboard.writeText(link);
-  }
-
-  function openFormLink(id) {
- const link = APP_URL + `/v/${id}`;
-    goto(link);
+    const res = await deleteFormById(formId);
+    if (res.success) await fetchForms();
   }
 
   async function duplicateForm(formId) {
-    const { success, data } = await duplicateFormById(formId);
-    if (success) {
-      alert('Form duplicated successfully!');
-      fetchForms();
-    } else {
-      alert('Failed to duplicate form: ' + data.error);
-    }
+    const res = await duplicateFormById(formId);
+    if (res.success) await fetchForms();
+  }
+
+  async function renameForm(formId, newName) {
+    const res = await updateForm({ id: formId, name: newName });
+    if (res.success) await fetchForms();
+  }
+
+  function showQrModal(url) {
+    qrText = url;
+    qrOpen = true;
   }
 </script>
 
 <Navbar />
 
-<!-- Forms UI -->
 <div class="p-6 bg-white text-black min-h-screen">
   <Dialog />
 
@@ -173,37 +96,33 @@ async function createNewForm() {
       on:click={createNewForm}
       class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-neutral-800 transition"
     >
-      <Plus class="w-5 h-5" />
-      <span>New Form</span>
+      New Form
     </button>
   </div>
 
   {#if forms.length === 0}
-    <div class="flex flex-col items-center justify-center py-20 bg-gray-100 rounded-lg text-center space-y-4">
-      <FileText class="w-16 h-16 text-gray-400" />
-      <h2 class="text-xl font-semibold text-gray-700">No forms created yet</h2>
-      <p class="text-gray-500">Start by creating a new form to get started.</p>
-      <button
-        on:click={createNewForm}
-        class="bg-black text-white px-6 py-2 rounded-xl hover:bg-neutral-800 transition"
-      >
-        Create New Form
-      </button>
-    </div>
+    <p>No forms yet. Create one to get started!</p>
   {:else}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
       {#each forms as form}
         <FormCard
           form={form}
           responseCount={formResponseCounts[form.id]}
-          onOpen={() => openFormLink(form.id)}
-          onCopy={() => copyFormLink(form.id)}
-          onRename={() => renameForm(form.id)}
-          onRenameLink={() => renameLink(form.id)}
+          onOpen={() => goto(APP_URL + `/v/${form.id}`)}
+          onCopy={() => navigator.clipboard.writeText(APP_URL + `/v/${form.id}`)}
+          onRename={(newName) => renameForm(form.id, newName)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
-        />
+          onQRCode={()=> showQrModal(APP_URL + `/v/${form.id}`)}
+        >
+        </FormCard>
+
       {/each}
     </div>
   {/if}
+
+  {#if qrOpen}
+  <QRModal open={qrOpen} text={qrText} onClose={qrModalOnClose} />
+{/if}
+
 </div>
