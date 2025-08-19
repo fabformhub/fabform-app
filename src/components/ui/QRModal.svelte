@@ -15,7 +15,7 @@
 
   function renderQRCode() {
     if (QRCode && canvas) {
-      QRCode.toCanvas(canvas, text, { width: 60 }).catch(err => console.error(err));
+      QRCode.toCanvas(canvas, text, { width: 100 }).catch(err => console.error(err));
     }
   }
 
@@ -29,9 +29,9 @@
   class="fixed inset-0 flex items-center justify-center z-50"
   on:click={() => onClose()}
 >
-  <div class="bg-white p-2 rounded shadow-sm relative flex flex-col items-center" on:click|stopPropagation>
+  <div class="bg-white p-4 rounded shadow-sm relative flex flex-col items-center" on:click|stopPropagation>
     <canvas bind:this={canvas}></canvas>
-    <div class="mt-2 text-xs text-gray-700 break-words text-center max-w-[150px]">
+    <div class="mt-2 text-sm text-gray-700 break-words text-center max-w-[180px]">
       {text}
     </div>
     <!-- Close icon -->
