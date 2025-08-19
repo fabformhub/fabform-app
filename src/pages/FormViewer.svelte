@@ -1,80 +1,69 @@
 <script>
-  import { fly, fade } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { getBlocksByFormId } from "../services/blockService.js";  
   import { getFormById } from "../services/formService.js";  
-  import { FormView} from '../components/form-builder';
+  import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
   import { SplashScreen } from '../components/ui';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
-  import { APP_URL } from '../utils/global.js';
 
   let { route } = $props();
   let showSplash = $state(true);
   let errorMessage = $state();
-
   let blocks = $state([]);
   let blockNo = $state(0);
   let submitted = $state(false);
-  
   let formId;
   let uiMeta = $state();
-
-  $inspect(blocks);
+  
+  let divState = $state({
+    visible: false,   // start hidden
+    direction: 'bottom'
+  });
 
   onMount(async () => {
-     formId = route.result.path.params.id;
-      const formRes = await getFormById(formId);
-      uiMeta = formRes.data.form.meta;      
-      const res = await getBlocksByFormId(formId);
-  
+    formId = route.result.path.params.id;
+    const formRes = await getFormById(formId);
+    uiMeta = formRes.data.form.meta;      
+    const res = await getBlocksByFormId(formId);
     blocks = res.data.blocks.slice().sort(
-  (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
-);
-      blockNo = 0;
-   
+      (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+    );
+    blockNo = 0;
+    // show first block from bottom
+    setTimeout(() => divState = { ...divState, visible: true, direction: 'bottom' }, 100);
   });
 
   setTimeout(() => { showSplash = false; }, 4000);
 
-  const positions = { top: -500, bottom: 500 };
-
-  let divState = $state({
-    visible: true,
-    direction: 'top'
-  });
-
   function nextBlock() {
     errorMessage = '';  
-
     const block = blocks[blockNo];
     const err = validateBlock(block);
-
     if (err) {
       errorMessage = err;
       return;
     }
-
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      blockNo = blockNo + 1;
       divState = { ...divState, visible: false, direction: 'bottom' };
       setTimeout(() => {
-        divState = { ...divState, visible: true };
-      }, 700);
+        blockNo += 1;
+        divState = { ...divState, visible: true, direction: 'bottom' };
+      }, 300);
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      blockNo = blockNo - 1;
       divState = { ...divState, visible: false, direction: 'top' };
       setTimeout(() => {
-        divState = { ...divState, visible: true };
-      }, 700);
+        blockNo -= 1;
+        divState = { ...divState, visible: true, direction: 'top' };
+      }, 300);
     }
   }
 
@@ -86,7 +75,6 @@
         blockTypeId: block.meta.blockTypeId,
         answer: block.value
       }));
-
     await createResponse(formId, responses);
     submitted = true;
     blockNo = -1;
@@ -95,9 +83,7 @@
 
 <main>
   {#if showSplash}
-    <div>
-      <SplashScreen />
-    </div>
+    <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
     <div class="text-center mt-20 text-red-600 text-lg px-4">
       <p>{errorMessage}</p>
@@ -106,15 +92,24 @@
   {:else}
     {#if submitted}
       <ThankYou />
-
-    {:else if blocks[blockNo]?.meta && divState.visible}
-    
-    <div 
-        in:fly={{ y: divState.direction === 'top' ? positions.top : positions.bottom, opacity: 0, duration: 700 }} 
-        out:fade
-          
-      >      
-        <FormView uiMeta= {uiMeta} formMode={true} bind:block={blocks[blockNo]} {errorMessage} {nextBlock}/>
+    {:else if blocks[blockNo]?.meta}
+      <div 
+        class={`absolute bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center
+                transition-transform duration-700 ease-in-out
+                ${divState.visible 
+                  ? 'translate-y-0 opacity-100' 
+                  : divState.direction === 'top' 
+                    ? '-translate-y-[150vh] opacity-0'
+                    : 'translate-y-[150vh] opacity-0'
+                }`}
+      >
+        <FormView 
+          uiMeta={uiMeta} 
+          formMode={true} 
+          bind:block={blocks[blockNo]} 
+          {errorMessage} 
+          {nextBlock}
+        />
       </div>
     {/if}
   {/if}
@@ -124,7 +119,7 @@
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
           <button 
-            onclick={previousBlock} 
+            on:click={previousBlock} 
             class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
             title="Previous"
           >
@@ -134,7 +129,7 @@
 
         {#if blockNo < blocks.length - 1}
           <button 
-            onclick={nextBlock} 
+            on:click={nextBlock} 
             class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
             title="Next"
           >
@@ -142,6 +137,7 @@
           </button>
         {/if}
       </div>
+
       <a 
         href="https://fabform.io"
         target="_blank" 
