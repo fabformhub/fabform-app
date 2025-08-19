@@ -91,7 +91,7 @@
       <ThankYou />
    <!--  {:else if blocks[blockNo] && divState.visible} -->
      <p>test</p>
-    {:else if divState.visible}
+    {:else}
     
       <div 
         in:fly={{ y: divState.direction === 'top' ? positions.top : positions.bottom, opacity: 0, duration: 700 }}
