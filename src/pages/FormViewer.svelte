@@ -83,12 +83,16 @@
 </script>
 
 <main class="relative w-full h-full min-h-screen">
-  {#if showSplash}
+<!---  {#if showSplash}
     <SplashScreen />
   {:else}
+-->
     {#if submitted}
       <ThankYou />
-    {:else if blocks[blockNo] && divState.visible}
+   <!--  {:else if blocks[blockNo] && divState.visible} -->
+     <p>test</p>
+    {:else if divState.visible}
+    
       <div 
         in:fly={{ y: divState.direction === 'top' ? positions.top : positions.bottom, opacity: 0, duration: 700 }}
         out:fade
