@@ -5,22 +5,19 @@
   import { getFormById } from '../services/formService.js';
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
-  import { SplashScreen } from '../components/ui';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
   import { fly } from 'svelte/transition';
 
   let { route } = $props();
 
-  let showSplash = $state(true);
+  let showSplash = $state(false); // Splash disabled
   let errorMessage = $state('');
   let blocks = $state([]);
   let blockNo = $state(0);
   let submitted = $state(false);
   let uiMeta = $state({});
   let direction = $state('bottom');
-  let currentAnimation = $state('');
-
   let formId;
 
   onMount(async () => {
@@ -38,11 +35,6 @@
     } catch (err) {
       errorMessage = 'Failed to load form. Please try again later.';
     }
-
-    setTimeout(() => {
-      showSplash = false;
-      currentAnimation = 'bottom'; // just initial direction
-    }, 4000);
   });
 
   function nextBlock() {
@@ -86,9 +78,7 @@
 
 <main class="min-h-screen flex flex-col items-center justify-start py-8 px-4">
 
-  {#if showSplash}
-    <SplashScreen />
-  {:else if errorMessage && blocks.length === 0}
+  {#if errorMessage && blocks.length === 0}
     <div class="text-center mt-20 text-red-600 text-lg px-4">
       <p>{errorMessage}</p>
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
