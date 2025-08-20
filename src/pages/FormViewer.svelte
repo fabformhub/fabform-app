@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { fly, fade } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { getBlocksByFormId } from "../services/blockService.js";  
   import { getFormById } from "../services/formService.js";  
@@ -10,60 +11,54 @@
   import { validateBlock } from '../utils/validation.js';
 
   let { route } = $props();
+  
   let showSplash = $state(true);
-  let errorMessage = $state();
+  let errorMessage = $state('');
   let blocks = $state([]);
   let blockNo = $state(0);
   let submitted = $state(false);
-  let formId;
   let uiMeta = $state();
-  
-  let divState = $state({
-    visible: false,   // start hidden
-    direction: 'bottom'
-  });
+  let divState = $state({ direction: 'bottom' });
+  let formId;
 
   onMount(async () => {
     formId = route.result.path.params.id;
-    const formRes = await getFormById(formId);
-    uiMeta = formRes.data.form.meta;      
-    const res = await getBlocksByFormId(formId);
-    blocks = res.data.blocks.slice().sort(
-      (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
-    );
-    blockNo = 0;
-    // show first block from bottom
-    setTimeout(() => divState = { ...divState, visible: true, direction: 'bottom' }, 100);
+    try {
+      const formRes = await getFormById(formId);
+      uiMeta = formRes.data.form.meta;
+
+      const res = await getBlocksByFormId(formId);
+      blocks = res.data.blocks.slice().sort(
+        (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+      );
+
+      blockNo = 0;
+
+      setTimeout(() => { showSplash = false; }, 4000);
+    } catch (err) {
+      errorMessage = 'Failed to load form. Please try again.';
+    }
   });
 
-  setTimeout(() => { showSplash = false; }, 4000);
-
   function nextBlock() {
-    errorMessage = '';  
+    errorMessage = '';
     const block = blocks[blockNo];
     const err = validateBlock(block);
-    if (err) {
-      errorMessage = err;
-      return;
-    }
+    if (err) return errorMessage = err;
+
+    divState = { ...divState, direction: 'bottom' };
+
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      divState = { ...divState, visible: false, direction: 'bottom' };
-      setTimeout(() => {
-        blockNo += 1;
-        divState = { ...divState, visible: true, direction: 'bottom' };
-      }, 300);
+      blockNo += 1;
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      divState = { ...divState, visible: false, direction: 'top' };
-      setTimeout(() => {
-        blockNo -= 1;
-        divState = { ...divState, visible: true, direction: 'top' };
-      }, 300);
+      divState = { ...divState, direction: 'top' };
+      blockNo -= 1;
     }
   }
 
@@ -81,7 +76,7 @@
   }
 </script>
 
-<main>
+<main class="relative min-h-screen bg-gray-50 flex justify-center items-start md:items-center">
   {#if showSplash}
     <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
@@ -91,31 +86,32 @@
     </div>
   {:else}
     {#if submitted}
-      <ThankYou />
+      <div transition:fade>
+        <ThankYou />
+      </div>
     {:else if blocks[blockNo]?.meta}
-      <div 
-        class={`absolute bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center
-                transition-transform duration-700 ease-in-out
-                ${divState.visible 
-                  ? 'translate-y-0 opacity-100' 
-                  : divState.direction === 'top' 
-                    ? '-translate-y-[150vh] opacity-0'
-                    : 'translate-y-[150vh] opacity-0'
-                }`}
-      >
-        <FormView 
-          uiMeta={uiMeta} 
-          formMode={true} 
-          bind:block={blocks[blockNo]} 
-          {errorMessage} 
-          {nextBlock}
-        />
+<div
+  transition:fly={{ 
+    y: divState.direction === 'top' ? -500 : 500, 
+    duration: 400, 
+    opacity: 0 
+  }}
+  class="bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16"
+>
+  <FormView 
+    uiMeta={uiMeta} 
+    formMode={true} 
+    bind:block={blocks[blockNo]} 
+    errorMessage={errorMessage} 
+    {nextBlock}
+  />
+
       </div>
     {/if}
   {/if}
 
   {#if !submitted && !errorMessage}
-    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+    <div class="fixed bottom-10 right-10 z-10 flex gap-4 items-center">
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
           <button 

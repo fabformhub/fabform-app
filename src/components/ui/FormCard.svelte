@@ -54,7 +54,7 @@
           { label: 'Rename Link', icon: 'CopyLink', onClick: onRenameFormLink },
           { label: 'Duplicate', icon: 'Duplicate', onClick: onDuplicate },
           { label: 'Delete', icon: 'Delete', onClick: onDelete },
-          { label: 'Create QR Code', icon: 'QRCode', onClick: onQRCode }
+          { label: 'Create QR Code', icon: 'QRCode', onClick: onQRCode}
         ]}
       />
     </div>
