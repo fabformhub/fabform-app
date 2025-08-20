@@ -54,7 +54,7 @@
     <div class="mt-4 flex">
       <Button 
       style={`background-color: ${uiMeta.buttonColor}; color: ${uiMeta.buttonTextColor};`}
-      text={block?.meta?.buttonText || 'Submit'} onclick={clickHandler} />
+      text={block?.meta?.buttonText} onclick={clickHandler} />
     </div>
 
     {#if errorMessage}
