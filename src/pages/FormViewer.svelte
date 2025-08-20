@@ -1,5 +1,5 @@
 <script>
-  import { onMount} from 'svelte';
+  import { onMount } from 'svelte';
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
@@ -10,27 +10,17 @@
 
   let { route } = $props();
 
-  // let showSplash = $state(true); // commented out for now
-  let showSplash = $state(false);
-  let errorMessage = $state('');
+  let showSplash = $state(false); // splash commented out
+  let errorMessage = '';
   let blocks = $state([]);
   let blockNo = $state(0);
-  let submitted = $state(false);
+  let submitted = false;
   let uiMeta = {};
   let formId;
 
   // Slide state
-  let divVisible = $state(true);
+  let divVisible = $state(false);
   let divDirection = $state('top');
-  let animClass = $state('slide-in');
-
-  $effect(() => {
-    animClass = divVisible
-      ? 'slide-in'
-      : divDirection === 'top'
-        ? 'slide-out-top'
-        : 'slide-out-bottom';
-  });
 
   onMount(async () => {
     try {
@@ -44,13 +34,18 @@
       );
       blockNo = 0;
 
-      // Example splash timeout if we bring it back:
-      // setTimeout(() => { showSplash = false; }, 2000);
+      // Trigger first block slide-in
+      setTimeout(() => { divVisible = true; }, 0);
+
     } catch (err) {
       errorMessage = 'Failed to load form. Please try again later.';
       console.error(err);
     }
   });
+
+  function flyDistance() {
+    return window.innerHeight;
+  }
 
   function nextBlock() {
     errorMessage = '';
@@ -70,7 +65,7 @@
         blockNo += 1;
         divDirection = 'top';
         divVisible = true;
-      }, 400); // matches CSS transition duration
+      }, 500); // matches transition duration
     }
   }
 
@@ -82,7 +77,7 @@
         blockNo -= 1;
         divDirection = 'bottom';
         divVisible = true;
-      }, 400);
+      }, 500);
     }
   }
 
@@ -102,75 +97,66 @@
 </script>
 
 <style>
-  .slide-in {
-    transform: translateY(0);
+  .slide-block {
+    transition: transform 0.5s ease, opacity 0.5s ease;
     opacity: 1;
-    transition: transform 0.4s ease, opacity 0.4s ease;
   }
-  .slide-out-top {
-    transform: translateY(-100vh);
+  .slide-block.hidden {
     opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-  }
-  .slide-out-bottom {
-    transform: translateY(100vh);
-    opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease;
   }
 </style>
 
 <main class="relative min-h-screen bg-gray-50">
-  {#if showSplash}
-    <!-- <SplashScreen /> -->
-  {:else}
 
-    {#if errorMessage && blocks.length === 0}
-      <div class="text-center mt-20 text-red-600 text-lg px-4">
-        <p>{errorMessage}</p>
-        <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
-      </div>
-    {:else if submitted}
-      <ThankYou />
-    {:else if blocks[blockNo]}
-      <div class="relative w-full max-w-md mx-auto h-60 overflow-hidden">
-        <div class="absolute w-full h-full {animClass}">
-          <div class="bg-white h-full text-black flex items-center justify-center rounded-xl shadow-lg p-4">
-            <FormView
-              uiMeta={uiMeta}
-              formMode={true}
-              bind:block={blocks[blockNo]}
-              {errorMessage}
-              {nextBlock}
-            />
-          </div>
+  {#if errorMessage && blocks.length === 0}
+    <div class="text-center mt-20 text-red-600 text-lg px-4">
+      <p>{errorMessage}</p>
+      <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
+    </div>
+  {:else if submitted}
+    <ThankYou />
+  {:else if blocks[blockNo]}
+    <div class="relative w-full max-w-md mx-auto h-60 overflow-hidden">
+      <div
+        class="absolute w-full h-full slide-block {divVisible ? '' : 'hidden'}"
+        style="transform: translateY({divVisible ? '0' : divDirection === 'top' ? `-${flyDistance()}px` : `${flyDistance()}px`});"
+      >
+        <div class="bg-white h-full text-black flex items-center justify-center rounded-xl shadow-lg p-4">
+          <FormView
+            uiMeta={uiMeta}
+            formMode={true}
+            bind:block={blocks[blockNo]}
+            {errorMessage}
+            {nextBlock}
+          />
         </div>
       </div>
-    {/if}
+    </div>
+  {/if}
 
-    {#if !submitted && !errorMessage}
-      <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
-        <div class="flex gap-2 items-center">
-          {#if blockNo > 0}
-            <button
-              on:click={previousBlock}
-              class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
-              title="Previous"
-            >
-              <ArrowUp size={16} />
-            </button>
-          {/if}
+  {#if !submitted && !errorMessage}
+    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+      <div class="flex gap-2 items-center">
+        {#if blockNo > 0}
+          <button
+            on:click={previousBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+            title="Previous"
+          >
+            <ArrowUp size={16} />
+          </button>
+        {/if}
 
-          {#if blockNo < blocks.length - 1}
-            <button
-              on:click={nextBlock}
-              class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
-              title="Next"
-            >
-              <ArrowDown size={16} />
-            </button>
-          {/if}
-        </div>
+        {#if blockNo < blocks.length - 1}
+          <button
+            on:click={nextBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+            title="Next"
+          >
+            <ArrowDown size={16} />
+          </button>
+        {/if}
       </div>
-    {/if}
+    </div>
   {/if}
 </main>
