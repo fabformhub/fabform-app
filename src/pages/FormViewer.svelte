@@ -1,30 +1,26 @@
 <script>
   import { onMount } from 'svelte';
-  import { animate } from '@motionone/dom';
-  import { ArrowDown, ArrowUp } from 'lucide-svelte';
+  import { SplashScreen } from '../components/ui';
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
-  import { SplashScreen } from '../components/ui';
-  import { getBlocksByFormId } from '../services/blockService.js';  
-  import { getFormById } from '../services/formService.js';  
+  import { ArrowDown, ArrowUp } from 'lucide-svelte';
+  import { getBlocksByFormId } from '../services/blockService.js';
+  import { getFormById } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
-  
+
   let { route } = $props();
-  
-  // Svelte 5 reactive state
   let showSplash = $state(true);
-  let errorMessage = $state('');
+  let errorMessage = '';
   let blocks = $state([]);
   let blockNo = $state(0);
-  let submitted = $state(false);
-  let uiMeta = $state();
+  let submitted = false;
+  let uiMeta = {};
   let formId;
 
-  let blockRef;
-
-  // Track block animation direction
-  let animationDirection = $state('bottom');
+  // Slide state
+  let divVisible = true;
+  let divDirection = 'top';
 
   onMount(async () => {
     try {
@@ -36,25 +32,15 @@
       blocks = res.data.blocks.slice().sort(
         (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
       );
-
-      // show first block from bottom
       blockNo = 0;
-      animationDirection = 'bottom';
+
+      // Hide splash screen after 2s
+      setTimeout(() => { showSplash = false; }, 2000);
     } catch (err) {
       errorMessage = 'Failed to load form. Please try again later.';
-    } finally {
-      setTimeout(() => showSplash = false, 2000);
+      console.error(err);
     }
   });
-
-  function animateBlock(direction = 'bottom') {
-    if (!blockRef) return;
-    animate(
-      blockRef,
-      { transform: [`translateY(${direction === 'top' ? '-100vh' : '100vh'})`, 'translateY(0)'], opacity: [0, 1] },
-      { duration: 0.5 }
-    );
-  }
 
   function nextBlock() {
     errorMessage = '';
@@ -68,17 +54,25 @@
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      animationDirection = 'bottom';
-      blockNo += 1;
-      animateBlock(animationDirection);
+      divVisible = false;
+      divDirection = 'bottom';
+      setTimeout(() => {
+        blockNo += 1;
+        divDirection = 'top';
+        divVisible = true;
+      }, 400); // matches CSS transition duration
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      animationDirection = 'top';
-      blockNo -= 1;
-      animateBlock(animationDirection);
+      divVisible = false;
+      divDirection = 'top';
+      setTimeout(() => {
+        blockNo -= 1;
+        divDirection = 'bottom';
+        divVisible = true;
+      }, 400);
     }
   }
 
@@ -90,76 +84,75 @@
         blockTypeId: block.meta.blockTypeId,
         answer: block.value
       }));
+
     await createResponse(formId, responses);
     submitted = true;
     blockNo = -1;
   }
 </script>
 
-<main class="relative min-h-screen flex flex-col items-center justify-start p-4">
+<style>
+  .slide-block {
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    opacity: 1;
+  }
+  .slide-block.hidden {
+    opacity: 0;
+  }
+</style>
+
+<main class="relative min-h-screen bg-gray-50">
+
   {#if showSplash}
     <SplashScreen />
-  {:else if errorMessage && blocks.length === 0}
-    <div class="text-center mt-20 text-red-600 text-lg px-4">
-      <p>{errorMessage}</p>
-      <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
-    </div>
   {:else}
-    {#if submitted}
+
+    {#if errorMessage && blocks.length === 0}
+      <div class="text-center mt-20 text-red-600 text-lg px-4">
+        <p>{errorMessage}</p>
+        <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
+      </div>
+    {:else if submitted}
       <ThankYou />
-    {:else if blocks[blockNo]?.meta}
+    {:else if blocks[blockNo]}
       <div
-        bind:this={blockRef}
-        class="bg-white rounded-xl shadow-lg p-6 w-full sm:w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16"
+        class="bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16 slide-block {divVisible ? '' : 'hidden'}"
+        style="transform: translateY({divVisible ? '0' : divDirection === 'top' ? '-100vh' : '100vh'});"
       >
-        <FormView 
-          uiMeta={uiMeta} 
-          formMode={true} 
-          bind:block={blocks[blockNo]} 
-          {errorMessage} 
-          {nextBlock} 
+        <FormView
+          uiMeta={uiMeta}
+          formMode={true}
+          bind:block={blocks[blockNo]}
+          {errorMessage}
+          {nextBlock}
         />
       </div>
     {/if}
-  {/if}
 
-  {#if !submitted && !errorMessage && blocks.length > 0}
-    <div class="fixed bottom-6 right-6 flex gap-4 items-center z-20">
-      <div class="flex gap-2 items-center">
-        {#if blockNo > 0}
-          <button 
-            on:click={previousBlock} 
-            class="w-10 h-10 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
-            title="Previous"
-          >
-            <ArrowUp size={16} />
-          </button>
-        {/if}
+    {#if !submitted && !errorMessage}
+      <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+        <div class="flex gap-2 items-center">
+          {#if blockNo > 0}
+            <button
+              on:click={previousBlock}
+              class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+              title="Previous"
+            >
+              <ArrowUp size={16} />
+            </button>
+          {/if}
 
-        {#if blockNo < blocks.length - 1}
-          <button 
-            on:click={nextBlock} 
-            class="w-10 h-10 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
-            title="Next"
-          >
-            <ArrowDown size={16} />
-          </button>
-        {/if}
+          {#if blockNo < blocks.length - 1}
+            <button
+              on:click={nextBlock}
+              class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+              title="Next"
+            >
+              <ArrowDown size={16} />
+            </button>
+          {/if}
+        </div>
       </div>
-
-      <a 
-        href="https://fabform.io"
-        target="_blank" 
-        class="bg-black text-white text-sm flex items-center gap-2 py-1 px-3 rounded-md hover:bg-gray-800"
-      >
-        Powered by FabForm
-      </a>
-    </div>
+    {/if}
   {/if}
 </main>
-
-<style>
-  main {
-    overflow-x: hidden;
-  }
-</style>
