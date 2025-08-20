@@ -84,6 +84,7 @@
 
 <main class="min-h-screen flex flex-col justify-start items-center relative">
   {#if showSplash}
+    <!-- SplashScreen is plain, no transitions -->
     <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
     <div class="text-center mt-20 text-red-600 text-lg px-4">
@@ -91,7 +92,7 @@
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
     </div>
   {:else if submitted}
-    <!-- ThankYou stays normal, no transition -->
+    <!-- ThankYou is plain, no transitions -->
     <ThankYou />
   {:else if blocks[blockNo]?.meta}
     <div class="relative w-11/12 md:w-1/2 mt-8 md:mt-16">
