@@ -1,30 +1,32 @@
 <script>
   import { onMount } from 'svelte';
-  import { FormView } from '../components/form-builder';
-  import { ThankYou } from '../blocks';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { getBlocksByFormId } from '../services/blockService.js';
   import { getFormById } from '../services/formService.js';
+  import { FormView } from '../components/form-builder';
+  import { ThankYou } from '../blocks';
+  import { SplashScreen } from '../components/ui';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
   let { route } = $props();
 
-  let showSplash = $state(false); // splash commented out
-  let errorMessage = '';
+  // Reactive state
+  let showSplash = $state(true);
+  let errorMessage = $state('');
   let blocks = $state([]);
   let blockNo = $state(0);
-  let submitted = false;
-  let uiMeta = {};
-  let formId;
+  let submitted = $state(false);
+  let uiMeta = $state({});
+  let direction = $state('bottom'); // "top" or "bottom" for CSS class
 
-  // Slide state
-  let divVisible = $state(false);
-  let divDirection = $state('top');
+  let formId;
+  let currentAnimation = $state(''); // class for slide animation
 
   onMount(async () => {
+    formId = route.result.path.params.id;
+
     try {
-      formId = route.result.path.params.id;
       const formRes = await getFormById(formId);
       uiMeta = formRes.data.form.meta;
 
@@ -33,14 +35,15 @@
         (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
       );
       blockNo = 0;
-
-      // Trigger first block slide-in
-      setTimeout(() => { divVisible = true; }, 0);
-
     } catch (err) {
       errorMessage = 'Failed to load form. Please try again later.';
-      console.error(err);
     }
+
+    // Hide splash screen after 4 seconds and show first block
+    setTimeout(() => {
+      showSplash = false;
+      currentAnimation = 'slide-in-bottom';
+    }, 4000);
   });
 
   function nextBlock() {
@@ -55,24 +58,22 @@
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      divVisible = false;
-      divDirection = 'bottom';
+      direction = 'bottom';
+      currentAnimation = 'slide-out-top';
       setTimeout(() => {
         blockNo += 1;
-        divDirection = 'top';
-        divVisible = true;
-      }, 500); // matches CSS transition duration
+        currentAnimation = 'slide-in-bottom';
+      }, 500); // match CSS animation duration
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      divVisible = false;
-      divDirection = 'top';
+      direction = 'top';
+      currentAnimation = 'slide-out-bottom';
       setTimeout(() => {
         blockNo -= 1;
-        divDirection = 'bottom';
-        divVisible = true;
+        currentAnimation = 'slide-in-top';
       }, 500);
     }
   }
@@ -92,57 +93,30 @@
   }
 </script>
 
-<style>
-  .slide-block {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s ease, opacity 0.5s ease;
-    opacity: 1;
-  }
-
-  .slide-block.hidden {
-    opacity: 0;
-  }
-
-  .from-top {
-    transform: translateY(-100vh);
-  }
-
-  .from-bottom {
-    transform: translateY(100vh);
-  }
-
-  .on-screen {
-    transform: translateY(0);
-  }
-</style>
-
-<main class="relative min-h-screen bg-gray-50">
-
-  {#if errorMessage && blocks.length === 0}
+<main>
+  {#if showSplash}
+    <SplashScreen />
+  {:else if errorMessage && blocks.length === 0}
     <div class="text-center mt-20 text-red-600 text-lg px-4">
       <p>{errorMessage}</p>
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
     </div>
-  {:else if submitted}
-    <ThankYou />
-  {:else if blocks[blockNo]}
-    <div class="relative w-full max-w-md mx-auto h-60 overflow-hidden">
+  {:else}
+    {#if submitted}
+      <ThankYou />
+    {:else if blocks[blockNo]?.meta}
       <div
-        class="slide-block {divVisible ? 'on-screen' : divDirection === 'top' ? 'from-top hidden' : 'from-bottom hidden'}"
+        class="bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16 {currentAnimation}"
       >
-        <div class="bg-white h-full text-black flex items-center justify-center rounded-xl shadow-lg p-4">
-          <FormView
-            uiMeta={uiMeta}
-            formMode={true}
-            bind:block={blocks[blockNo]}
-            {errorMessage}
-            {nextBlock}
-          />
-        </div>
+        <FormView
+          uiMeta={uiMeta}
+          formMode={true}
+          bind:block={blocks[blockNo]}
+          {errorMessage}
+          {nextBlock}
+        />
       </div>
-    </div>
+    {/if}
   {/if}
 
   {#if !submitted && !errorMessage}
@@ -168,6 +142,47 @@
           </button>
         {/if}
       </div>
+
+      <a
+        href="https://fabform.io"
+        target="_blank"
+        class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
+      >
+        Powered by FabForm
+      </a>
     </div>
   {/if}
 </main>
+
+<style>
+main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Slide In/Out animations */
+@keyframes slideInTop {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideOutTop {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes slideInBottom {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideOutBottom {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+.slide-in-top { animation: slideInTop 0.5s forwards; }
+.slide-out-top { animation: slideOutTop 0.5s forwards; }
+.slide-in-bottom { animation: slideInBottom 0.5s forwards; }
+.slide-out-bottom { animation: slideOutBottom 0.5s forwards; }
+</style>
