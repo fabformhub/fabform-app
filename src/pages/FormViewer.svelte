@@ -1,91 +1,78 @@
 <script>
-  import { onMount} from 'svelte';
+  import { onMount } from 'svelte';
+  import { animate } from '@motionone/dom';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
-  import { getBlocksByFormId } from "../services/blockService.js";  
-  import { getFormById } from "../services/formService.js";  
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
   import { SplashScreen } from '../components/ui';
+  import { getBlocksByFormId } from "../services/blockService.js";  
+  import { getFormById } from "../services/formService.js";  
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
-  let { route } = $props();
+  export let route;
 
-  // Splash screen
-  let showSplash = $state(true);
-
-  // Error messages
-  let errorMessage = $state();
-
-  // Blocks data
-  let blocks = $state([]);
-  let blockNo = $state(0);
-  let submitted = $state(false);
+  let showSplash = true;
+  let errorMessage = '';
+  let blocks = [];
+  let blockNo = 0;
+  let submitted = false;
   let formId;
-  let uiMeta = $state();
-
-  // Animation state
-  let currentBlockVisible = $state(false);
-  let slideDirection = $state('bottom');
+  let uiMeta = {};
 
   onMount(async () => {
     formId = route.result.path.params.id;
     const formRes = await getFormById(formId);
-    uiMeta = formRes.data.form.meta;
-
+    uiMeta = formRes.data.form.meta;      
     const res = await getBlocksByFormId(formId);
-    blocks = res.data.blocks.slice().sort(
-      (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
-    );
-
+    blocks = res.data.blocks.slice().sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId);
     blockNo = 0;
 
-    // Show first block with slide-in
-    setTimeout(() => {
-      currentBlockVisible = true;
-      slideDirection = 'bottom';
-    }, 100);
+    // Splash screen timeout
+    setTimeout(() => showSplash = false, 3000);
 
-    // Hide splash after 4s
-    setTimeout(() => showSplash = false, 4000);
+    // Animate first block in
+    setTimeout(() => animateBlockIn(), 100);
   });
 
-  function slideClass(direction, visible) {
-    if (visible) return 'translate-y-0 opacity-100';
-    return direction === 'top'
-      ? '-translate-y-[100vh] opacity-0'
-      : 'translate-y-[100vh] opacity-0';
+  function animateBlockIn(direction = 'bottom') {
+    const el = document.querySelector('.current-block');
+    if (!el) return;
+    const yStart = direction === 'top' ? -window.innerHeight : window.innerHeight;
+    animate(el, { y: [yStart, 0], opacity: [0, 1] }, { duration: 0.5, easing: 'ease-out' });
+  }
+
+  function animateBlockOut(direction = 'bottom', callback) {
+    const el = document.querySelector('.current-block');
+    if (!el) return callback?.();
+    const yEnd = direction === 'top' ? -window.innerHeight : window.innerHeight;
+    animate(el, { y: [0, yEnd], opacity: [1, 0] }, { duration: 0.5, easing: 'ease-in' }).finished.then(callback);
   }
 
   function nextBlock() {
-    errorMessage = '';
+    errorMessage = '';  
     const block = blocks[blockNo];
     const err = validateBlock(block);
     if (err) {
       errorMessage = err;
       return;
     }
-
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      currentBlockVisible = false;
-      slideDirection = 'bottom';
-      setTimeout(() => {
+      animateBlockOut('bottom', () => {
         blockNo += 1;
-        currentBlockVisible = true;
-      }, 300);
+        animateBlockIn('bottom');
+      });
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      currentBlockVisible = false;
-      slideDirection = 'top';
-      setTimeout(() => {
+      animateBlockOut('top', () => {
         blockNo -= 1;
-        currentBlockVisible = true;
-      }, 300);
+        animateBlockIn('top');
+      });
     }
   }
 
@@ -103,8 +90,7 @@
   }
 </script>
 
-<main class="relative min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-
+<main class="relative min-h-screen bg-gray-100 flex flex-col items-center justify-start">
   {#if showSplash}
     <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
@@ -117,9 +103,7 @@
       <ThankYou />
     {:else if blocks[blockNo]?.meta}
       <div 
-        class={`bg-white rounded-xl shadow-lg p-6 w-11/12 sm:w-3/4 md:w-1/2 text-center mt-8 md:mt-16
-                transition-transform duration-500 ease-in-out
-                ${slideClass(slideDirection, currentBlockVisible)}`}
+        class="current-block bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16"
       >
         <FormView 
           uiMeta={uiMeta} 
@@ -133,7 +117,7 @@
   {/if}
 
   {#if !submitted && !errorMessage}
-    <div class="absolute bottom-6 right-6 z-10 flex gap-4 items-center">
+    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
           <button 
@@ -165,5 +149,4 @@
       </a>
     </div>
   {/if}
-
 </main>

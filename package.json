@@ -19,6 +19,7 @@
     "@mateothegreat/svelte5-drag-and-drop": "^0.0.2",
     "@mateothegreat/svelte5-router": "^2.14.1",
     "@melloware/coloris": "^0.24.2",
+    "@motionone/dom": "^10.18.0",
     "@stripe/stripe-js": "^7.8.0",
     "@supabase/supabase-js": "^2.48.1",
     "@svelte-plugins/datepicker": "^1.0.11",
