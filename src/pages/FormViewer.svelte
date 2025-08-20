@@ -1,6 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { getBlocksByFormId } from '../services/blockService.js';
   import { getFormById } from '../services/formService.js';
@@ -9,17 +8,18 @@
   import { SplashScreen } from '../components/ui';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
+  import { fly } from 'svelte/transition';
 
   let { route } = $props();
 
-  // Reactive state
   let showSplash = $state(true);
   let errorMessage = $state('');
   let blocks = $state([]);
   let blockNo = $state(0);
   let submitted = $state(false);
   let uiMeta = $state({});
-  let direction = $state('bottom'); // controls fly direction
+  let direction = $state('bottom');
+  let currentAnimation = $state('');
 
   let formId;
 
@@ -39,8 +39,10 @@
       errorMessage = 'Failed to load form. Please try again later.';
     }
 
-    // Hide splash screen after 4 seconds
-    setTimeout(() => (showSplash = false), 4000);
+    setTimeout(() => {
+      showSplash = false;
+      currentAnimation = 'bottom'; // just initial direction
+    }, 4000);
   });
 
   function nextBlock() {
@@ -82,24 +84,23 @@
   }
 </script>
 
-<main class="min-h-screen flex flex-col justify-start items-center relative">
+<main class="min-h-screen flex flex-col items-center justify-start py-8 px-4">
+
   {#if showSplash}
-    <!-- SplashScreen is plain, no transitions -->
     <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
     <div class="text-center mt-20 text-red-600 text-lg px-4">
       <p>{errorMessage}</p>
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
     </div>
-  {:else if submitted}
-    <!-- ThankYou is plain, no transitions -->
-    <ThankYou />
-  {:else if blocks[blockNo]?.meta}
-    <div class="relative w-11/12 md:w-1/2 mt-8 md:mt-16">
+  {:else}
+    {#if submitted}
+      <ThankYou />
+    {:else if blocks[blockNo]?.meta}
       {#key blockNo}
         <div
-          class="bg-white rounded-xl shadow-lg p-8 text-center absolute w-full"
-          transition:fly={{ y: direction === 'bottom' ? window.innerHeight : -window.innerHeight, duration: 500 }}
+          class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md mx-auto mt-8 text-center"
+          transition:fly={{ y: direction === 'bottom' ? 1000 : -1000, duration: 500 }}
         >
           <FormView
             uiMeta={uiMeta}
@@ -110,11 +111,11 @@
           />
         </div>
       {/key}
-    </div>
+    {/if}
   {/if}
 
   {#if !submitted && !errorMessage}
-    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+    <div class="fixed bottom-10 right-10 flex gap-4 items-center z-10">
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
           <button
@@ -146,4 +147,5 @@
       </a>
     </div>
   {/if}
+
 </main>
