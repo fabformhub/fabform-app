@@ -43,10 +43,6 @@
     }
   });
 
-  function flyDistance() {
-    return window.innerHeight;
-  }
-
   function nextBlock() {
     errorMessage = '';
     const block = blocks[blockNo];
@@ -65,7 +61,7 @@
         blockNo += 1;
         divDirection = 'top';
         divVisible = true;
-      }, 500); // matches transition duration
+      }, 500); // matches CSS transition duration
     }
   }
 
@@ -98,11 +94,27 @@
 
 <style>
   .slide-block {
+    position: absolute;
+    width: 100%;
+    height: 100%;
     transition: transform 0.5s ease, opacity 0.5s ease;
     opacity: 1;
   }
+
   .slide-block.hidden {
     opacity: 0;
+  }
+
+  .from-top {
+    transform: translateY(-100vh);
+  }
+
+  .from-bottom {
+    transform: translateY(100vh);
+  }
+
+  .on-screen {
+    transform: translateY(0);
   }
 </style>
 
@@ -118,8 +130,7 @@
   {:else if blocks[blockNo]}
     <div class="relative w-full max-w-md mx-auto h-60 overflow-hidden">
       <div
-        class="absolute w-full h-full slide-block {divVisible ? '' : 'hidden'}"
-        style="transform: translateY({divVisible ? '0' : divDirection === 'top' ? `-${flyDistance()}px` : `${flyDistance()}px`});"
+        class="slide-block {divVisible ? 'on-screen' : divDirection === 'top' ? 'from-top hidden' : 'from-bottom hidden'}"
       >
         <div class="bg-white h-full text-black flex items-center justify-center rounded-xl shadow-lg p-4">
           <FormView
