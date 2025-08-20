@@ -1,157 +1,148 @@
 <script>
-  import { onMount} from 'svelte';
-  import { animate } from '@motionone/dom';
+  import { onMount } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { fly } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
+  import { getBlocksByFormId } from "../services/blockService.js";  
+  import { getFormById } from "../services/formService.js";  
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
   import { SplashScreen } from '../components/ui';
-  import { getBlocksByFormId } from '../services/blockService.js';
-  import { getFormById } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
   let { route } = $props();
-  let showSplash = state(true);
-  let errorMessage = state();
-  let blocks = state([]);
-  let blockNo = state(0);
-  let submitted = state(false);
-  let uiMeta = state();
-  let direction = state('bottom');
+  let showSplash = $state(true);
+  let blocks = $state([]);
+  let blockNo = $state(0);
+  let submitted = $state(false);
+  let errorMessage = $state('');
+  let uiMeta = $state({});
+  
+  // Controls the slide direction and visibility
+  let divState = $state({ visible: false, direction: 'top' });
 
-  let formContainer;
+  function flyDistance() {
+    return window.innerHeight; // full screen
+  }
 
   onMount(async () => {
     const formId = route.result.path.params.id;
 
-    try {
-      const formRes = await getFormById(formId);
-      uiMeta = formRes.data.form.meta;
+    const formRes = await getFormById(formId);
+    uiMeta = formRes.data.form.meta;
 
-      const res = await getBlocksByFormId(formId);
-      blocks = res.data.blocks.slice().sort(
-        (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
-      );
+    const res = await getBlocksByFormId(formId);
+    blocks = res.data.blocks.slice().sort(
+      (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+    );
+    
+    blockNo = 0;
 
-      blockNo = 0;
-      direction = 'bottom';
-      showSplash.set(false);
-
-      slideIn();
-    } catch (err) {
-      errorMessage.set('Failed to load form. Please try again later.');
-      showSplash.set(false);
-    }
+    // Wait a short delay to let splash show a bit, then show first block
+    setTimeout(() => {
+      divState = { visible: true, direction: 'top' };
+      showSplash = false;
+    }, 500);
   });
 
-  function slideIn() {
-    if (!formContainer) return;
-
-    // move off screen
-    formContainer.style.transform = `translateY(${direction.get() === 'top' ? '-100vh' : '100vh'})`;
-    formContainer.style.opacity = 0;
-
-    animate(formContainer, 
-      { translateY: '0vh', opacity: 1 },
-      { duration: 0.6, easing: 'ease-in-out' }
-    );
-  }
-
   function nextBlock() {
-    errorMessage.set('');
-    const block = blocks.get()[blockNo.get()];
+    errorMessage = '';
+    const block = blocks[blockNo];
     const err = validateBlock(block);
-
     if (err) {
-      errorMessage.set(err);
+      errorMessage = err;
       return;
     }
 
-    if (blockNo.get() === blocks.get().length - 1) {
+    if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      direction.set('bottom');
-      slideOut(() => {
-        blockNo.update(n => n + 1);
-        slideIn();
-      });
+      divState = { ...divState, visible: false, direction: 'bottom' };
+      setTimeout(() => {
+        blockNo += 1;
+        divState = { ...divState, visible: true };
+      }, 500);
     }
   }
 
   function previousBlock() {
-    if (blockNo.get() > 0) {
-      direction.set('top');
-      slideOut(() => {
-        blockNo.update(n => n - 1);
-        slideIn();
-      });
+    if (blockNo > 0) {
+      divState = { ...divState, visible: false, direction: 'top' };
+      setTimeout(() => {
+        blockNo -= 1;
+        divState = { ...divState, visible: true };
+      }, 500);
     }
   }
 
-  function slideOut(callback) {
-    if (!formContainer) return;
-
-    animate(formContainer, 
-      { translateY: direction.get() === 'top' ? '-100vh' : '100vh', opacity: 0 },
-      { duration: 0.4, easing: 'ease-in-out' }
-    ).finished.then(callback);
-  }
-
   async function submitForm() {
-    const responses = blocks.get()
-      .filter(b => b.value != null)
-      .map(b => ({
-        blockId: b.id,
-        blockTypeId: b.meta.blockTypeId,
-        answer: b.value
+    const responses = blocks
+      .filter(block => block.value != null)
+      .map(block => ({
+        blockId: block.id,
+        blockTypeId: block.meta.blockTypeId,
+        answer: block.value
       }));
 
     await createResponse(route.result.path.params.id, responses);
-    submitted.set(true);
-    blockNo.set(-1);
+    submitted = true;
+    blockNo = -1;
   }
 </script>
 
-<main class="relative min-h-screen flex flex-col items-center justify-start p-4">
-  {#if $showSplash}
+<main>
+  {#if showSplash}
     <SplashScreen />
-  {:else if $errorMessage && $blocks.length === 0}
-    <div class="text-center mt-20 text-red-600 text-lg px-4">
-      <p>{$errorMessage}</p>
-      <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
+  {:else if submitted}
+    <ThankYou />
+  {:else if blocks[blockNo] && divState.visible}
+    <div
+      in:fly={{ y: divState.direction === 'top' ? -flyDistance() : flyDistance(), duration: 500, easing: cubicOut }}
+      out:fly={{ y: divState.direction === 'top' ? -flyDistance() : flyDistance(), duration: 500, easing: cubicOut }}
+      class="bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16"
+    >
+      <FormView
+        uiMeta={uiMeta}
+        formMode={true}
+        bind:block={blocks[blockNo]}
+        {errorMessage}
+        {nextBlock}
+      />
     </div>
-  {:else}
-    {#if $submitted}
-      <ThankYou />
-    {:else if $blocks[$blockNo]?.meta}
-      <div 
-        bind:this={formContainer}
-        class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md mx-auto text-center mt-8 md:mt-16"
-      >
-        <FormView 
-          uiMeta={$uiMeta} 
-          formMode={true} 
-          bind:block={$blocks[$blockNo]} 
-          {errorMessage} 
-          {nextBlock} 
-        />
-      </div>
-    {/if}
   {/if}
 
-  {#if !$submitted && !$errorMessage}
-    <div class="fixed bottom-4 right-4 flex gap-4 items-center">
-      {#if $blockNo > 0}
-        <button on:click={previousBlock} class="w-10 h-10 bg-gray-800 text-white rounded-md flex items-center justify-center hover:bg-gray-700" title="Previous">
-          <ArrowUp size={16} />
-        </button>
-      {/if}
+  {#if !submitted}
+    <div class="fixed bottom-10 right-10 flex gap-4 items-center z-10">
+      <div class="flex gap-2">
+        {#if blockNo > 0}
+          <button
+            onclick={previousBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+            title="Previous"
+          >
+            <ArrowUp size={16} />
+          </button>
+        {/if}
 
-      {#if $blockNo < $blocks.length - 1}
-        <button on:click={nextBlock} class="w-10 h-10 bg-gray-800 text-white rounded-md flex items-center justify-center hover:bg-gray-700" title="Next">
-          <ArrowDown size={16} />
-        </button>
-      {/if}
+        {#if blockNo < blocks.length - 1}
+          <button
+            onclick={nextBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
+            title="Next"
+          >
+            <ArrowDown size={16} />
+          </button>
+        {/if}
+      </div>
+
+      <a
+        href="https://fabform.io"
+        target="_blank"
+        class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
+      >
+        Powered by FabForm
+      </a>
     </div>
   {/if}
 </main>
