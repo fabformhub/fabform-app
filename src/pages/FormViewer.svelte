@@ -1,78 +1,85 @@
 <script>
   import { onMount } from 'svelte';
-  import { animate } from '@motionone/dom';
-  import { ArrowDown, ArrowUp } from 'lucide-svelte';
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import { ArrowUp, ArrowDown } from 'lucide-svelte';
+  import { SplashScreen } from '../components/ui';
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
-  import { SplashScreen } from '../components/ui';
   import { getBlocksByFormId } from "../services/blockService.js";  
   import { getFormById } from "../services/formService.js";  
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
+  import { APP_URL } from '../utils/global.js';
 
-  export let route;
+  let { route } = $props();
+  
+  // Splash screen
+  let showSplash = $state(true);
 
-  let showSplash = true;
-  let errorMessage = '';
-  let blocks = [];
-  let blockNo = 0;
-  let submitted = false;
+  // Form state
+  let blocks = $state([]);
+  let blockNo = $state(0);
+  let submitted = $state(false);
+  let errorMessage = $state('');
+  let uiMeta = $state();
+
+  // Animation state
+  let divState = $state({
+    visible: true,
+    direction: 'down' // 'up' or 'down'
+  });
+
   let formId;
-  let uiMeta = {};
 
   onMount(async () => {
     formId = route.result.path.params.id;
+
     const formRes = await getFormById(formId);
-    uiMeta = formRes.data.form.meta;      
+    uiMeta = formRes.data.form.meta;
+
     const res = await getBlocksByFormId(formId);
-    blocks = res.data.blocks.slice().sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId);
+    blocks = res.data.blocks.slice().sort(
+      (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
+    );
+
     blockNo = 0;
 
-    // Splash screen timeout
-    setTimeout(() => showSplash = false, 3000);
-
-    // Animate first block in
-    setTimeout(() => animateBlockIn(), 100);
+    // Hide splash after 3s
+    setTimeout(() => { showSplash = false; }, 3000);
   });
 
-  function animateBlockIn(direction = 'bottom') {
-    const el = document.querySelector('.current-block');
-    if (!el) return;
-    const yStart = direction === 'top' ? -window.innerHeight : window.innerHeight;
-    animate(el, { y: [yStart, 0], opacity: [0, 1] }, { duration: 0.5, easing: 'ease-out' });
-  }
-
-  function animateBlockOut(direction = 'bottom', callback) {
-    const el = document.querySelector('.current-block');
-    if (!el) return callback?.();
-    const yEnd = direction === 'top' ? -window.innerHeight : window.innerHeight;
-    animate(el, { y: [0, yEnd], opacity: [1, 0] }, { duration: 0.5, easing: 'ease-in' }).finished.then(callback);
-  }
+  const flyDistance = () => '100vh'; // works for desktop & mobile
 
   function nextBlock() {
-    errorMessage = '';  
+    errorMessage = '';
+
     const block = blocks[blockNo];
     const err = validateBlock(block);
+
     if (err) {
       errorMessage = err;
       return;
     }
+
     if (blockNo === blocks.length - 1) {
       submitForm();
     } else {
-      animateBlockOut('bottom', () => {
+      divState = { ...divState, visible: false, direction: 'down' };
+      setTimeout(() => {
         blockNo += 1;
-        animateBlockIn('bottom');
-      });
+        divState = { ...divState, visible: true };
+      }, 500);
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
-      animateBlockOut('top', () => {
+      divState = { ...divState, visible: false, direction: 'up' };
+      setTimeout(() => {
         blockNo -= 1;
-        animateBlockIn('top');
-      });
+        divState = { ...divState, visible: true };
+      }, 500);
     }
   }
 
@@ -84,65 +91,57 @@
         blockTypeId: block.meta.blockTypeId,
         answer: block.value
       }));
+
     await createResponse(formId, responses);
     submitted = true;
     blockNo = -1;
   }
 </script>
 
-<main class="relative min-h-screen bg-gray-100 flex flex-col items-center justify-start">
+<main class="relative overflow-hidden min-h-screen">
   {#if showSplash}
-    <SplashScreen />
-  {:else if errorMessage && blocks.length === 0}
-    <div class="text-center mt-20 text-red-600 text-lg px-4">
-      <p>{errorMessage}</p>
-      <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
+    <div class="absolute inset-0">
+      <SplashScreen />
     </div>
-  {:else}
-    {#if submitted}
-      <ThankYou />
-    {:else if blocks[blockNo]?.meta}
-      <div 
-        class="current-block bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16"
-      >
-        <FormView 
-          uiMeta={uiMeta} 
-          formMode={true} 
-          bind:block={blocks[blockNo]} 
-          {errorMessage} 
-          {nextBlock}
-        />
-      </div>
-    {/if}
+  {:else if submitted}
+    <ThankYou />
+  {:else if blocks[blockNo]?.meta && divState.visible}
+    <div
+      in:fly={{ y: divState.direction === 'up' ? '-' + flyDistance() : flyDistance(), opacity: 0, duration: 500, easing: cubicOut }}
+      out:fly={{ y: divState.direction === 'up' ? '-' + flyDistance() : flyDistance(), opacity: 0, duration: 500, easing: cubicOut }}
+      class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 text-center"
+    >
+      <FormView uiMeta={uiMeta} formMode={true} bind:block={blocks[blockNo]} {errorMessage} {nextBlock}/>
+    </div>
   {/if}
 
   {#if !submitted && !errorMessage}
     <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
-          <button 
-            on:click={previousBlock} 
-            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
+          <button
+            on:click={previousBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
             title="Previous"
           >
-            <ArrowUp size={16} />
+            <ArrowUp size={16}/>
           </button>
         {/if}
 
         {#if blockNo < blocks.length - 1}
-          <button 
-            on:click={nextBlock} 
-            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
+          <button
+            on:click={nextBlock}
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
             title="Next"
           >
-            <ArrowDown size={16} />
+            <ArrowDown size={16}/>
           </button>
         {/if}
       </div>
 
-      <a 
+      <a
         href="https://fabform.io"
-        target="_blank" 
+        target="_blank"
         class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
       >
         Powered by FabForm
