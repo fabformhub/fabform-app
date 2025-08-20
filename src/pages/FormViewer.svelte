@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { getBlocksByFormId } from '../services/blockService.js';
   import { getFormById } from '../services/formService.js';
@@ -18,10 +19,9 @@
   let blockNo = $state(0);
   let submitted = $state(false);
   let uiMeta = $state({});
-  let direction = $state('bottom'); // "top" or "bottom" for CSS class
+  let direction = $state('bottom'); // controls fly direction
 
   let formId;
-  let currentAnimation = $state(''); // class for slide animation
 
   onMount(async () => {
     formId = route.result.path.params.id;
@@ -39,11 +39,8 @@
       errorMessage = 'Failed to load form. Please try again later.';
     }
 
-    // Hide splash screen after 4 seconds and show first block
-    setTimeout(() => {
-      showSplash = false;
-      currentAnimation = 'slide-in-bottom';
-    }, 4000);
+    // Hide splash screen after 4 seconds
+    setTimeout(() => (showSplash = false), 4000);
   });
 
   function nextBlock() {
@@ -59,22 +56,14 @@
       submitForm();
     } else {
       direction = 'bottom';
-      currentAnimation = 'slide-out-top';
-      setTimeout(() => {
-        blockNo += 1;
-        currentAnimation = 'slide-in-bottom';
-      }, 500); // match CSS animation duration
+      blockNo += 1;
     }
   }
 
   function previousBlock() {
     if (blockNo > 0) {
       direction = 'top';
-      currentAnimation = 'slide-out-bottom';
-      setTimeout(() => {
-        blockNo -= 1;
-        currentAnimation = 'slide-in-top';
-      }, 500);
+      blockNo -= 1;
     }
   }
 
@@ -93,7 +82,7 @@
   }
 </script>
 
-<main>
+<main class="min-h-screen flex flex-col justify-start items-center relative">
   {#if showSplash}
     <SplashScreen />
   {:else if errorMessage && blocks.length === 0}
@@ -101,22 +90,26 @@
       <p>{errorMessage}</p>
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
     </div>
-  {:else}
-    {#if submitted}
-      <ThankYou />
-    {:else if blocks[blockNo]?.meta}
-      <div
-        class="bg-white rounded-xl shadow-lg p-8 w-11/12 md:w-1/2 mx-auto text-center mt-8 md:mt-16 {currentAnimation}"
-      >
-        <FormView
-          uiMeta={uiMeta}
-          formMode={true}
-          bind:block={blocks[blockNo]}
-          {errorMessage}
-          {nextBlock}
-        />
-      </div>
-    {/if}
+  {:else if submitted}
+    <!-- ThankYou stays normal, no transition -->
+    <ThankYou />
+  {:else if blocks[blockNo]?.meta}
+    <div class="relative w-11/12 md:w-1/2 mt-8 md:mt-16">
+      {#key blockNo}
+        <div
+          class="bg-white rounded-xl shadow-lg p-8 text-center absolute w-full"
+          transition:fly={{ y: direction === 'bottom' ? window.innerHeight : -window.innerHeight, duration: 500 }}
+        >
+          <FormView
+            uiMeta={uiMeta}
+            formMode={true}
+            bind:block={blocks[blockNo]}
+            {errorMessage}
+            {nextBlock}
+          />
+        </div>
+      {/key}
+    </div>
   {/if}
 
   {#if !submitted && !errorMessage}
@@ -153,36 +146,3 @@
     </div>
   {/if}
 </main>
-
-<style>
-main {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-/* Slide In/Out animations */
-@keyframes slideInTop {
-  0% { transform: translateY(-100%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-@keyframes slideOutTop {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(-100%); opacity: 0; }
-}
-@keyframes slideInBottom {
-  0% { transform: translateY(100%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-@keyframes slideOutBottom {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(100%); opacity: 0; }
-}
-
-.slide-in-top { animation: slideInTop 0.5s forwards; }
-.slide-out-top { animation: slideOutTop 0.5s forwards; }
-.slide-in-bottom { animation: slideInBottom 0.5s forwards; }
-.slide-out-bottom { animation: slideOutBottom 0.5s forwards; }
-</style>
