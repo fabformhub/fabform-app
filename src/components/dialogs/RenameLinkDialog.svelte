@@ -3,8 +3,8 @@
 </script>
   
   <input
-    bind:value={props.name}
-    placeholder="Enter Link id"
+    bind:value={props.id}
+    placeholder="Enter Form id"
     class="border p-2 w-full"
   />
   

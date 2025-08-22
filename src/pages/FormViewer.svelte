@@ -2,8 +2,7 @@
   import { onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
-  import { FormView } from '../components/form-builder';
-  import { ThankYou } from '../blocks';
+  import { BlockLayout } from '../components/form-builder';
   import { SplashScreen } from '../components/ui';
   import { getBlocksByFormId } from '../services/blockService.js';
   import { getFormById } from '../services/formService.js';
@@ -58,8 +57,7 @@
     blocks = res.data.blocks
       .slice()
       .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId)
-      .concat({ id: 'thankyou', type: 'thankyou', component: ThankYou, meta: {} });
-
+      
     blockNo = 0;
     direction = 'bottom';
     updateFlyParams();
@@ -135,7 +133,7 @@
     {#key blockNo}
       <div in:fly="{flyParams}">
         
-          <FormView 
+          <BlockLayout 
             uiMeta={uiMeta} 
             formMode={true} 
             bind:block={blocks[blockNo]} 

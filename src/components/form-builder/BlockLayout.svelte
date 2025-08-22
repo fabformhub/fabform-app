@@ -1,5 +1,5 @@
 <script>
-  import { FontLoader } from '../../components/ui';
+  import { FontLoader } from '../ui';
   import { BlockView } from '.';
 
 

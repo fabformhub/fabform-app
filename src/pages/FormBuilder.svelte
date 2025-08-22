@@ -1,11 +1,10 @@
   <script>
-  import { FormView } from '../components/form-builder';
+  import { BlockLayout } from '../components/form-builder';
   import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById } from '../services/blockService';
   import { getFormById, updateForm } from "../services/formService.js";
   import { AddBlockButton } from '../components/ui';
   import { BlockPicker } from '../components/form-builder';
-  import { Sidebar } from '../components/layouts';
-  
+  import { Sidebar } from '../components/layouts';  
   import { Dialog } from '../components/dialogs';
   import { DefaultLayout } from '../components/layouts';
   import { openDialog } from '../utils/dialog.svelte.js';
@@ -14,6 +13,7 @@
   import { DesignEditor } from '../components/design-editor';
   import { PropertyEditor } from '../components/property-editor';
   import { onMount, setContext } from 'svelte';
+
   setContext('blockPickerClick', createBlockPick);
 
   let { route } = $props();
@@ -185,7 +185,7 @@ async function createBlockPick(i) {
 
       <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
         {#if blocks[blockNo]}
-          <FormView  bind:block={blocks[blockNo]} on:updateBlock={handleBlockUpdate} />
+          <BlockLayout  bind:block={blocks[blockNo]} on:updateBlock={handleBlockUpdate} />
         {:else}
           <p class="text-gray-400">No blocks to display</p>
         {/if}

@@ -56,6 +56,25 @@
     formResponseCounts[formId] = success ? data.count : 0;
   }
 
+   async function renameFormLink(formId) {
+    const result = await openDialog(
+      'Rename form Id',
+      '',
+      'Cancel',
+      'Rename',
+      RenameDialog,
+      { name: 'enter anything here' }
+    );
+
+    if (result && result.name) {
+      const response = await updateForm({ id: formId, id: result.id });
+      if (response.success) {
+        fetchForms();
+      }
+    }
+  }
+
+ 
   async function renameForm(formId) {
     const result = await openDialog(
       'Rename form',
@@ -173,7 +192,8 @@ async function createNewForm() {
           responseCount={formResponseCounts[form.id]}
           onOpen={() => openFormLink(form.id)}
           onCopy={() => copyFormLink(form.id)}
-          onRename={() => renameForm(form.id)}
+          onRenameForm={() => renameForm(form.id)}
+          onRenameFormLink={() => renameFormLink(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
         />

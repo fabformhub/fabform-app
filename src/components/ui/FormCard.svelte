@@ -7,7 +7,7 @@
     responseCount = 0,
     onOpen,
     onCopy,
-    onRename,
+    onRenameForm,
     onRenameFormLink,
     onDuplicate,
     onDelete,
@@ -50,8 +50,8 @@
         dropdownItems={[
           { label: 'Open Form', icon: 'OpenForm', onClick: onOpen },
           { label: 'Copy Form Link', icon: 'CopyLink', onClick: onCopy },
-          { label: 'Rename Form', icon: 'Rename', onClick: onRename },
-          { label: 'Rename Link', icon: 'CopyLink', onClick: onRenameFormLink },
+          { label: 'Rename Form', icon: 'Rename', onClick: onRenameForm },
+          { label: 'Rename Link Id', icon: 'Rename', onClick: onRenameFormLink },
           { label: 'Duplicate', icon: 'Duplicate', onClick: onDuplicate },
           { label: 'Delete Form', icon: 'Delete', onClick: onDelete },
           { label: 'Create QR Code', icon: 'QRCode', onClick: onQRCode}
