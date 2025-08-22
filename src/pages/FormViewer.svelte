@@ -73,11 +73,7 @@
         answer: b.value
       }));
 
-    if (responses.length === 0) {
-      errorMessage = 'Please complete at least one block before submitting.';
-      return;
-    }
-
+    
     await createResponse(formId, responses);
     submitted = true;
   }

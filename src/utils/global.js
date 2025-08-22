@@ -1,3 +1,3 @@
 
-  export const APP_URL = "https://app.fabform.io";
+  export const APP_URL = "https://fabform.io";
 
