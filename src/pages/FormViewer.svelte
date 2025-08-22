@@ -1,76 +1,111 @@
 <script>
   import { onMount } from 'svelte';
+  import { fade, fly } from 'svelte/transition';
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
-  import { getBlocksByFormId } from '../services/blockService.js';
-  import { getFormById } from '../services/formService.js';
   import { FormView } from '../components/form-builder';
   import { ThankYou } from '../blocks';
   import { SplashScreen } from '../components/ui';
+  import { getBlocksByFormId } from '../services/blockService.js';
+  import { getFormById } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
-  import { fly } from 'svelte/transition';
 
   let { route } = $props();
 
-  // Reactive state
-  let showSplash = $state(false); // temporarily disabled splash for mobile
+  // State
+  let showSplash = $state(true);
   let errorMessage = $state('');
   let blocks = $state([]);
   let blockNo = $state(0);
   let submitted = $state(false);
-  let uiMeta = $state({});
-  let direction = $state('bottom'); // top or bottom
-  let currentAnimation = $state('');
-
   let formId;
+  let uiMeta;
+  
 
-  onMount(async () => {
-    formId = route.result.path.params.id;
-    console.log("Form ID:", formId);
+  let direction = $state('bottom');
+  let flyParams = $state({ y: 0, duration: 1000, opacity: 0.7 });
+  let firstBlockLoaded = $state(false);
 
-    try {
-      const formRes = await getFormById(formId);
-      if (!formRes.success) {
-        console.error("Form fetch error:", formRes.error);
-        errorMessage = "Failed to load form metadata.";
-        return;
-      }
-      uiMeta = formRes.data.form.meta;
+  function updateFlyParams() {
+    const vh = window.innerHeight;
+    const offsetMultiplier = 1.5;
+    flyParams = {
+      y: direction === 'top' ? -vh * offsetMultiplier : vh * offsetMultiplier,
+      duration: 1000,
+      opacity: 0.7,
+      easing: t => 1 - Math.pow(1 - t, 3)
+    };
+  }
 
-      const res = await getBlocksByFormId(formId);
-      if (!res.success) {
-        console.error("Blocks fetch error:", res.error);
-        errorMessage = "Failed to load form blocks.";
-        return;
-      }
-      blocks = res.data.blocks.slice().sort(
-        (a, b) => a.meta.blockTypeId - b.meta.blockTypeId
-      );
+  onMount(() => {
+    setTimeout(() => showSplash = false, 4000);
+    loadForm();
 
-      if (blocks.length === 0) {
-        errorMessage = "No form data available.";
-      }
-
-      blockNo = 0;
-    } catch (err) {
-      console.error("Unexpected fetch error:", err);
-      errorMessage = "Failed to load form. Please try again later.";
-    }
+    window.addEventListener('resize', updateFlyParams);
+    window.addEventListener('orientationchange', updateFlyParams);
+    return () => {
+      window.removeEventListener('resize', updateFlyParams);
+      window.removeEventListener('orientationchange', updateFlyParams);
+    };
   });
 
-  function nextBlock() {
-    errorMessage = '';
-    const block = blocks[blockNo];
-    const err = validateBlock(block);
-    if (err) {
-      errorMessage = err;
+  async function loadForm() {
+    formId = route.result.path.params.id;
+    const formRes = await getFormById(formId);
+    uiMeta = formRes.data.form.meta;
+
+    const res = await getBlocksByFormId(formId);
+    blocks = res.data.blocks
+      .slice()
+      .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId)
+      .concat({ id: 'thankyou', type: 'thankyou', component: ThankYou, meta: {} });
+
+    blockNo = 0;
+    direction = 'bottom';
+    updateFlyParams();
+    firstBlockLoaded = true;
+  }
+
+  async function submitResponses() {
+    const responses = blocks
+      .filter(b => b.value != null)
+      .map(b => ({
+        blockId: b.id,
+        blockTypeId: b.meta.blockTypeId,
+        answer: b.value
+      }));
+
+    if (responses.length === 0) {
+      errorMessage = 'Please complete at least one block before submitting.';
       return;
     }
 
-    if (blockNo === blocks.length - 1) {
-      submitForm();
-    } else {
+    await createResponse(formId, responses);
+    submitted = true;
+  }
+
+  async function nextBlock() {
+    errorMessage = '';
+    const block = blocks[blockNo];
+
+    // Skip validation for ThankYou block
+    if (block.type !== 'thankyou') {
+      const err = validateBlock(block);
+      if (err) { 
+        errorMessage = err; 
+        return; 
+      }
+    }
+
+    // Only submit when the current block is second-to-last (before ThankYou)
+    if (blockNo === blocks.length - 2) {
+      await submitResponses();
+    }
+
+    // Move to next block
+    if (blockNo < blocks.length - 1) {
       direction = 'bottom';
+      updateFlyParams();
       blockNo += 1;
     }
   }
@@ -78,92 +113,62 @@
   function previousBlock() {
     if (blockNo > 0) {
       direction = 'top';
+      updateFlyParams();
       blockNo -= 1;
     }
   }
-
-  async function submitForm() {
-    const responses = blocks
-      .filter(block => block.value != null)
-      .map(block => ({
-        blockId: block.id,
-        blockTypeId: block.meta.blockTypeId,
-        answer: block.value
-      }));
-
-    await createResponse(formId, responses);
-    submitted = true;
-    blockNo = -1;
-  }
 </script>
 
-<main class="flex flex-col justify-start items-center min-h-screen px-4">
+<main class="relative w-full h-full">
   {#if showSplash}
-    <SplashScreen />
+    <div transition:fade={{ duration: 600 }}>
+      <SplashScreen />
+    </div>
+
   {:else if errorMessage && blocks.length === 0}
-    <div class="text-center mt-20 text-red-600 text-lg">
+    <div class="text-center mt-20 text-red-600 text-lg px-4">
       <p>{errorMessage}</p>
       <p class="text-sm text-gray-500 mt-2">Please check the link or try again later.</p>
     </div>
-  {:else}
-    {#if submitted}
-      <ThankYou />
-    {:else if blocks[blockNo]?.meta}
-      {#if direction === 'bottom'}
-        <div transition:fly={{ y: window.innerHeight, duration: 500, opacity: 0 }} 
-             class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md mx-auto text-center mt-8">
-          <FormView
-            uiMeta={uiMeta}
-            formMode={true}
-            bind:block={blocks[blockNo]}
-            {errorMessage}
+
+  {:else if firstBlockLoaded}
+    {#key blockNo}
+      <div in:fly="{flyParams}">
+        
+          <FormView 
+            uiMeta={uiMeta} 
+            formMode={true} 
+            bind:block={blocks[blockNo]} 
+            {errorMessage} 
             {nextBlock}
           />
-        </div>
-      {:else if direction === 'top'}
-        <div transition:fly={{ y: -window.innerHeight, duration: 500, opacity: 0 }} 
-             class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md mx-auto text-center mt-8">
-          <FormView
-            uiMeta={uiMeta}
-            formMode={true}
-            bind:block={blocks[blockNo]}
-            {errorMessage}
-            {nextBlock}
-          />
-        </div>
-      {/if}
-    {/if}
+        
+      </div>
+    {/key}
   {/if}
 
-  {#if !submitted && !errorMessage && blocks.length > 0}
-    <div class="flex gap-4 items-center mt-6">
-      {#if blockNo > 0}
-        <button
-          on:click={previousBlock}
-          class="w-10 h-10 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
-          title="Previous"
-        >
-          <ArrowUp size={16} />
-        </button>
-      {/if}
+    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+      <div class="flex gap-2 items-center">
+        {#if blockNo > 0}
+          <button on:click={previousBlock} class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" title="Previous">
+            <ArrowUp size={16} />
+          </button>
+        {/if}
+        {#if blockNo < blocks.length - 2}
+          <button on:click={nextBlock} class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" title="Next">
+            <ArrowDown size={16} />
+          </button>
+        {/if}
 
-      {#if blockNo < blocks.length - 1}
-        <button
-          on:click={nextBlock}
-          class="w-10 h-10 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center"
-          title="Next"
-        >
-          <ArrowDown size={16} />
-        </button>
-      {/if}
-
-      <a
+        <a
         href="https://fabform.io"
         target="_blank"
         class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
       >
         Powered by FabForm
       </a>
+      </div>
     </div>
-  {/if}
-</main>
+    
+  
+  </main>

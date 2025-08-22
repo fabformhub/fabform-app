@@ -51,11 +51,14 @@
   />
 {/if}
 
+<!--dont show button if a thankyou block -->
+{#if block?.meta?.blockTypeId !== 99}
     <div class="mt-4 flex">
       <Button 
       style={`background-color: ${uiMeta.buttonColor}; color: ${uiMeta.buttonTextColor};`}
       text={block?.meta?.buttonText} onclick={clickHandler} />
     </div>
+{/if}
 
     {#if errorMessage}
       <div class="mt-4 flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">

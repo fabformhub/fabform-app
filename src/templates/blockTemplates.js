@@ -366,6 +366,7 @@ export let blockTemplates = [{
 	'embed': '',
 	
 	'component': 'ThankYou',
+	'buttonText' : 'Submit',
 	'textAlign' : 'center',
 	'coverImageProps': {
 	'coverImage': '',
