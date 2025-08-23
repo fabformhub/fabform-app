@@ -3,7 +3,7 @@ import { goto } from '@mateothegreat/svelte5-router';
 import { authService } from '../services/authService.svelte.js';
 
 const requireAuth = () => {
-  if (!authService.state.user) {
+  if (!authService.userSession.user) {
     goto('/login');
     return false;
   }

@@ -1,94 +1,93 @@
 import { supabase } from '../lib/supabaseClient';
 
 export const authService = (() => {
-  const state = $state({
+  // Tracks the current logged-in user and session info
+  const userSession = {
     user: null,
     loading: false,
     error: null,
     message: null,
     lastAction: null,
     lastProvider: null,
-  });
+  };
 
   const getUser = async () => {
-    state.loading = true;
-    state.error = null;
+    userSession.loading = true;
+    userSession.error = null;
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw new Error(error.message);
-      state.user = session?.user || null;
+      userSession.user = session?.user || null;
     } catch (err) {
-      state.error = err.message;
-      state.user = null;
+      userSession.error = err.message;
+      userSession.user = null;
     } finally {
-      state.loading = false;
+      userSession.loading = false;
     }
-    return state.user;
+    return userSession.user;
   };
 
   const createUser = async (email, password) => {
-    state.loading = true;
-    state.error = null;
-    state.message = null;
-    state.lastAction = 'signup';
-    state.lastProvider = 'email';
+    userSession.loading = true;
+    userSession.error = null;
+    userSession.message = null;
+    userSession.lastAction = 'signup';
+    userSession.lastProvider = 'email';
 
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
-
       if (error) {
-        state.error = error.message;
+        userSession.error = error.message;
         return false;
       }
 
       if (!data.session || !data.user) {
-        state.message = "Check your email to confirm your account.";
+        userSession.message = "Check your email to confirm your account.";
         return false;
       }
 
-      state.user = data.user;
-      state.message = "Signup successful! Redirecting...";
+      userSession.user = data.user;
+      userSession.message = "Signup successful! Redirecting...";
       return true;
     } catch (err) {
-      state.error = err.message;
+      userSession.error = err.message;
       return false;
     } finally {
-      state.loading = false;
+      userSession.loading = false;
     }
   };
 
   const loginWithEmail = async (email, password) => {
-    state.loading = true;
-    state.error = null;
-    state.message = null;
-    state.lastAction = 'login';
-    state.lastProvider = 'email';
+    userSession.loading = true;
+    userSession.error = null;
+    userSession.message = null;
+    userSession.lastAction = 'login';
+    userSession.lastProvider = 'email';
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
       if (error) {
-        state.error = error.message;
+        userSession.error = error.message;
         return false;
       }
 
-      state.user = data.user;
-      state.message = "Login successful! Redirecting...";
+      userSession.user = data.user;
+      userSession.message = "Login successful! Redirecting...";
       return true;
     } catch (err) {
-      state.error = err.message;
+      userSession.error = err.message;
       return false;
     } finally {
-      state.loading = false;
+      userSession.loading = false;
     }
   };
 
   const loginWithGoogle = async () => {
-    state.loading = true;
-    state.error = null;
-    state.message = null;
-    state.lastAction = 'login';
-    state.lastProvider = 'google';
+    userSession.loading = true;
+    userSession.error = null;
+    userSession.message = null;
+    userSession.lastAction = 'login';
+    userSession.lastProvider = 'google';
 
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -97,27 +96,26 @@ export const authService = (() => {
       });
 
       if (error) {
-        state.error = error.message;
-        state.loading = false;
+        userSession.error = error.message;
+        userSession.loading = false;
         return false;
       }
 
-      // OAuth will redirect to /login
       return true;
     } catch (err) {
-      state.error = err.message;
-      state.loading = false;
+      userSession.error = err.message;
+      userSession.loading = false;
       return false;
     }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
-    state.user = null;
+    userSession.user = null;
   };
 
   return {
-    state,
+    userSession,
     getUser,
     createUser,
     loginWithEmail,

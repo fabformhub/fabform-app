@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte';
+  import { tick } from 'svelte';
 
   let { open = false, text = "", onClose = () => {} } = $props();
-
   let canvas;
   let QRCode;
 
@@ -10,38 +10,30 @@
     const module = await import('qrcode');
     QRCode = module.default;
 
-    if (open) renderQRCode();
+    if (open) await generateQRCode();
   });
 
-  function renderQRCode() {
-    if (QRCode && canvas) {
-      QRCode.toCanvas(canvas, text, { width: 100 }).catch(err => console.error(err));
+  // Re-run whenever `open` or `text` changes
+  $effect(async () => {
+    if (open) {
+      await tick(); // wait for DOM
+      await generateQRCode();
+    }
+  });
+
+  async function generateQRCode() {
+    if (QRCode && canvas && text) {
+      QRCode.toCanvas(canvas, text, { width: 150 }).catch(console.error);
     }
   }
-
-  $effect(() => {
-    if (open) renderQRCode();
-  });
 </script>
 
 {#if open}
-<div
-  class="fixed inset-0 flex items-center justify-center z-50"
-  on:click={() => onClose()}
->
-  <div class="bg-white p-4 rounded shadow-sm relative flex flex-col items-center" on:click|stopPropagation>
-    <canvas bind:this={canvas}></canvas>
-    <div class="mt-2 text-sm text-gray-700 break-words text-center max-w-[180px]">
-      {text}
+  <div class="fixed inset-0 flex items-center justify-center bg-black/30 z-50" on:click={onClose}>
+    <div class="bg-white p-4 rounded shadow-sm relative flex flex-col items-center" on:click|stopPropagation>
+      <canvas bind:this={canvas}></canvas>
+      <div class="mt-2 text-sm text-gray-700 break-words text-center max-w-[180px]">{text}</div>
+      <button class="absolute top-1 right-1 text-gray-600 hover:text-gray-800 font-bold" on:click={onClose}>×</button>
     </div>
-    <!-- Close icon -->
-    <button
-      class="absolute top-1 right-1 text-gray-600 hover:text-gray-800 text-sm font-bold"
-      on:click={onClose}
-      aria-label="Close"
-    >
-      ×
-    </button>
   </div>
-</div>
 {/if}
