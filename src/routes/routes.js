@@ -3,12 +3,12 @@ import { goto } from '@mateothegreat/svelte5-router';
 import { authService } from '../services/authService.svelte.js';
 
 const requireAuth = () => {
-  if (!authService.userSession.user) {
+  if (!authService.state.user) {
     goto('/login');
     return false;
   }
   return true;
-};
+};  
 
 export default [
   { path: '', hooks: { pre: () => goto('/dashboard') } },

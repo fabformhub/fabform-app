@@ -8,6 +8,8 @@
     updateForm,
     duplicateFormById
   } from '../services/formService.js';
+    const { state} = authService;
+
   import { goto } from '@mateothegreat/svelte5-router';
   import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
@@ -39,8 +41,7 @@
   // ---------------------
   let forms = [];
   let formResponseCounts = {};
-  const { userSession } = authService; // reactive user session
-
+ 
   const uiMeta = {
     backgroundImage: '',
     backgroundColor: '#f9fafb',
@@ -55,13 +56,15 @@
     fontSize: 'Medium'
   };
 
+  const userId = state.user.id;
+    
+  
   // ---------------------
   // Fetch forms on mount
   // ---------------------
   onMount(fetchForms);
 
   async function fetchForms() {
-    const userId = authService.userSession.user.id;
     if (!userId) return;
 
     const res = await getFormsByUserId(userId);
@@ -127,7 +130,6 @@
   }
 
   async function createNewForm() {
-    const userId = userSession.user?.id;
     if (!userId) return console.error("User ID missing");
 
     const formData = { name: "Untitled Form", user_id: userId, meta: { ...uiMeta } };
