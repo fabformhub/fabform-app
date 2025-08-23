@@ -11,7 +11,7 @@
 
   let { route } = $props();
 
-  // State
+  
   let showSplash = $state(true);
   let errorMessage = $state('');
   let blocks = $state([]);
@@ -154,15 +154,17 @@
           </button>
         {/if}
 
-        <a
-        href="https://fabform.io"
-        target="_blank"
-        class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
-      >
-        Powered by FabForm
-      </a>
-      </div>
-    </div>
+      <a
+  href="https://fabform.io"
+  target="_blank"
+  class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
+>
+  <span class="text-gray-300">Powered by</span>
+  <span class="text-white">FabForm</span>
+</a>
+  
+</div>
+</div>
     
   
-  </main>
+</main>
