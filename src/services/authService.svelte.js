@@ -2,13 +2,14 @@
 import { supabase } from '../lib/supabaseClient';
 
 export const authService = (() => {
-  const state = $state({
+  // Plain global state object
+  const state = {
     user: null,
     loading: false,
     error: null
-  });
+  };
 
-  // Get current session/user
+  // Get current user/session
   const getUser = async () => {
     state.loading = true;
     try {
@@ -23,35 +24,6 @@ export const authService = (() => {
     }
 
     return state.user;
-  };
-
-  // Sign up with email and password
-  const createUser = async (email, password) => {
-    state.loading = true;
-    state.error = null;
-
-    try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-
-      if (error) {
-        state.error = error.message;
-        return false;
-      }
-
-      // Handle email confirmation flow
-      if (!data.session || !data.user) {
-        state.error = "Check your email to confirm your account.";
-        return false;
-      }
-
-      state.user = data.user;
-      return true;
-    } catch (err) {
-      state.error = err.message;
-      return false;
-    } finally {
-      state.loading = false;
-    }
   };
 
   // Login with email/password
@@ -85,9 +57,7 @@ export const authService = (() => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
+        options: { redirectTo: window.location.origin }
       });
 
       if (error) {
@@ -114,12 +84,5 @@ export const authService = (() => {
     state.user = null;
   };
 
-  return {
-    state,
-    getUser,
-    createUser,
-    loginWithEmail,
-    loginWithGoogle,
-    logout
-  };
+  return { state, getUser, loginWithEmail, loginWithGoogle, logout };
 })();
