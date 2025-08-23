@@ -2,20 +2,25 @@
 import { supabase } from '../lib/supabaseClient';
 
 export const authService = (() => {
-  // Plain global state object
+  // Plain global state
   const state = {
     user: null,
     loading: false,
     error: null
   };
 
-  // Get current user/session
+  // Get current session/user
   const getUser = async () => {
     state.loading = true;
+    state.error = null;
+
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw new Error(error.message);
-      state.user = session?.user || null;
+      const result = await supabase.auth.getSession();
+
+      if (result.error) throw new Error(result.error.message);
+
+      state.user = result.data?.session?.user || null;
+
     } catch (err) {
       state.error = err.message;
       state.user = null;
@@ -32,15 +37,16 @@ export const authService = (() => {
     state.error = null;
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const result = await supabase.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        state.error = error.message;
+      if (result.error) {
+        state.error = result.error.message;
         return false;
       }
 
-      state.user = data.user;
+      state.user = result.data?.user || null;
       return true;
+
     } catch (err) {
       state.error = err.message;
       return false;
@@ -55,21 +61,22 @@ export const authService = (() => {
     state.error = null;
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const result = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin }
       });
 
-      if (error) {
-        state.error = error.message;
+      if (result.error) {
+        state.error = result.error.message;
         return false;
       }
 
-      supabase.auth.onAuthStateChange((event, session) => {
+      supabase.auth.onAuthStateChange((_, session) => {
         state.user = session?.user || null;
       });
 
       return true;
+
     } catch (err) {
       state.error = err.message;
       return false;
