@@ -1,6 +1,6 @@
 <script>
   import { goto } from '@mateothegreat/svelte5-router';
-  import { DropdownButton } from '../../components/ui';
+  import { DropdownButton } from '.';
 
   const {
     form,

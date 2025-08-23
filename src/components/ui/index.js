@@ -8,7 +8,7 @@ export { default as Checkbox } from './Checkbox.svelte';
 export { default as CopyLinkButton } from './CopyLinkButton.svelte';
 export { default as Dropdown } from './Dropdown.svelte';
 export { default as DropdownButton } from './DropdownButton.svelte';
-export { default as FormCard } from './FormCard.svelte';
+export { default as DashboardDetail } from './DashboardDetail.svelte';
 export { default as OpenFormLinkButton } from './OpenFormLinkButton.svelte';
 export { default as Toast } from './Toast.svelte';
 export { default as Tooltip } from './Tooltip.svelte';

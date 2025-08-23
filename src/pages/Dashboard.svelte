@@ -11,7 +11,7 @@
   import { goto } from '@mateothegreat/svelte5-router';
   import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
-  import { FormCard } from '../components/ui';
+  import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog } from '../components/dialogs';
   import { openDialog } from '../utils/dialog.svelte.js';
   import { Navbar } from '../components/layouts';
@@ -34,13 +34,12 @@
   function closeQRModal() {
     showQR = false;
   }
-
   // ---------------------
   // Forms state
   // ---------------------
   let forms = [];
   let formResponseCounts = {};
-  const { state: userSession } = authService; // reactive user session
+  const { userSession } = authService; // reactive user session
 
   const uiMeta = {
     backgroundImage: '',
@@ -198,7 +197,7 @@
   {:else}
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
       {#each forms as form}
-        <FormCard
+        <DashboardDetail
           form={form}
           responseCount={formResponseCounts[form.id]}
           onOpen={() => openFormLink(form.id)}
