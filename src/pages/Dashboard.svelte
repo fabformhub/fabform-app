@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { authService } from '../services/authService.svelte.js';
   import {
     createForm,
     getFormsByUserId,
@@ -7,7 +8,7 @@
     updateForm,
     duplicateFormById
   } from '../services/formService.js';
-  import { authService } from '../services/authService.svelte.js';
+
   import { goto } from '@mateothegreat/svelte5-router';
   import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
@@ -18,25 +19,31 @@
   import { blockTemplates } from '../templates/blockTemplates';
   import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
-  
+  import { QRModal } from '../components/ui';
+
+  // --- Local state ---
   let forms = [];
   let formResponseCounts = {};
-  const { state } = authService;
+  let showQR = false;
+  let qrText = "";
+
+  const { state } = authService; // reactive service state
 
   const uiMeta = {
-  backgroundImage: '',
-  backgroundColor: '#f9fafb',         // Light gray (soft, modern base)
-  questionColor: '#1f2937',           // Slate-900 – deep readable gray
-  answerColor: '#374151',             // Slate-700 – subtle but clear
-  buttonColor: '#2563eb',             // Blue-600 – modern call-to-action
-  buttonTextColor: '#ffffff',         // White – best contrast on blue
-  starRatingColor: '#facc15',         // Amber-400 – warm, vibrant star
-  font: 'Inter',                      // Clean sans-serif font
-  logo: null,
-  roundedCorner: true,
-  fontSize: 'Medium'
-};
+    backgroundImage: '',
+    backgroundColor: '#f9fafb',
+    questionColor: '#1f2937',
+    answerColor: '#374151',
+    buttonColor: '#2563eb',
+    buttonTextColor: '#ffffff',
+    starRatingColor: '#facc15',
+    font: 'Inter',
+    logo: null,
+    roundedCorner: true,
+    fontSize: 'Medium'
+  };
 
+  // --- Fetch forms on mount ---
   onMount(fetchForms);
 
   async function fetchForms() {
@@ -51,30 +58,44 @@
     }
   }
 
-  async function getResponseCountForForm(formId) {
-    const { success, data } = await countResponsesByFormId(formId);
-    formResponseCounts[formId] = success ? data.count : 0;
+  // --- QR Modal ---
+  function openQRModal(formId) {
+    qrText = APP_URL + `/v/${formId}`;
+    showQR = true;
   }
 
-   async function renameFormLink(formId) {
+  function closeQRModal() {
+    showQR = false;
+  }
+
+  // --- Count responses ---
+  async function getResponseCountForForm(formId) {
+    const { success, data } = await countResponsesByFormId(formId);
+    formResponseCounts = {
+      ...formResponseCounts,
+      [formId]: success ? data.count : 0
+    };
+  }
+
+  // --- Form actions ---
+  async function renameFormLink(formId) {
     const result = await openDialog(
-      'Rename form Id',
+      'Rename form link',
       '',
       'Cancel',
       'Rename',
       RenameDialog,
-      { name: 'enter anything here' }
+      { name: 'my-form-link' }
     );
 
-    if (result && result.name) {
-      const response = await updateForm({ id: formId, id: result.id });
+    if (result && result.name?.trim()) {
+      const response = await updateForm({ id: formId, link: result.name });
       if (response.success) {
         fetchForms();
       }
     }
   }
 
- 
   async function renameForm(formId) {
     const result = await openDialog(
       'Rename form',
@@ -85,7 +106,7 @@
       { name: 'Untitled' }
     );
 
-    if (result && result.name) {
+    if (result && result.name?.trim()) {
       const response = await updateForm({ id: formId, name: result.name });
       if (response.success) {
         fetchForms();
@@ -100,6 +121,7 @@
       'No, keep it',
       'Yes, delete it'
     );
+
     if (result) {
       const res = await deleteFormById(formId);
       if (res.success) {
@@ -108,32 +130,30 @@
     }
   }
 
-async function createNewForm() {
-  const userId = state.user?.id;
+  async function createNewForm() {
+    const userId = state.user?.id;
+    if (!userId) {
+      console.error("User ID is missing");
+      return;
+    }
 
-  if (!userId) {
-    console.error("User ID is missing");
-    return;
-  }
+    const formData = {
+      name: "Untitled Form",
+      user_id: userId,
+      meta: { ...uiMeta },
+    };
 
-  const formData = {
-    name: "Untitled Form",
-    user_id: userId,
-    meta: { ...uiMeta },
-  };
+    const res = await createForm(formData);
 
-  const res = await createForm(formData);
+    if (res.success) {
+      await fetchForms();
+      const formId = res.data.id;
 
-  if (res.success) {
-    await fetchForms();
-    const formId = res.data.id;
-
+      // Add start and end blocks automatically
       await createBlock(formId, blockTemplates[0]);
-          await createBlock(formId, blockTemplates[blockTemplates.length-1]);
-  
-    } 
-  
-}
+      await createBlock(formId, blockTemplates[blockTemplates.length - 1]);
+    }
+  }
 
   function copyFormLink(id) {
     const link = APP_URL + `/v/${id}`;
@@ -147,10 +167,20 @@ async function createNewForm() {
   async function duplicateForm(formId) {
     const { success, data } = await duplicateFormById(formId);
     if (success) {
-      alert('Form duplicated successfully!');
+      await openDialog(
+        'Form Duplicated',
+        'Your form was successfully duplicated.',
+        'Close',
+        null
+      );
       fetchForms();
     } else {
-      alert('Failed to duplicate form: ' + data.error);
+      await openDialog(
+        'Duplicate Failed',
+        'Failed to duplicate form: ' + (data?.error || 'Unknown error'),
+        'Close',
+        null
+      );
     }
   }
 </script>
@@ -158,7 +188,7 @@ async function createNewForm() {
 <Navbar />
 
 <!-- Forms UI -->
-<div class="p-6 bg-white text-black min-h-screen">
+<div class="p-6 bg-gray-50 text-black min-h-screen">
   <Dialog />
 
   <div class="flex justify-between items-center mb-6">
@@ -196,8 +226,13 @@ async function createNewForm() {
           onRenameFormLink={() => renameFormLink(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
+          onQRCode={() => openQRModal(form.id)}
         />
       {/each}
     </div>
+  {/if}
+
+  {#if showQR}
+    <QRModal text={qrText} onClose={closeQRModal} />
   {/if}
 </div>
