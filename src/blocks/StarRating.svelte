@@ -1,24 +1,24 @@
 <script>
   import { Star } from 'lucide-svelte';
   import { scale } from 'svelte/transition';
-  let { formMode, value = $bindable(), props } = $props();
+  let { canAnswer, value = $bindable(), props } = $props();
 
   let selected = $state(value || 0);
   let hover = $state(0);
 
   function setRating(rating) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     selected = rating;
     value = rating;
   }
 
   function onMouseEnter(rating) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     hover = rating;
   }
 
   function onMouseLeave() {
-    if (!formMode) return;
+    if (!canAnswer) return;
     hover = 0;
   }
 </script>
@@ -28,7 +28,7 @@
   <div
     class="flex items-center space-x-2"
     on:mouseleave={onMouseLeave}
-    style={!formMode ? 'pointer-events: none;' : ''}
+    style={!canAnswer ? 'pointer-events: none;' : ''}
   >
   {#each Array(Number(props.maxRating)) as _, i}
       <span

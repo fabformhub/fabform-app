@@ -1,8 +1,8 @@
 <script>
-  let { value = $bindable(), formMode = false } = $props();
+  let { value = $bindable(), canAnswer = false } = $props();
 
   function selectYesNo(val) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     value = val;
   }
 
@@ -18,9 +18,9 @@
       isSelected(true)
         ? 'bg-blue-600 text-white scale-105 shadow-xl ring-2 ring-blue-300 animate-[pulse_0.6s_ease-in-out]'
         : 'bg-white text-gray-700 hover:bg-blue-100 hover:text-blue-600',
-      !formMode && 'opacity-50 cursor-not-allowed'
+      !canAnswer && 'opacity-50 cursor-not-allowed'
     ]}
-    disabled={!formMode}
+    disabled={!canAnswer}
     on:click={() => selectYesNo(true)}
     aria-pressed={isSelected(true)}
   >
@@ -33,9 +33,9 @@
       isSelected(false)
         ? 'bg-red-600 text-white scale-105 shadow-xl ring-2 ring-red-300 animate-[pulse_0.6s_ease-in-out]'
         : 'bg-white text-gray-700 hover:bg-red-100 hover:text-red-600',
-      !formMode && 'opacity-50 cursor-not-allowed'
+      !canAnswer && 'opacity-50 cursor-not-allowed'
     ]}
-    disabled={!formMode}
+    disabled={!canAnswer}
     on:click={() => selectYesNo(false)}
     aria-pressed={isSelected(false)}
   >

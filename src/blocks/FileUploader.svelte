@@ -3,7 +3,7 @@
   import { CloudUpload, Trash2, FileText } from 'lucide-svelte';
   import { authService } from '../services/authService.svelte.js';
 
-  let { formMode = false } = $props();
+  let { canAnswer = false } = $props();
   let fileInput;
   let uploadedFiles = [];
   let currentUserId = '';
@@ -44,7 +44,7 @@
   }
 
   function triggerFileInput() {
-    if (formMode) fileInput.click();
+    if (canAnswer) fileInput.click();
   }
 
   async function handleFileChange(event) {
@@ -54,7 +54,7 @@
 
   // Simulated progress uploader
   async function handleFileUpload(file) {
-    if (!formMode || !currentUserId) return;
+    if (!canAnswer || !currentUserId) return;
 
     progress = 0;
     uploading = true;
@@ -116,10 +116,10 @@
   >
     <CloudUpload class="w-16 h-16 text-blue-500 mb-4" />
     <p class="text-gray-500">
-      {formMode ? 'Click or drag and drop to upload a file' : ''}
+      {canAnswer ? 'Click or drag and drop to upload a file' : ''}
     </p>
 
-    {#if formMode}
+    {#if canAnswer}
       <button on:click={triggerFileInput} class="mt-3 text-blue-600 hover:text-blue-800 font-medium">
         <CloudUpload class="inline w-5 h-5 mr-1" /> Upload File
       </button>
@@ -130,7 +130,7 @@
       class="hidden"
       bind:this={fileInput}
       on:change={handleFileChange}
-      disabled={!formMode}
+      disabled={!canAnswer}
     />
 
     {#if uploading}
@@ -145,8 +145,8 @@
   </div>
 </div>
 
-<!-- Files Grid, only show if formMode -->
-{#if formMode}
+<!-- Files Grid, only show if canAnswer -->
+{#if canAnswer}
   <div class="flex-grow overflow-auto max-w-6xl mx-auto mt-12 px-4 py-3">
     <div class="flex flex-wrap gap-4 justify-center">
       {#each uploadedFiles as file}

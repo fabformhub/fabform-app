@@ -3,7 +3,7 @@
   import { RefreshCw, Undo2 } from 'lucide-svelte';
 
   export let value = '';
-  // export let formMode = true; // <-- Can re-add later
+  // export let canAnswer = true; // <-- Can re-add later
 
   let canvas;
   let ctx;
@@ -35,7 +35,7 @@
   }
 
   function startDraw(event) {
-    // if (!formMode) return;  <-- Can re-enable later
+    // if (!canAnswer) return;  <-- Can re-enable later
     isDrawing = true;
     currentStroke = [];
     strokes = [...strokes, currentStroke];
@@ -43,14 +43,14 @@
   }
 
   function draw(event) {
-    // if (!formMode || !isDrawing) return;  <-- Can re-enable later
+    // if (!canAnswer || !isDrawing) return;  <-- Can re-enable later
     if (!isDrawing) return;
     currentStroke.push(getPos(event));
     redraw();
   }
 
   function stopDraw() {
-    // if (!formMode || !isDrawing) return;  <-- Can re-enable later
+    // if (!canAnswer || !isDrawing) return;  <-- Can re-enable later
     if (!isDrawing) return;
     isDrawing = false;
     saveSignature();

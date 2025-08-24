@@ -1,5 +1,5 @@
 <script>
-  let { value = $bindable(), props = {}, formMode = false } = $props();
+  let { value = $bindable(), props = {}, canAnswer = false } = $props();
 
   let {
     choices = [],
@@ -28,9 +28,9 @@
         isSelected(choice)
           ? 'bg-blue-600 text-white scale-105 shadow-xl ring-2 ring-blue-300 animate-[pulse_0.6s_ease-in-out]'
           : 'bg-white text-gray-800 hover:bg-blue-100 hover:text-blue-600 hover:scale-105',
-        !formMode && 'opacity-60 cursor-not-allowed'
+        !canAnswer && 'opacity-60 cursor-not-allowed'
       ]}
-      disabled={!formMode}
+      disabled={!canAnswer}
       on:click={() => toggleChoice(choice)}
     >
       {choice}

@@ -4,14 +4,14 @@
   import { AlertTriangle } from 'lucide-svelte';
   import { Label } from '../../components/ui';
 
-  let { block = $bindable({}), uiMeta= $bindable({}), formMode, clickHandler, errorMessage } = $props();
+  let { block = $bindable({}), uiMeta= $bindable({}), canAnswer, clickHandler, errorMessage } = $props();
   let SvelteComponent = $derived(getComponent(block?.meta?.component));
 
 </script>
 
 <!-- Outer container -->
 <div
-  class={`relative ${formMode 
+  class={`relative ${canAnswer 
     ? 'flex items-center justify-center w-screen h-screen px-6' 
     : 'max-w-lg px-4 pt-8 mx-auto mt-5'
   }`}
@@ -46,7 +46,7 @@
 {#if block && SvelteComponent}
   <SvelteComponent
     bind:value={block.value}
-    {formMode}
+    {canAnswer}
     props={block.meta?.props}
   />
 {/if}

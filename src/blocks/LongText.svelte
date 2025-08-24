@@ -1,5 +1,5 @@
 <script>
-  let { value = $bindable(), formMode = false, props } = $props();
+  let { value = $bindable(), canAnswer = false, props } = $props();
   let { message = '' } = props ?? {};
   let inputValue = $state(value ?? '');
   let size = $derived(props?.size ?? 'Medium');
@@ -12,7 +12,7 @@
   };
 
   function handleInput(e) {
-    if (formMode) {
+    if (canAnswer) {
       inputValue = e.target.value;
       value = e.target.value;
     }
@@ -27,7 +27,7 @@
     class={`border rounded-xl p-4 resize-none text-base shadow-sm focus:outline-none
       ${sizeClasses[size]}
       ${
-        formMode
+        canAnswer
           ? 'text-gray-900 border-gray-400 focus:border-indigo-500'
           : 'text-gray-400 border-gray-200 cursor-not-allowed'
       }

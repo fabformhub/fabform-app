@@ -2,7 +2,7 @@
   import { countries } from '../constants/countries.js';
   import { clickOutside } from '../utils/clickOutside.js';
 
-  let { value = $bindable(), formMode = false, props } = $props();
+  let { value = $bindable(), canAnswer = false, props } = $props();
   
   let selectedCountry = $state(countries[0]);
   let number = $state('');
@@ -13,7 +13,7 @@
   });
 
   function handleInput(e) {
-    if (!formMode) {
+    if (!canAnswer) {
       e.preventDefault();
       return;
     }
@@ -21,13 +21,13 @@
   }
 
   function toggleDropdown() {
-    if (formMode) {
+    if (canAnswer) {
       showDropdown = !showDropdown;
     }
   }
 
   function selectCountry(country) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     selectedCountry = country;
     showDropdown = false;
   }
@@ -44,7 +44,7 @@
   }
 </style>
 
-<div class={`flex flex-col space-y-2 w-full max-w-xs ${!formMode ? 'disabled-cursor' : ''}`}>
+<div class={`flex flex-col space-y-2 w-full max-w-xs ${!canAnswer ? 'disabled-cursor' : ''}`}>
   <label class="text-gray-700 text-base font-medium"></label>
 
   <div class="relative flex items-center space-x-2 w-full">
@@ -52,10 +52,10 @@
       type="button"
       class={`flex items-center space-x-2 min-w-[100px] bg-transparent text-base
         border-b-2 border-gray-300
-        ${formMode ? 'focus:border-indigo-500 focus:outline-none' : 'opacity-50 cursor-not-allowed'}`}
+        ${canAnswer ? 'focus:border-indigo-500 focus:outline-none' : 'opacity-50 cursor-not-allowed'}`}
       on:click={toggleDropdown}
-      tabindex={formMode ? 0 : -1}
-      aria-disabled={!formMode}
+      tabindex={canAnswer ? 0 : -1}
+      aria-disabled={!canAnswer}
     >
       <span>{selectedCountry.flag}</span>
       <span>{selectedCountry.code}</span>
@@ -69,16 +69,16 @@
       class={`flex-1 bg-transparent text-lg
         border-b-2 border-gray-300
         focus:border-indigo-500 focus:outline-none
-        ${formMode ? 'text-gray-800 cursor-text' : 'text-gray-400 cursor-not-allowed'}
+        ${canAnswer ? 'text-gray-800 cursor-text' : 'text-gray-400 cursor-not-allowed'}
       `}
       bind:value={number}
       on:input={handleInput}
-      tabindex={formMode ? 0 : -1}
+      tabindex={canAnswer ? 0 : -1}
       inputmode="numeric"
       pattern="\d*"
       placeholder="123456789"
-      readonly={!formMode}
-      aria-readonly={!formMode}
+      readonly={!canAnswer}
+      aria-readonly={!canAnswer}
     />
 
     {#if showDropdown}

@@ -1,11 +1,11 @@
 <script>
-  let { formMode = false, value = $bindable() } = $props();
+  let { canAnswer = false, value = $bindable() } = $props();
 
   let selected = $state(value);
   let animating = $state(false);
 
   function selectValue(i) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     selected = i;
     value = i;
 
@@ -79,7 +79,7 @@
       <button
         on:click={() => selectValue(id)}
         class={`flex-grow rounded transition duration-300 transform flex flex-col items-center justify-center p-1
-          ${formMode ? 'cursor-pointer' : 'pointer-events-none'}
+          ${canAnswer ? 'cursor-pointer' : 'pointer-events-none'}
           ${selected === id
             ? `${animating ? 'pop' : ''}`
             : 'opacity-70 hover:opacity-100'}

@@ -3,7 +3,7 @@
   import { BlockView } from '.';
 
 
-  let { block = null, formMode, uiMeta = {}, nextBlock = () => {}, errorMessage = '' } = $props();
+  let { block = null, canAnswer, uiMeta = {}, nextBlock = () => {}, errorMessage = '' } = $props();
 
   const coverImage = block?.meta?.coverImageProps?.coverImage || '';
   const layout = block?.meta?.coverImageProps?.layout || '';
@@ -23,7 +23,7 @@
     <div class={`flex flex-col items-center justify-center w-full h-full ${coverImage ? 'bg-cover bg-center' : ''}`} 
          style={coverImage ? `background-image: url('${coverImage}')` : ''}>
       {#if block}
-        <BlockView uiMeta={uiMeta} formMode={formMode} bind:block={block} clickHandler={nextBlock} {errorMessage} />
+        <BlockView uiMeta={uiMeta} canAnswer={canAnswer} bind:block={block} clickHandler={nextBlock} {errorMessage} />
       {/if}
     </div>
 

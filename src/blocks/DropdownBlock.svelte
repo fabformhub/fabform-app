@@ -4,7 +4,7 @@
   import { clickOutside } from '../utils/clickOutside.js';
   import { debounce } from '../utils/debounce.js';
 
-  let { formMode, value = $bindable(), props } = $props();
+  let { canAnswer, value = $bindable(), props } = $props();
   let { choices = [], label = '' } = props;
 
   let isOpen = $state(false);
@@ -17,12 +17,12 @@
   }, 300);
 
   function toggleDropdown() {
-    if (!formMode) return;
+    if (!canAnswer) return;
     isOpen = !isOpen;
   }
 
   function selectOption(option, idx) {
-    if (!formMode) return;
+    if (!canAnswer) return;
     selected = option;
     value = option;
     flashIndex = idx;
@@ -33,13 +33,13 @@
 <div
   class="relative inline-block w-64 font-sans"
   use:clickOutside={() => {
-    if (formMode) isOpen = false;
+    if (canAnswer) isOpen = false;
   }}
 >
   <button
     on:click={toggleDropdown}
     class="w-full flex justify-between items-center px-5 py-3 rounded-lg bg-white border border-gray-300 shadow-sm text-gray-700 font-medium hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all duration-200"
-    style={!formMode ? 'pointer-events: none;' : ''}
+    style={!canAnswer ? 'pointer-events: none;' : ''}
     aria-haspopup="listbox"
     aria-expanded={isOpen}
   >
@@ -49,7 +49,7 @@
     />
   </button>
 
-  {#if isOpen && formMode}
+  {#if isOpen && canAnswer}
     <div
       class="absolute right-0 mt-2 w-full rounded-lg bg-white border border-gray-300 shadow-lg z-50"
       role="listbox"

@@ -1,5 +1,5 @@
 <script>
-  let { value = $bindable(), formMode = false, props } = $props();
+  let { value = $bindable(), canAnswer = false, props } = $props();
   let { message = '' } = props ?? {};
 </script>
 <div class="">

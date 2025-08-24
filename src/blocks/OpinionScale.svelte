@@ -1,5 +1,5 @@
 <script>
-  let { formMode = false, value = $bindable(), props } = $props();
+  let { canAnswer = false, value = $bindable(), props } = $props();
 
   let min = $derived(Number(props.start ?? 0));
   let max = $derived(Number(props.end ?? 10));
@@ -9,7 +9,7 @@
 
   function selectValue(i) {
   
-    if (!formMode) return;
+    if (!canAnswer) return;
     selected = i;
     value = i;
 
@@ -42,7 +42,7 @@
         onclick={() => selectValue(num)}
         class={`w-10 h-10 sm:w-12 sm:h-12 rounded font-semibold text-sm transition duration-300 transform
           flex items-center justify-center
-          ${formMode ? 'cursor-pointer' : 'pointer-events-none'}
+          ${canAnswer ? 'cursor-pointer' : 'pointer-events-none'}
           ${selected === num
             ? `bg-indigo-600 text-white shadow-lg ${animating ? 'pop' : ''}`
             : 'bg-white text-gray-800 border border-gray-300 hover:bg-indigo-100 hover:text-indigo-700'}

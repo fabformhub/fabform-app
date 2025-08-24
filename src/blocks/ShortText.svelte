@@ -1,5 +1,5 @@
 <script>
-  let { value = $bindable(), formMode, props } = $props();
+  let { value = $bindable(), canAnswer, props } = $props();
   let { icon = null } = props ?? {};
 
   let inputValue = $state(value ?? '');
@@ -23,8 +23,8 @@
     type="text"
     bind:value={inputValue}
     placeholder={props.placeholder}
-    tabindex={formMode ? 0 : -1}
-    disabled={formMode}
+    tabindex={canAnswer ? 0 : -1}
+    disabled={canAnswer}
     class={`peer block w-full bg-transparent border-0 border-b-2 text-xl py-2 px-0 outline-none transition-all duration-300
       ${icon ? 'pl-8' : ''}
       
@@ -33,7 +33,7 @@
     `}
   />
 
-  {#if formMode}
+  {#if canAnswer}
     <span class="absolute bottom-0 left-0 h-0.5 w-0 bg-indigo-500 transition-all duration-300 peer-focus:w-full"></span>
   {/if}
 </div>
