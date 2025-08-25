@@ -1,6 +1,6 @@
 <script>
-  import { authService } from '../services/authService.svelte.js'; // Import your authentication service
-  import { goto } from '@mateothegreat/svelte5-router'; // Use your router for navigation
+  import { authService } from '../services/authService.svelte.js';
+  import { goto } from '@mateothegreat/svelte5-router';
 
   const { state, createUser } = authService;
 
@@ -8,71 +8,95 @@
   let password = '';
   let confirmPassword = '';
 
+  // Reactive computed value to check if passwords match
+  $: passwordsMatch = password && confirmPassword && password === confirmPassword;
+
   const handleSignup = async () => {
-    if (password !== confirmPassword) {
-      state.error = "Passwords do not match!";
+    state.error = '';
+
+    // Validate fields
+    if (!email || !password || !confirmPassword) {
+      state.error = 'All fields are required!';
       return;
     }
 
-    const success = await createUser(email, password);
-    if (success) {
-      goto('/dashboard'); // Redirect to the dashboard after successful signup
+    // Password match check (redundant but ensures server safety)
+    if (!passwordsMatch) {
+      state.error = 'Passwords do not match!';
+      return;
+    }
+
+    state.loading = true;
+
+    try {
+      const user = await createUser(email, password);
+      if (!user) throw new Error('Signup failed');
+
+      state.user = user; // set session
+      goto('/dashboard');
+    } catch (err) {
+      state.error = err?.message || 'Signup failed';
+    } finally {
+      state.loading = false;
     }
   };
 </script>
 
-<!-- Full-screen signup container -->
 <div class="min-h-screen flex justify-center items-center bg-gray-100">
-
-  <!-- Signup Card -->
   <div class="w-full max-w-sm bg-white p-8 space-y-6 rounded-xl shadow-lg">
-
-    <!-- Header Section -->
     <h2 class="text-3xl font-bold text-center text-gray-900">Create an Account</h2>
     <p class="text-sm text-center text-gray-500">Sign up to start your journey</p>
 
-    <!-- Form Section -->
-    <div class="space-y-5">
-      
-      <!-- Email Input -->
+    <form class="space-y-5" on:submit|preventDefault={handleSignup}>
+      <!-- Email -->
       <input
         type="email"
         placeholder="Email"
         bind:value={email}
+        on:input={() => state.error = ''}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+        required
       />
 
-      <!-- Password Input -->
+      <!-- Password -->
       <input
         type="password"
         placeholder="Password"
         bind:value={password}
+        on:input={() => state.error = ''}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+        required
       />
 
-      <!-- Confirm Password Input -->
+      <!-- Confirm Password -->
       <input
         type="password"
         placeholder="Confirm Password"
         bind:value={confirmPassword}
+        on:input={() => state.error = ''}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+        required
       />
+
+      <!-- Live password match feedback -->
+      {#if confirmPassword}
+        <p class="text-sm text-right {passwordsMatch ? 'text-green-500' : 'text-red-500'}">
+          {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
+        </p>
+      {/if}
 
       <!-- Signup Button -->
       <button
-        on:click={handleSignup}
+        type="submit"
         class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         disabled={state.loading}
       >
         {state.loading ? 'Creating account…' : 'Sign Up'}
       </button>
-    </div>
+    </form>
 
-    <!-- Error Message Section -->
     {#if state.error}
       <p class="text-sm text-red-500 text-center">{state.error}</p>
     {/if}
-    
   </div>
-
 </div>

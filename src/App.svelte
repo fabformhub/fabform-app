@@ -2,18 +2,20 @@
   import { onMount } from 'svelte';
   import { Router } from '@mateothegreat/svelte5-router';
   import { authService } from './services/authService.svelte.js';
-  import routes from './routes/routes.js'
+  import routes from './routes/routes.js';
 
   const { state, getUser } = authService;
   let loading = true;
 
   onMount(async () => {
-    await getUser();
-    loading = false;
-    
-    
+    try {
+      await getUser(); // fetch existing session if any
+    } catch (err) {
+      console.log('No active session');
+    } finally {
+      loading = false;
+    }
   });
-  
 </script>
 
 <style>
