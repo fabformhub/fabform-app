@@ -41,14 +41,19 @@ import { APP_URL } from '../../utils/global.js';
           use:clickOutside={() => (showMenu = false)}
           class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
         >
+        <!-- <a
+                use:route
+                  href=""
+              class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition"
+              on:click={() => (showMenu = false)}
+         -->
           {#if state.user}
             <a
-              use:route
-              href="/dashboard"
+              href="https://fabform.io/v/fabform-feedback" target="_BLANK"
               class="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition"
               on:click={() => (showMenu = false)}
             >
-              <LayoutDashboard class="w-4 h-4" /> Dashboard
+              <LayoutDashboard class="w-4 h-4" /> Feedback Form
             </a>
             <!-- <a
               use:route
