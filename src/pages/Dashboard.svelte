@@ -12,8 +12,7 @@
   } from '../services/formService.js';
   const { state } = authService;
 
-  import { goto } from '@mateothegreat/svelte5-router';
-  import { Plus, FileText, Eye, MessageSquare } from 'lucide-svelte';
+  import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
   import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog, RenameSlugDialog } from '../components/dialogs';
@@ -100,14 +99,13 @@
     };
   }
 
-  
-async function getViewCountForForm(formId) {
-  const { success, data } = await getFormViews(formId);
-  formViewCounts = {
-    ...formViewCounts,
-    [formId]: success ? data.views : 0
-  };
-}
+  async function getViewCountForForm(formId) {
+    const { success, data } = await getFormViews(formId);
+    formViewCounts = {
+      ...formViewCounts,
+      [formId]: success ? data.views : 0
+    };
+  }
 
   // ---------------------
   // Form actions
@@ -174,7 +172,7 @@ async function getViewCountForForm(formId) {
   }
 
   function openFormLink(id) {
-    goto(`/v/${id}`);
+    window.location.href = APP_URL + `/v/${id}`;
   }
 
   async function duplicateForm(formId) {
@@ -186,6 +184,53 @@ async function getViewCountForForm(formId) {
       await openDialog('Duplicate Failed', 'Failed to duplicate form: ' + (data?.error || 'Unknown error'), 'Close', null);
     }
   }
+
+  // ---------------------
+  // Sticky Lifetime Offer CTA
+  // ---------------------
+  let showCTA = true;
+  const price = "$59"; // one-time payment
+  let ctaText = `Lifetime Access – Only ${price}!`;
+  let ctaSubText = "Grab this limited-time deal before it’s gone!";
+  let countdown = "";
+
+  // Set offer to end **today at 23:59:59**
+  const now = new Date();
+  const offerEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23, 59, 59
+  ).getTime();
+
+  function handleCTAClick() {
+    window.open("https://fabform.io/pricing", "_blank");
+  }
+
+  // Countdown timer
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = offerEnd - now;
+
+    if (distance <= 0) {
+      countdown = "Offer expired";
+      showCTA = false;
+      return;
+    }
+
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    countdown = `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  let interval;
+  onMount(() => {
+    updateCountdown();
+    interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  });
 </script>
 
 <Navbar />
@@ -201,6 +246,17 @@ async function getViewCountForForm(formId) {
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">My Forms</h1>
+
+    <!-- Upgraded In-Page Buy/Upgrade Button -->
+    <button
+      on:click={handleCTAClick}
+      class="bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 font-semibold flex items-center justify-center gap-2"
+    >
+      <span>Get Lifetime Access – Only $59!</span>
+      <span class="text-xs bg-white/20 px-2 py-1 rounded uppercase font-bold">Limited Time</span>
+      <span class="ml-2 text-xs font-semibold">{countdown}</span>
+    </button>
+
     <button
       on:click={createNewForm}
       class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-neutral-800 transition"
@@ -242,3 +298,20 @@ async function getViewCountForForm(formId) {
     </div>
   {/if}
 </div>
+
+<!-- Sticky Lifetime Offer CTA -->
+{#if showCTA}
+  <div
+    class="fixed bottom-6 right-6 bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-4 rounded-xl shadow-lg cursor-pointer animate-bounce z-50 max-w-xs hover:scale-105 transition-transform duration-300"
+    on:click={handleCTAClick}
+  >
+    <div class="font-bold text-lg">{ctaText}</div>
+    <div class="text-sm mt-1">{ctaSubText}</div>
+    <div class="mt-2 text-xs uppercase tracking-wide bg-white/20 px-2 py-1 rounded font-semibold">
+      Limited Offer – Ends Today in {countdown}
+    </div>
+    <div class="mt-2 text-sm font-semibold">
+      Don’t miss your chance to lock in lifetime access before it goes back to $30/month!
+    </div>
+  </div>
+{/if}
