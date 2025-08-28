@@ -43,8 +43,8 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
   let showQR = false;
   let qrText = "";
 
-  function openQRModal(formId) {
-    qrText = APP_URL + `/v/${formId}`;
+  function openQRModal(IdOrSlug) {
+    qrText = APP_URL + `/v/${IdOrSlug}`;
     showQR = true;
   }
 
@@ -72,7 +72,7 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
   };
 
   const userId = state.user.id;
-    
+   
   
   // ---------------------
   // Fetch forms on mount
@@ -154,6 +154,7 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
     if (res.success) {
       await fetchForms();
       const formId = res.data.id;
+
       await createBlock(formId, blockTemplates[0]);
       await createBlock(formId, blockTemplates[blockTemplates.length - 1]);
     }
@@ -225,7 +226,8 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
           onRenameFormSlug={() => renameFormSlug(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
-          onQRCode={() => openQRModal(form.id)}
+          onQRCode={() => openQRModal(form.slug || form.id)}
+
         />
       {/each}
     </div>
