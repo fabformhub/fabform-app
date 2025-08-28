@@ -5,7 +5,7 @@
   import { BlockLayout } from '../components/form-builder';
   import { SplashScreen } from '../components/ui';
   import { getBlocksByFormId } from '../services/blockService.js';
-  import { getFormById } from '../services/formService.js';
+  import { getForm } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
@@ -48,21 +48,37 @@
     };
   });
 
-  async function loadForm() {
-    formId = route.result.path.params.id;
-    const formRes = await getFormById(formId);
-    uiMeta = formRes.data.form.meta;
+async function loadForm() {
+  const identifier = route.result.path.params.id;
 
-    const res = await getBlocksByFormId(formId);
-    blocks = res.data.blocks
-      .slice()
-      .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId)
-      
-    blockNo = 0;
-    direction = 'bottom';
-    updateFlyParams();
-    firstBlockLoaded = true;
+  // Fetch the form using unified getForm
+  const formRes = await getForm(identifier);
+  if (!formRes.success) {
+    errorMessage = formRes.error;
+    return;
   }
+
+  const form = formRes.data.form;
+  formId = form.id;       // numeric/internal ID
+  uiMeta = form.meta;     // form metadata
+
+  // Load blocks
+  const blocksRes = await getBlocksByFormId(formId);
+  if (!blocksRes.success) {
+    errorMessage = blocksRes.error;
+    return;
+  }
+
+  blocks = blocksRes.data.blocks
+    .slice()
+    .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId);
+
+  blockNo = 0;
+  direction = 'bottom';
+  updateFlyParams();
+  firstBlockLoaded = true;
+}
+
 
   async function submitResponses() {
     const responses = blocks

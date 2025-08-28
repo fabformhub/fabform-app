@@ -2,7 +2,7 @@
   import { authService } from '../services/authService.svelte.js'; // Importing your authentication service
   import { goto } from '@mateothegreat/svelte5-router'; // Using your router for navigation
 
-  const { state, loginWithEmail, loginWithGoogle } = authService;
+  const { state, loginWithEmail } = authService;
 
   let email = '';
   let password = '';

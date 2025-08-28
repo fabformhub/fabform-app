@@ -38,6 +38,7 @@
     "svelte-spa-router": "^4.0.1",
     "tailwindcss": "^4.1.4",
     "tippy.js": "^6.3.7",
+    "unique-names-generator": "^4.7.1",
     "zod": "^3.24.3"
   }
 }

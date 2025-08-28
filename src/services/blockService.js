@@ -4,40 +4,33 @@ import { supabase } from "../lib/supabaseClient.js";
 const apiSuccess = (data) => ({ success: true, data });
 const apiError = (error) => ({ success: false, error: error?.message || "Unknown error" });
 
-// Delete block by ID
-export async function deleteBlockById(blockId) {
-  const { data, error } = await supabase
-    .from("blocks")
-    .delete()
-    .eq("id", blockId)
-    .select();
+/** -----------------------------
+ * BLOCK FUNCTIONS
+ * ----------------------------- */
 
-  return error ? apiError(error) : apiSuccess({ id: data[0]?.id });
-}
-
-// Create block (everything stored in meta)
+// Create a block for a form (everything stored in meta)
 export async function createBlock(formId, template) {
-  // Everything from the template will be stored in the meta field
-  const { ...meta } = template;
+  const meta = { ...template };
 
-  // Get the current number of blocks for this form to determine position
-  const { count, error: countError } = await supabase
+  // Get the current max position
+  const { data: lastBlock, error: maxError } = await supabase
     .from("blocks")
-    .select("*", { count: "exact", head: true })
-    .eq("form_id", formId);
+    .select("position")
+    .eq("form_id", formId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .single();
 
-  if (countError) {
-    return apiError(countError);
-  }
+  if (maxError && maxError.code !== "PGRST116") return apiError(maxError);
 
-  const nextPosition = count ?? 0; // If count is null, fall back to 0
+  const nextPosition = lastBlock ? lastBlock.position + 1 : 0;
 
   const { data, error } = await supabase
     .from("blocks")
     .insert({
       form_id: formId,
-      position: nextPosition, // Assign position here
-      meta, // Store all properties inside the meta field
+      position: nextPosition,
+      meta,
     })
     .select()
     .single();
@@ -45,7 +38,7 @@ export async function createBlock(formId, template) {
   return error ? apiError(error) : apiSuccess({ blockId: data.id });
 }
 
-// Get all blocks by form ID, ordered by position
+// Get all blocks for a specific form, ordered by position
 export async function getBlocksByFormId(formId) {
   const { data, error } = await supabase
     .from("blocks")
@@ -56,19 +49,35 @@ export async function getBlocksByFormId(formId) {
   return error ? apiError(error) : apiSuccess({ blocks: data });
 }
 
-// Update block by ID
+// Update a block (partial updates supported)
 export async function updateBlock(block) {
-
   const { id, meta, position } = block;
-
   if (!id) return apiError("Missing block ID");
+
+  const updateData = {};
+  if (meta !== undefined) updateData.meta = meta;
+  if (position !== undefined) updateData.position = position;
 
   const { data, error } = await supabase
     .from("blocks")
-    .update({ meta, position })
+    .update(updateData)
     .eq("id", id)
     .select()
     .single();
 
   return error ? apiError(error) : apiSuccess({ block: data });
+}
+
+// Delete a block by ID
+export async function deleteBlockById(blockId) {
+  const { data, error } = await supabase
+    .from("blocks")
+    .delete()
+    .eq("id", blockId)
+    .select();
+
+  if (error) return apiError(error);
+  if (!data?.length) return apiError("Block not found");
+
+  return apiSuccess({ id: data[0].id });
 }

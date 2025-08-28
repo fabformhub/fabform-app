@@ -1,4 +1,5 @@
 // dialog.svelte.js
+
 export const dialog = $state({
   show: false,
   title: "",
@@ -10,7 +11,7 @@ export const dialog = $state({
   resolve: null
 });
 
-export function openDialog(title, message, cancelLabel, confirmLabel, component, props) {
+export function openDialog(title, message, cancelLabel = "Cancel", confirmLabel = "Yes", component = null, props = null) {
   return new Promise((resolve) => {
     dialog.title = title;
     dialog.message = message;
@@ -28,7 +29,6 @@ export function closeDialog(result) {
     dialog.resolve(result);
     dialog.resolve = null;
     dialog.component = null;
-    
   }
   dialog.show = false;
 }

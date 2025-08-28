@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { Spinner, PageNotFound } from '../../components/ui';
-  import { getFormById } from '../../services/formService.js';
+  import { getForm } from '../../services/formService.js';
   import { debounce } from '../../utils/debounce.js'; // Adjust path as needed
   import { Menu } from '../../components/layouts';
 
@@ -15,7 +15,7 @@
   }, 500);
 
   onMount(async () => {
-    const result = await getFormById(formId);
+    const result = await getForm(formId);
 
     if (!result.success) {
       status = 'notfound'; // immediate for 'notfound'

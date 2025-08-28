@@ -1,7 +1,7 @@
   <script>
   import { BlockLayout } from '../components/form-builder';
   import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById } from '../services/blockService';
-  import { getFormById, updateForm } from "../services/formService.js";
+  import { getForm, updateForm } from "../services/formService.js";
   import { AddBlockButton } from '../components/ui';
   import { BlockPicker } from '../components/form-builder';
   import { Sidebar } from '../components/layouts';  
@@ -37,7 +37,7 @@
   async function fetchData() {
     try {
       
-      const formRes = await getFormById(formId);
+      const formRes = await getForm(formId);
       form = formRes.data.form;
       uiMeta = form.meta;
 

@@ -6,6 +6,7 @@
     getFormsByUserId,
     deleteFormById,
     updateForm,
+    updateFormSlug,
     duplicateFormById
   } from '../services/formService.js';
     const { state} = authService;
@@ -14,13 +15,27 @@
   import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
   import { DashboardDetail } from '../components/ui';
-  import { Dialog, RenameDialog } from '../components/dialogs';
+  import { Dialog, RenameDialog, RenameSlugDialog } from '../components/dialogs';
   import { openDialog } from '../utils/dialog.svelte.js';
   import { Navbar } from '../components/layouts';
   import { blockTemplates } from '../templates/blockTemplates';
+
   import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
   import { QRModal } from '../components/ui';
+
+  import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+
+function generateRandomUrl() {
+  return uniqueNamesGenerator({
+    dictionaries: [adjectives, animals],
+    separator: '-',
+    length: 2,
+    style: 'lowerCase'
+  });
+}
+
+console.log(generateRandomUrl()); // e.g., "happy-elephant"
 
   // ---------------------
   // QR Modal state
@@ -86,19 +101,21 @@
   // ---------------------
   // Form actions
   // ---------------------
-  async function renameFormLink(formId) {
-    const result = await openDialog(
-      'Rename form link',
+  async function renameFormSlug(formId) {
+    const formResult = await openDialog(
+      'Rename Form Link',
       '',
       'Cancel',
       'Rename',
-      RenameDialog,
-      { name: 'my-form-link' }
+      RenameSlugDialog,
+      { slugName: generateRandomUrl()
+       }
     );
-    if (result?.name?.trim()) {
-      const res = await updateForm({ id: formId, link: result.name });
+    
+    const mySlugName = formResult.slugName
+      const res = await updateFormSlug(formId,mySlugName);
       if (res.success) fetchForms();
-    }
+  //  }
   }
 
   async function renameForm(formId) {
@@ -205,7 +222,7 @@
           onOpen={() => openFormLink(form.id)}
           onCopy={() => copyFormLink(form.id)}
           onRenameForm={() => renameForm(form.id)}
-          onRenameFormLink={() => renameFormLink(form.id)}
+          onRenameFormSlug={() => renameFormSlug(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
           onQRCode={() => openQRModal(form.id)}

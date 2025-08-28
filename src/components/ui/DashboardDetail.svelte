@@ -8,7 +8,7 @@
     onOpen,
     onCopy,
     onRenameForm,
-    onRenameFormLink,
+    onRenameFormSlug,
     onDuplicate,
     onDelete,
     onQRCode
@@ -51,7 +51,7 @@
           { label: 'Open Form', icon: 'OpenForm', onClick: onOpen },
           { label: 'Copy Form Link', icon: 'CopyLink', onClick: onCopy },
           { label: 'Rename Form', icon: 'Rename', onClick: onRenameForm },
-          { label: 'Rename Link Id', icon: 'Rename', onClick: onRenameFormLink },
+          { label: 'Customize Form Link', icon: 'Rename', onClick: onRenameFormSlug },
           { label: 'Duplicate', icon: 'Duplicate', onClick: onDuplicate },
           { label: 'Delete Form', icon: 'Delete', onClick: onDelete },
           { label: 'Create QR Code', icon: 'QRCode', onClick: onQRCode}
