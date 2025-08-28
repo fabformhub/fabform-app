@@ -214,3 +214,38 @@ export async function updateFormSlug(formId, newSlug) {
   return { success: true, form: data };
 }
 
+// Increment form views by 1
+export async function incrementFormViews(formId) {
+  if (!formId) return apiError("Form ID is required");
+
+  // Simple increment: fetch current count, then update
+  const { data: current, error: fetchError } = await supabase
+    .from("forms")
+    .select("views")
+    .eq("id", formId)
+    .single();
+
+  if (fetchError) return apiError(fetchError);
+
+  const { data, error } = await supabase
+    .from("forms")
+    .update({ views: current.views + 1 })
+    .eq("id", formId)
+    .select("views")
+    .single();
+
+  return error ? apiError(error) : apiSuccess({ views: data.views });
+}
+
+// Get current form view count
+export async function getFormViews(formId) {
+  if (!formId) return apiError("Form ID is required");
+
+  const { data, error } = await supabase
+    .from("forms")
+    .select("views")
+    .eq("id", formId)
+    .single();
+
+  return error ? apiError(error) : apiSuccess({ views: data.views });
+}

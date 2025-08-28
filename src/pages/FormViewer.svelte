@@ -5,7 +5,7 @@
   import { BlockLayout } from '../components/form-builder';
   import { SplashScreen } from '../components/ui';
   import { getBlocksByFormId } from '../services/blockService.js';
-  import { getForm } from '../services/formService.js';
+  import { getForm,incrementFormViews } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
@@ -61,6 +61,9 @@ async function loadForm() {
   const form = formRes.data.form;
   formId = form.id;       // numeric/internal ID
   uiMeta = form.meta;     // form metadata
+
+
+  incrementFormViews(formId);
 
   // Load blocks
   const blocksRes = await getBlocksByFormId(formId);

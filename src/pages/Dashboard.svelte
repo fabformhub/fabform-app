@@ -7,35 +7,35 @@
     deleteFormById,
     updateForm,
     updateFormSlug,
-    duplicateFormById
+    duplicateFormById,
+    getFormViews
   } from '../services/formService.js';
-    const { state} = authService;
+  const { state } = authService;
 
   import { goto } from '@mateothegreat/svelte5-router';
-  import { Plus, FileText } from 'lucide-svelte';
+  import { Plus, FileText, Eye, MessageSquare } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
   import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog, RenameSlugDialog } from '../components/dialogs';
   import { openDialog } from '../utils/dialog.svelte.js';
   import { Navbar } from '../components/layouts';
   import { blockTemplates } from '../templates/blockTemplates';
-
   import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
   import { QRModal } from '../components/ui';
-
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
-function generateRandomUrl() {
-  return uniqueNamesGenerator({
-    dictionaries: [adjectives, animals],
-    separator: '-',
-    length: 2,
-    style: 'lowerCase'
-  });
-}
-
-console.log(generateRandomUrl()); // e.g., "happy-elephant"
+  // ---------------------
+  // Helper: generate random slug
+  // ---------------------
+  function generateRandomUrl() {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, animals],
+      separator: '-',
+      length: 2,
+      style: 'lowerCase'
+    });
+  }
 
   // ---------------------
   // QR Modal state
@@ -51,12 +51,14 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
   function closeQRModal() {
     showQR = false;
   }
+
   // ---------------------
   // Forms state
   // ---------------------
   let forms = [];
   let formResponseCounts = {};
- 
+  let formViewCounts = {};
+
   const uiMeta = {
     backgroundImage: '',
     backgroundColor: '#f9fafb',
@@ -72,8 +74,7 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
   };
 
   const userId = state.user.id;
-   
-  
+
   // ---------------------
   // Fetch forms on mount
   // ---------------------
@@ -87,6 +88,7 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
 
     for (let form of forms) {
       await getResponseCountForForm(form.id);
+      await getViewCountForForm(form.id);
     }
   }
 
@@ -98,6 +100,15 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
     };
   }
 
+  
+async function getViewCountForForm(formId) {
+  const { success, data } = await getFormViews(formId);
+  formViewCounts = {
+    ...formViewCounts,
+    [formId]: success ? data.views : 0
+  };
+}
+
   // ---------------------
   // Form actions
   // ---------------------
@@ -108,14 +119,12 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
       'Cancel',
       'Rename',
       RenameSlugDialog,
-      { slugName: generateRandomUrl()
-       }
+      { slugName: generateRandomUrl() }
     );
-    
-    const mySlugName = formResult.slugName
-      const res = await updateFormSlug(formId,mySlugName);
-      if (res.success) fetchForms();
-  //  }
+
+    const mySlugName = formResult.slugName;
+    const res = await updateFormSlug(formId, mySlugName);
+    if (res.success) fetchForms();
   }
 
   async function renameForm(formId) {
@@ -220,6 +229,7 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
         <DashboardDetail
           form={form}
           responseCount={formResponseCounts[form.id]}
+          formViewCount={formViewCounts[form.id]}   
           onOpen={() => openFormLink(form.id)}
           onCopy={() => copyFormLink(form.id)}
           onRenameForm={() => renameForm(form.id)}
@@ -227,7 +237,6 @@ console.log(generateRandomUrl()); // e.g., "happy-elephant"
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
           onQRCode={() => openQRModal(form.slug || form.id)}
-
         />
       {/each}
     </div>

@@ -1,9 +1,11 @@
 <script>
   import { goto } from '@mateothegreat/svelte5-router';
   import { DropdownButton } from '.';
+    import { Divide,Eye } from 'lucide-svelte';
 
   const {
     form,
+    formViewCount,
     responseCount = 0,
     onOpen,
     onCopy,
@@ -43,6 +45,13 @@
     >
       {responseCount} Response{responseCount === 1 ? '' : 's'}
     </button>
+
+   
+  <div class="flex items-center gap-1">
+    <Eye class="w-4 h-4" />
+    <span>{formViewCount ?? 0}</span> 
+   </div>
+
 
     <!-- Dropdown -->
     <div class="relative z-20">

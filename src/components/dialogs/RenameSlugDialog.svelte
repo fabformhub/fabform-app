@@ -9,7 +9,7 @@
   />
 
 <p class="m-1 text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
-  https://fabform/{props.slugName}
+  https://fabform/v/{props.slugName}
 </p>
 
   
