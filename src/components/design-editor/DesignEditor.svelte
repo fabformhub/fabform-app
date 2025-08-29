@@ -1,5 +1,5 @@
 <script>
-  import { Label, Checkbox, Dropdown, ColorPicker } from "../ui";
+  import { Checkbox, Dropdown, ColorPicker } from "../ui";
   import { updateForm } from "../../services/formService.js";
   
   let { formProp,changeColorOnForm } = $props();
