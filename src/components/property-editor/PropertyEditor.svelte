@@ -2,7 +2,7 @@
 	let { block = $bindable() } = $props();
 	
 	import {
-		Label, Input, TextArea, Checkbox, Dropdown
+		Input, TextArea, Checkbox, Dropdown
 	} from "../ui";
 
 	import {
@@ -14,72 +14,73 @@
 
 <div class="overflow-y-auto max-h-[calc(100vh-100px)] pr-2 space-y-4">
 	{#if block?.meta?.title !== undefined}
-		<Label text="Title" />
+		<label class="block text-gray-700 font-medium">Title</label>
 		<Input bind:value={block.meta.title} />
 	{/if}
 
 	{#if block?.meta?.question !== undefined}
-		<Label text="Question" />
+		<label class="block text-gray-700 font-medium">Question</label>
 		<Input bind:value={block.meta.question} />
 	{/if}
 
-
 	{#if block?.meta?.description !== undefined}
-		<Label text="Description" />
+		<label class="block text-gray-700 font-medium">Description</label>
 		<TextArea bind:value={block.meta.description} />
 	{/if}
 
 	{#if block?.meta?.embed !== undefined}
-		<Label text="Embed" />
+		<label class="block text-gray-700 font-medium">Embed</label>
 		<Input bind:value={block.meta.embed} />
 	{/if}
 
 	{#if block?.meta?.props?.choices !== undefined}
-		<Label text="Options" />
+		<label class="block text-gray-700 font-medium">Options</label>
 		<ChoicesControl bind:choices={block.meta.props.choices} />
 	{/if}
 
 	{#if block?.meta?.textAlign !== undefined}
-		<Label text="Text Align" />
+		<label class="block text-gray-700 font-medium">Text Align</label>
 		<AlignmentControl bind:textAlign={block.meta.textAlign} />
 	{/if}
 
 	{#if block?.meta?.buttonText !== undefined}
-		<Label text="Button Text" />
+		<label class="block text-gray-700 font-medium">Button Text</label>
 		<Input bind:value={block.meta.buttonText} />
 	{/if}
 
 	{#if block?.meta?.props?.placeholder !== undefined}
-		<Label text="Placeholder" />
+		<label class="block text-gray-700 font-medium">Placeholder</label>
 		<Input bind:value={block.meta.props.placeholder} />
 	{/if}
 
 	{#if block?.meta?.props?.size !== undefined}
-		<Label text="Textbox Size" />
+		<label class="block text-gray-700 font-medium">Textbox Size</label>
 		<Dropdown
 			choices={["Small", "Medium", "Large", "Extra Large"]}
 			bind:value={block.meta.props.size}
 		/>
 	{/if}
-<div class="flex gap-2">
-	{#if block?.meta?.props?.start !== undefined}
-		<Label text="Start" />
-		<Dropdown
-			choices={["0","1"]}
-			bind:value={block.meta.props.start}
-		/>
-	{/if}
-	
-	{#if block?.meta?.props?.end !== undefined}
-		<Label text="End" />
-		<Dropdown
-			choices={["3", "4", "5", "6","7","8","9","10"]}
-			bind:value={block.meta.props.end}
-		/>
-	{/if}
+
+	<div class="flex gap-2">
+		{#if block?.meta?.props?.start !== undefined}
+			<label class="block text-gray-700 font-medium">Start</label>
+			<Dropdown
+				choices={["0","1"]}
+				bind:value={block.meta.props.start}
+			/>
+		{/if}
+		
+		{#if block?.meta?.props?.end !== undefined}
+			<label class="block text-gray-700 font-medium">End</label>
+			<Dropdown
+				choices={["3", "4", "5", "6","7","8","9","10"]}
+				bind:value={block.meta.props.end}
+			/>
+		{/if}
 	</div>
+
 	{#if block?.meta?.props?.maxRating !== undefined}
-		<Label text="Max Rating" />
+		<label class="block text-gray-700 font-medium">Max Rating</label>
 		<Dropdown
 			choices={["3", "4", "5", "6","7","8","9","10"]}
 			bind:value={block.meta.props.maxRating}
@@ -87,41 +88,41 @@
 	{/if}
 
 	{#if block?.meta?.props?.maxCharacters !== undefined}
-		<Label text="Max Characters" />
+		<label class="block text-gray-700 font-medium">Max Characters</label>
 		<Input bind:value={block.meta.props.maxCharacters} />
 	{/if}
 
 	{#if block?.meta?.props?.leftLabel !== undefined}
-		<Label text="Left Label" />
+		<label class="block text-gray-700 font-medium">Left Label</label>
 		<Input bind:value={block.meta.props.leftLabel} />
 	{/if}
 
 	{#if block?.meta?.props?.rightLabel !== undefined}
-		<Label text="Right Label" />
+		<label class="block text-gray-700 font-medium">Right Label</label>
 		<Input bind:value={block.meta.props.rightLabel} />
 	{/if}
+
 	{#if block?.meta?.validation?.required != null}
-		<Label text="Required Field" />
+		<label class="block text-gray-700 font-medium">Required field</label>
 		<Checkbox bind:checked={block.meta.validation.required} />
-		<Label
-			small
-			text="If checked, users will be required to complete this field."
-		/>
+		<label class="block text-gray-500 text-sm mt-1">
+			If checked, users will be required to complete this field.
+		</label>
 	{/if}
 
 	{#if block?.meta?.validation?.maxLength != null}
-		<Label text="Max Characters" />
+		<label class="block text-gray-700 font-medium">Max Characters</label>
 		<Input bind:value={block.meta.validation.maxLength} />
 	{/if}
 
 	{#if block?.meta?.coverImageProps?.coverImage !== undefined}
-		<Label text="Cover Image URL" />
+		<label class="block text-gray-700 font-medium">Cover Image URL</label>
 		<CoverImageUploader
 			bind:coverImage={block.meta.coverImageProps.coverImage}
 			blockId={block.id}
 		/>
 		{#if block.meta.coverImageProps.coverImage != null && block.meta.coverImageProps.coverImage !== ""}
-			<Label text="Layout" />
+			<label class="block text-gray-700 font-medium">Layout</label>
 			<Dropdown
 				choices={["Wallpaper", "Stack", "Split-left", "Split-right"]}
 				bind:value={block.meta.coverImageProps.layout}
