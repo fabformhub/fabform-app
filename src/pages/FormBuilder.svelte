@@ -106,8 +106,8 @@
   });
 
 
-async function createBlockPick(i) {
-  await createBlock(formId, blockTemplates[i]);
+async function createBlockPick(block) {
+  await createBlock(formId, block);
   await fetchData();
 
   // Find first empty slot, excluding the last reserved one

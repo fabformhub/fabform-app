@@ -1,13 +1,14 @@
-// tailwind.config.js
 import defaultTheme from 'tailwindcss/defaultTheme';
+import { bgColors } from '../constants/colors.js';
 
 export default {
   content: ["./**/*.{html,js,svelte}"],
-    safelist: [
+  safelist: [
     'text-sm',
     'text-base',
     'text-lg',
     'text-xl',
+    ...bgColors, // import and use directly
   ],
   theme: {
     extend: {
@@ -17,10 +18,10 @@ export default {
       },
       colors: {
         fab: {
-          DEFAULT: "#5E60CE",      // Primary
+          DEFAULT: "#5E60CE",
           light: "#A8A9F5",
           dark: "#3A0CA3",
-          accent: "#F72585",       // Accent
+          accent: "#F72585",
           background: "#F8F9FC",
           muted: "#ADB5BD",
         },

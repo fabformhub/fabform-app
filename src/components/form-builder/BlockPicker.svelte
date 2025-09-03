@@ -2,13 +2,12 @@
   import { getContext } from 'svelte';
   import { blockTemplates } from "../../templates/blockTemplates.js";
   import { X } from 'lucide-svelte';
-  import { BlockIcon } from '../../components/ui';
 
   const { show, close } = $props();
   const notifyBlockPick = getContext('blockPickerClick') ?? (() => {});
 
-  function BlockPicked(name, typeId) {
-    notifyBlockPick(typeId);
+  function BlockPicked(block) {
+    notifyBlockPick(block);
     close();
   }
 
@@ -20,7 +19,7 @@
 {#if show}
   <div
     class="fixed inset-0 flex items-center justify-center z-50 bg-black/30"
-    on:click={() => { close(); }}
+    on:click={() => close()}
     on:keydown={handleKeyDown}
     tabindex="0"
     role="dialog"
@@ -39,7 +38,7 @@
         </h2>
         <button
           aria-label="Close"
-          on:click={() => { close(); }}
+          on:click={close}
           class="p-2 hover:bg-gray-200 rounded-md transition-colors duration-200"
         >
           <X class="w-6 h-6 text-gray-700 hover:text-gray-900" />
@@ -52,9 +51,9 @@
                overflow-y-auto pr-1"
         style="max-height: calc(90vh - 80px);"
       >
-        {#each blockTemplates as block, i}
+        {#each blockTemplates as block}
           <button
-            on:click={() => BlockPicked(block.label, i)}
+            on:click={() => BlockPicked(block)}
             class={`relative flex flex-col items-center justify-center
                     p-5 rounded-xl cursor-pointer select-none border-2
                     min-h-[115px] min-w-[115px] text-gray-900 text-sm
@@ -63,7 +62,9 @@
                     border-gray-300 hover:shadow-[0_4px_15px_rgba(0,0,0,0.1)]
                     hover:scale-105 hover:border-indigo-400`}
           >
-            <BlockIcon blockId={i} class="mb-2 w-7 h-7" />
+            {#if block.icon}
+              <svelte:component this={block.icon} class="mb-2 w-7 h-7 text-blue-600" />
+            {/if}
             <span class="text-center font-semibold">{block.label}</span>
           </button>
         {/each}

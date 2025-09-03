@@ -1,13 +1,37 @@
 <script>
-  let { blockId = 0 } = $props();  // Destructuring blockId with a default value of 0
-  import { Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck, Smile,CreditCard } from 'lucide-svelte';
+  export let blockTypeId = 0; // numeric ID of the block
 
-  const icons = [Sparkle, RectangleHorizontal, RectangleVertical, CircleDot, Check, ChevronDown, Star, Calendar, Hash, Gauge, Phone, ScrollText, Signature, Link, Calendar1, Upload, Mail, ToggleLeft, SquareCheck,Smile,CreditCard];
-  const totalIcons = icons.length;
+  import { 
+    Sparkle, RectangleHorizontal, CircleDot, Check, 
+    ChevronDown, Star, Hash, Gauge, Phone, 
+    ScrollText, Link, Upload, Mail, ToggleLeft, 
+    SquareCheck, Smile, CalendarCheck, Signature
+  } from 'lucide-svelte';
 
-  // Ensure blockId is within the valid range
-  const IconComponent = icons[Math.min(blockId, totalIcons - 1)];
+  // Map blockTypeId to icons explicitly
+  const iconsById = {
+    0: Sparkle,
+    1: RectangleHorizontal,
+    2: CircleDot,
+    3: Check,
+    4: ChevronDown,
+    5: Star,
+    6: Hash,
+    7: Gauge,
+    8: Phone,
+    9: ScrollText,
+    10: Link,
+    11: Upload,
+    12: Mail,
+    13: ToggleLeft,
+    14: SquareCheck,
+    15: Smile,
+    16: CalendarCheck,
+    17: Signature
+  };
+
+  // Safe fallback if ID not found
+  const IconComponent = iconsById[blockTypeId];
 </script>
 
-<!-- Render the selected icon component -->
 <IconComponent class="w-5 h-5 text-blue-600" />
