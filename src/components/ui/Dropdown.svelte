@@ -1,15 +1,39 @@
 <script>
-  let {choices = [],choiceSelected, value = $bindable() } = $props();
+  let { 
+    choices = [], 
+    choiceSelected, 
+    value = $bindable(), 
+    canAnswer = false, 
+    props 
+  } = $props();
 
- $effect(() => {
-    choiceSelected(value);
+  let selectedValue = $state(value ?? '');
+
+  $effect(() => {
+    choiceSelected(selectedValue);
+    value = selectedValue;
   });
 </script>
 
-<select  bind:value={value}
-  class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600"
->
-  {#each choices as choice}
-    <option value={choice}>{choice}</option>
-  {/each}
-</select>
+<div class="relative w-full m-0 p-0">
+  <select
+    bind:value={selectedValue}
+    disabled={!canAnswer}
+    class={`block w-full bg-transparent border-0 border-b-2 text-xl py-2 px-0 outline-none transition-all duration-300
+      ${canAnswer 
+        ? 'text-gray-900 border-gray-400 focus:border-indigo-500 cursor-pointer' 
+        : 'text-gray-400 border-gray-200 cursor-not-allowed'
+      }`}
+  >
+    {#if props?.placeholder}
+      <option value="" disabled hidden>{props.placeholder}</option>
+    {/if}
+    {#each choices as choice}
+      <option value={choice}>{choice}</option>
+    {/each}
+  </select>
+
+  {#if canAnswer}
+    <span class="absolute bottom-0 left-0 h-0.5 w-0 bg-indigo-500 transition-all duration-300 peer-focus:w-full"></span>
+  {/if}
+</div>

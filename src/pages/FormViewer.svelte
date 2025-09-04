@@ -19,7 +19,6 @@
   let submitted = $state(false);
   let formId;
   let uiMeta;
-  let canAnswer
 
   let direction = $state('bottom');
   let flyParams = $state({ y: 0, duration: 1000, opacity: 0.7 });
@@ -150,7 +149,7 @@ async function loadForm() {
         
           <BlockLayout 
             uiMeta={uiMeta} 
-            canAnswer={canAnswer} 
+            canAnswer={true} 
             bind:block={blocks[blockNo]} 
             {errorMessage} 
             {nextBlock}

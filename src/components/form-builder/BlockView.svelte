@@ -52,11 +52,11 @@
         </label>
       </div>      
     {/if}
-
+    
     {#if block && SvelteComponent}
       <SvelteComponent
         bind:value={block.value}
-        {canAnswer}
+        canAnswer={canAnswer}
         props={block.meta?.props}
       />
     {/if}

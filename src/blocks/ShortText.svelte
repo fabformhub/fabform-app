@@ -1,7 +1,5 @@
 <script>
-  let { value = $bindable(), canAnswer, props } = $props();
-  let { icon = null } = props ?? {};
-
+  let { value = $bindable(), canAnswer = false, props } = $props();
   let inputValue = $state(value ?? '');
 
   $effect(() => {
@@ -10,26 +8,15 @@
 </script>
 
 <div class="relative w-full m-0 p-0">
-  {#if icon}
-    <span 
-      class="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-      aria-hidden="true"
-    >
-      {@html icon}
-    </span>
-  {/if}
- 
   <input
     type="text"
     bind:value={inputValue}
     placeholder={props.placeholder}
-    tabindex={canAnswer ? 0 : -1}
-    disabled={canAnswer}
-    class={`peer block w-full bg-transparent border-0 border-b-2 text-xl py-2 px-0 outline-none transition-all duration-300
-      ${icon ? 'pl-8' : ''}
-      
-        'text-gray-900 border-gray-400 focus:border-indigo-500 cursor-text'
-        
+    readonly={!canAnswer}
+    class={`block w-full bg-transparent border-0 border-b-2 text-xl py-2 px-0 outline-none transition-all duration-300
+      ${canAnswer
+        ? 'text-gray-900 border-gray-400 focus:border-indigo-500 cursor-text'
+        : 'text-gray-400 border-gray-200 cursor-not-allowed'}
     `}
   />
 

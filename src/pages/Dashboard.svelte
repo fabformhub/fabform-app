@@ -15,13 +15,12 @@
   import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
   import { DashboardDetail } from '../components/ui';
-  import { Dialog, RenameDialog, RenameSlugDialog } from '../components/dialogs';
+  import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '../components/dialogs';
   import { openDialog } from '../utils/dialog.svelte.js';
   import { Navbar } from '../components/layouts';
   import { blockTemplates } from '../templates/blockTemplates';
   import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
-  import { QRModal } from '../components/ui';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 
   // ---------------------
@@ -34,21 +33,6 @@
       length: 2,
       style: 'lowerCase'
     });
-  }
-
-  // ---------------------
-  // QR Modal state
-  // ---------------------
-  let showQR = false;
-  let qrText = "";
-
-  function openQRModal(IdOrSlug) {
-    qrText = APP_URL + `/v/${IdOrSlug}`;
-    showQR = true;
-  }
-
-  function closeQRModal() {
-    showQR = false;
   }
 
   // ---------------------
@@ -120,7 +104,9 @@
       { slugName: generateRandomUrl() }
     );
 
-    const mySlugName = formResult.slugName;
+    const mySlugName = formResult?.slugName;
+    if (!mySlugName) return;
+
     const res = await updateFormSlug(formId, mySlugName);
     if (res.success) fetchForms();
   }
@@ -207,7 +193,6 @@
     window.open("https://fabform.io/pricing", "_blank");
   }
 
-  // Countdown timer
   function updateCountdown() {
     const now = new Date().getTime();
     const distance = offerEnd - now;
@@ -237,11 +222,6 @@
 
 <div class="p-6 bg-gray-50 text-black min-h-screen">
   <Dialog />
-
-  <!-- QR Modal -->
-  {#if showQR}
-    <QRModal open={showQR} text={qrText} onClose={closeQRModal} />
-  {/if}
 
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
@@ -292,7 +272,14 @@
           onRenameFormSlug={() => renameFormSlug(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
-          onQRCode={() => openQRModal(form.slug || form.id)}
+          onQRCode={() => openDialog(
+            'QR Code',
+            '',
+            'Close',
+            null,
+            QRCodeDialog,
+            { text: APP_URL + `/v/${form.slug || form.id}` }
+          )}
         />
       {/each}
     </div>

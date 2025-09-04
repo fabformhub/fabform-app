@@ -1,7 +1,8 @@
 // src/constants/blockTemplates.js
 import { 
-  Sparkle, RectangleHorizontal, CircleDot, Check, ChevronDown, Star, Hash, Gauge, Phone, 
-  ScrollText, Link, Upload, Mail, ToggleLeft, SquareCheck, Smile, CalendarCheck, Signature,PartyPopper
+  Sparkle, RectangleHorizontal, CircleDot, Check, ChevronDownSquare, Star, Hash, Gauge, Phone, 
+  ScrollText, Link, Upload, Mail, ToggleLeft, SquareCheck, Smile, CalendarCheck, Signature, PartyPopper, 
+  ListChecks, CalendarClock
 } from 'lucide-svelte';
 import { bgColors } from '../constants/colors.js';
 
@@ -63,10 +64,10 @@ export const blockTemplates = [
     component: 'Select',
     buttonText: 'Next',
     validation: { required: false },
-    props: { choices: ['Lions', 'Tigers', 'Bears', 'Fish'], multiple: true },
+    props: { choices: [], multiple: true },
     coverImageProps: { coverImage: '', layout: '' },
     bgColor: bgColors[4],
-    icon: ChevronDown
+    icon: ListChecks
   },
   {
     blockTypeId: 6,
@@ -78,7 +79,7 @@ export const blockTemplates = [
     props: { choices: ['One', 'Two', 'Three'] },
     coverImageProps: { coverImage: '', layout: '' },
     bgColor: bgColors[5],
-    icon: Star
+    icon: ChevronDownSquare
   },
   {
     blockTypeId: 7,
@@ -225,13 +226,13 @@ export const blockTemplates = [
     blockTypeId: 20,
     label: 'Timeslot Picker',
     title: 'Timeslot Picker', 
-    description: 'TimeSlotPicker',
+    description: '',
     embed: '',
     component: 'TimeSlotPicker',
     textAlign: 'center',
     coverImageProps: { coverImage: '', layout: '' },
     bgColor: bgColors[20],
-    icon: ChevronDown
+    icon: CalendarClock
   },
   {
     blockTypeId: 98,

@@ -2,8 +2,11 @@
   import { FontLoader } from '../ui';
   import { BlockView } from '.';
 
+//
+// There are many blockView on this page, make sure you update all of them on any changes
+//
 
-  let { block = null, canAnswer, uiMeta = {}, nextBlock = () => {}, errorMessage = '' } = $props();
+  let { block = null, canAnswer=false, uiMeta = {}, nextBlock = () => {}, errorMessage = '' } = $props();
 
   const coverImage = block?.meta?.coverImageProps?.coverImage || '';
   const layout = block?.meta?.coverImageProps?.layout || '';
@@ -34,7 +37,7 @@
       {/if}
       <div class="flex flex-col justify-center items-center w-full p-4">
         {#if block}
-          <BlockView uiMeta={uiMeta} bind:block={block} clickHandler={nextBlock} {errorMessage} />
+          <BlockView uiMeta={uiMeta} canAnswer={canAnswer} bind:block={block} clickHandler={nextBlock} {errorMessage} />
         {/if}
       </div>
     </div>
@@ -46,7 +49,7 @@
       {/if}
       <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-4">
         {#if block}
-          <BlockView uiMeta={uiMeta} bind:block={block} clickHandler={nextBlock} {errorMessage} />
+          <BlockView uiMeta={uiMeta} canAnswer={canAnswer} bind:block={block} clickHandler={nextBlock} {errorMessage} />
         {/if}
       </div>
     </div>
@@ -55,7 +58,7 @@
     <div class="flex flex-col md:flex-row w-full min-h-screen">
       <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-4">
         {#if block}
-          <BlockView uiMeta={uiMeta} bind:block={block} clickHandler={nextBlock} {errorMessage} />
+          <BlockView uiMeta={uiMeta} canAnswer={canAnswer} bind:block={block} clickHandler={nextBlock} {errorMessage} />
         {/if}
       </div>
       {#if coverImage}
@@ -68,7 +71,7 @@
   
     <div class="flex items-center justify-center min-h-screen w-full" style={combinedStyle}>
       {#if block}
-        <BlockView uiMeta={uiMeta} bind:block={block} clickHandler={nextBlock} {errorMessage} />
+        <BlockView uiMeta={uiMeta} canAnswer={canAnswer} bind:block={block} clickHandler={nextBlock} {errorMessage} />
       {/if}
     </div>
   {/if}
