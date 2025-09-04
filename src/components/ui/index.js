@@ -17,4 +17,3 @@ export { default as DashboardButton } from './DashboardButton.svelte';
 export { default as PageNotFound } from './PageNotFound.svelte';
 export { default as FontLoader } from './FontLoader.svelte';
 export { default as ColorPicker } from './ColorPicker.svelte';
-export { default as QRModal } from './QRModal.svelte';

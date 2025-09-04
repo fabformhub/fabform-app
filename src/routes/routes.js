@@ -1,4 +1,4 @@
-import { Dashboard, Login, Signup, FormViewer, FormResponses, FormBuilder, Test, Share, Settings } from '../pages';
+import { Dashboard, Login, Signup, FormViewer, FormResponses, FormBuilder, Test, Share, Settings, ChangeEmail, ChangePassword } from '../pages';
 import { goto } from '@mateothegreat/svelte5-router';
 import { authService } from '../services/authService.svelte.js';
 
@@ -8,7 +8,7 @@ const requireAuth = () => {
     return false;
   }
   return true;
-};  
+};
 
 export default [
   { path: '', hooks: { pre: () => goto('/dashboard') } },
@@ -16,9 +16,13 @@ export default [
   { path: 'signup', component: Signup },
   { path: 'dashboard', component: Dashboard, hooks: { pre: requireAuth } },
   { path: 'share/(?<id>.*)', component: Share, hooks: { pre: requireAuth } },
-  { path: 'settings/(?<id>.*)', component: Settings, hooks: { pre: requireAuth } },  
+  { path: 'settings/(?<id>.*)', component: Settings, hooks: { pre: requireAuth } },
   { path: 'responses/(?<id>.*)', component: FormResponses, hooks: { pre: requireAuth } },
   { path: 'form/(?<mode>[^/]+)/(?<id>[^/]+)', component: FormBuilder, hooks: { pre: requireAuth } },
   { path: 'v/(?<id>.*)', component: FormViewer },
-  { path: 'test', component: Test,  }
+  { path: 'test', component: Test },
+
+  // New account management routes
+  { path: 'account/email', component: ChangeEmail, hooks: { pre: requireAuth } },
+  { path: 'account/password', component: ChangePassword, hooks: { pre: requireAuth } },
 ];
