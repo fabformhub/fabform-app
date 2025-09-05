@@ -1,38 +1,55 @@
 <script>
-  import { onMount } from "svelte";
-  import '@melloware/coloris/dist/coloris.css';
-  import { init, coloris } from '@melloware/coloris';
+  import { Checkbox, Dropdown, ColorPicker } from "../ui";
+  import { updateForm } from "../../services/formService.js";
+  
+  let { formProp,changeColorOnForm } = $props();
+  
+  const form = $state(formProp);
 
-  let { color = $bindable(), colorChanged = () => {} } = $props();
-  let inputId = `coloris-${Math.random().toString(36).substring(2, 9)}`;
-
-  onMount(() => {
-    init();
-    coloris({
-      el: `#${inputId}`,
-      theme: 'default',
-      alpha: false
-    });
-  });
-
-  function handleInput(event) {
-    color = event.target.value;
-    colorChanged();
+  async function textsizeSelected(s) {
+    //alert("text Size selected " + s)
+    await updateForm(form);
   }
+  async function colorChanged() {
+    await updateForm(form);
+    changeColorOnForm(form)
+  }
+
 </script>
 
-<div class="flex flex-col gap-2 w-fit">
-  <label for={inputId} class="text-sm font-medium text-gray-700 dark:text-gray-300">
-    Pick a color
-  </label>
+<div class="space-y-3">
 
-  <input
-    id={inputId}
-    type="text"
-    bind:value={color}
-    on:input={handleInput}
-    class="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-40 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-  />
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Background Color</label>
+  <ColorPicker bind:color={form.meta.backgroundColor} {colorChanged}/>
+    
+  </div>
 
-  <div class="text-sm mt-1">{color}</div>
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Question Color</label>
+    <ColorPicker bind:color={form.meta.questionColor} {colorChanged} />
+  </div>
+
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Answer Color</label>
+    <ColorPicker bind:color={form.meta.answerColor} {colorChanged} />
+  </div>
+
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Button Color</label>
+    <ColorPicker bind:color={form.meta.buttonColor} {colorChanged} />
+  </div>
+
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Button Text Color</label>
+    <ColorPicker bind:color={form.meta.buttonTextColor} {colorChanged} />
+  </div>
+
+  <div class="p-3 rounded bg-white flex items-center justify-between">
+    <label class="text-sm font-medium text-gray-700">Font Size</label>
+    <Dropdown
+      choices={["Small", "Medium", "Large", "Extra Large"]}
+      bind:value={form.meta.fontSize} choiceSelected={textsizeSelected}
+    />
+  </div>
 </div>

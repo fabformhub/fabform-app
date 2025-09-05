@@ -10,6 +10,10 @@
   const bgColor = "#ffffff";
   const qrSize = 220;
   const textAreaHeight = 20;
+  const headingHeight = 30; // space above QR
+
+  // heading state (defaults here)
+  let headingText = "How Are We Doing?";
 
   async function generateQRCode() {
     if (!canvas || !QRCode || !dialog.props?.text) return;
@@ -25,17 +29,28 @@
     });
 
     const qrActualHeight = qrCanvas.height;
+
+    // total canvas size = heading + qr + footer
     canvas.width = qrSize;
-    canvas.height = qrActualHeight + textAreaHeight;
+    canvas.height = headingHeight + qrActualHeight + textAreaHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.drawImage(qrCanvas, 0, 0);
+    // draw heading
+    ctx.fillStyle = "#111";
+    ctx.font = "bold 16px Verdana, Geneva, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(headingText, qrSize / 2, 5);
 
+    // draw QR code under heading
+    ctx.drawImage(qrCanvas, 0, headingHeight);
+
+    // draw footer
     ctx.fillStyle = "#555";
     ctx.font = "bold 12px Verdana, Geneva, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
-    ctx.fillText("Powered by Fabform.io", qrSize / 2, qrActualHeight + 6);
+    ctx.fillText("Powered by FabForm.io", qrSize / 2, headingHeight + qrActualHeight + 6);
   }
 
   function downloadQRCode() {
@@ -83,6 +98,18 @@
         bind:value={qrColor} 
         on:input={generateQRCode} 
         class="w-14 h-14 p-0 border-0 rounded cursor-pointer"
+      />
+    </div>
+
+    <!-- New Heading Input -->
+    <div class="flex flex-col items-center mt-4 w-full">
+      <label class="text-sm mb-2 font-medium text-gray-600">Change Heading</label>
+      <input
+        type="text"
+        bind:value={headingText}
+        on:input={generateQRCode}
+        class="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Enter heading..."
       />
     </div>
 
