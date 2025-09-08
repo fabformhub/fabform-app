@@ -1,5 +1,5 @@
 <!-- Integrations.svelte - Svelte 5 mockup for a paid "Integrations" page
-     Simplified layout without search, with a complementary palette.
+     Simplified layout without extra buttons, with a fresh teal + slate palette.
      Drop this into a Svelte 5 + Tailwind project for a visual prototype.
 -->
 <script>
@@ -24,16 +24,14 @@
     <!-- Header -->
     <header class="flex items-center justify-between mb-10">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-lg font-bold shadow-lg">FB</div>
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white text-lg font-bold shadow-lg">FB</div>
         <div>
           <h1 class="text-3xl font-extrabold leading-tight text-slate-800">Integrations</h1>
           <p class="text-sm text-slate-500">Connect your forms to tools you already use — available on paid plans.</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a href="https://fabform.io/pricing/" target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:brightness-95">Upgrade</a>
-      </div>
+      <a href="https://fabform.io/pricing/" target="_blank" class="px-4 py-2 bg-teal-600 text-white rounded-lg shadow hover:brightness-95">Upgrade</a>
     </header>
 
     <!-- Grid -->
@@ -49,15 +47,14 @@
               </div>
               <p class="text-sm text-slate-500 mt-1">{integ.description}</p>
 
-              <div class="mt-4 flex items-center gap-3">
-                <button on:click={() => openPaidCTA(integ.name)} class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm shadow">Connect</button>
-                <button class="px-3 py-2 rounded-lg border text-sm text-slate-600">Learn</button>
+              <div class="mt-4">
+                <button on:click={() => openPaidCTA(integ.name)} class="px-3 py-2 rounded-lg bg-teal-600 text-white text-sm shadow">Connect</button>
               </div>
             </div>
           </div>
 
           <!-- Paid ribbon -->
-          <div class="absolute -bottom-3 left-4 px-3 py-1 rounded-full text-xs bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg">Paid feature</div>
+          <div class="absolute -bottom-3 left-4 px-3 py-1 rounded-full text-xs bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg">Paid feature</div>
         </article>
       {/each}
     </section>
@@ -70,7 +67,7 @@
       </div>
       <div class="flex items-center gap-3">
         <div class="text-2xl font-extrabold text-slate-800">$59 <span class="text-base font-medium">lifetime deal</span></div>
-        <a href="https://fabform.io/pricing/" target="_blank" class="px-5 py-2 bg-indigo-600 text-white rounded-lg shadow">Upgrade now</a>
+        <a href="https://fabform.io/pricing/" target="_blank" class="px-5 py-2 bg-teal-600 text-white rounded-lg shadow">Upgrade now</a>
       </div>
     </footer>
   </div>
@@ -81,13 +78,12 @@
       <div class="w-full max-w-2xl bg-white rounded-2xl p-8 shadow-2xl relative">
         <button on:click={() => (showPreview = false)} class="absolute right-4 top-4 text-slate-500">✕</button>
         <div class="flex gap-6">
-          <div class="w-24 h-24 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center text-3xl font-bold">FB</div>
+          <div class="w-24 h-24 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 text-white flex items-center justify-center text-3xl font-bold">FB</div>
           <div>
             <h3 class="text-xl font-bold text-slate-800">Upgrade to Pro to connect integrations</h3>
             <p class="text-sm text-slate-500 mt-1">This mockup demonstrates the paid-flow. In the live app you would be redirected to billing and then to an OAuth / connection screen.</p>
-            <div class="mt-4 flex items-center gap-3">
-              <a href="https://fabform.io/pricing/" target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Upgrade for $59 lifetime deal</a>
-              <button class="px-4 py-2 border rounded-lg text-slate-600">Contact sales</button>
+            <div class="mt-4">
+              <a href="https://fabform.io/pricing/" target="_blank" class="px-4 py-2 bg-teal-600 text-white rounded-lg">Upgrade for $59 lifetime deal</a>
             </div>
           </div>
         </div>
