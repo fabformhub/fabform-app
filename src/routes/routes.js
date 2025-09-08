@@ -1,4 +1,4 @@
-import { Dashboard, Login, Signup, FormViewer, FormResponses, FormBuilder, Test, Share, Settings, ChangeEmail, ChangePassword } from '../pages';
+import { Dashboard, Login, Signup, FormViewer, FormResponses, FormBuilder, Test, Share,Integrate, Settings, ChangeEmail, ChangePassword } from '../pages';
 import { goto } from '@mateothegreat/svelte5-router';
 import { authService } from '../services/authService.svelte.js';
 
@@ -16,6 +16,7 @@ export default [
   { path: 'signup', component: Signup },
   { path: 'dashboard', component: Dashboard, hooks: { pre: requireAuth } },
   { path: 'share/(?<id>.*)', component: Share, hooks: { pre: requireAuth } },
+  { path: 'integrate/(?<id>.*)', component: Integrate, hooks: { pre: requireAuth } },
   { path: 'settings/(?<id>.*)', component: Settings, hooks: { pre: requireAuth } },
   { path: 'responses/(?<id>.*)', component: FormResponses, hooks: { pre: requireAuth } },
   { path: 'form/(?<mode>[^/]+)/(?<id>[^/]+)', component: FormBuilder, hooks: { pre: requireAuth } },
