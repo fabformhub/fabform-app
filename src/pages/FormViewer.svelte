@@ -5,13 +5,12 @@
   import { BlockLayout } from '../components/form-builder';
   import { SplashScreen } from '../components/ui';
   import { getBlocksByFormId } from '../services/blockService.js';
-  import { getForm,incrementFormViews } from '../services/formService.js';
+  import { getForm, incrementFormViews } from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 
   let { route } = $props();
 
-  
   let showSplash = $state(true);
   let errorMessage = $state('');
   let blocks = $state([]);
@@ -47,40 +46,38 @@
     };
   });
 
-async function loadForm() {
-  const identifier = route.result.path.params.id;
+  async function loadForm() {
+    const identifier = route.result.path.params.id;
 
-  // Fetch the form using unified getForm
-  const formRes = await getForm(identifier);
-  if (!formRes.success) {
-    errorMessage = formRes.error;
-    return;
+    // Fetch the form
+    const formRes = await getForm(identifier);
+    if (!formRes.success) {
+      errorMessage = formRes.error;
+      return;
+    }
+
+    const form = formRes.data.form;
+    formId = form.id;       // numeric/internal ID
+    uiMeta = form.meta;     // form metadata
+
+    incrementFormViews(formId);
+
+    // Load blocks
+    const blocksRes = await getBlocksByFormId(formId);
+    if (!blocksRes.success) {
+      errorMessage = blocksRes.error;
+      return;
+    }
+
+    blocks = blocksRes.data.blocks
+      .slice()
+      .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId);
+
+    blockNo = 0;
+    direction = 'bottom';
+    updateFlyParams();
+    firstBlockLoaded = true;
   }
-
-  const form = formRes.data.form;
-  formId = form.id;       // numeric/internal ID
-  uiMeta = form.meta;     // form metadata
-
-
-  incrementFormViews(formId);
-
-  // Load blocks
-  const blocksRes = await getBlocksByFormId(formId);
-  if (!blocksRes.success) {
-    errorMessage = blocksRes.error;
-    return;
-  }
-
-  blocks = blocksRes.data.blocks
-    .slice()
-    .sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId);
-
-  blockNo = 0;
-  direction = 'bottom';
-  updateFlyParams();
-  firstBlockLoaded = true;
-}
-
 
   async function submitResponses() {
     const responses = blocks
@@ -91,7 +88,6 @@ async function loadForm() {
         answer: b.value
       }));
 
-    
     await createResponse(formId, responses);
     submitted = true;
   }
@@ -103,9 +99,9 @@ async function loadForm() {
     // Skip validation for ThankYou block
     if (block.type !== 'thankyou') {
       const err = validateBlock(block);
-      if (err) { 
-        errorMessage = err; 
-        return; 
+      if (err) {
+        errorMessage = err;
+        return;
       }
     }
 
@@ -146,43 +142,49 @@ async function loadForm() {
   {:else if firstBlockLoaded}
     {#key blockNo}
       <div in:fly="{flyParams}">
-        
-          <BlockLayout 
-            uiMeta={uiMeta} 
-            canAnswer={true} 
-            bind:block={blocks[blockNo]} 
-            {errorMessage} 
-            {nextBlock}
-          />
-        
+        <BlockLayout 
+          uiMeta={uiMeta} 
+          canAnswer={true} 
+          bind:block={blocks[blockNo]} 
+          {errorMessage} 
+          {nextBlock}
+        />
       </div>
     {/key}
   {/if}
 
-    <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+  <div class="absolute bottom-10 right-10 z-10 flex gap-4 items-center">
+    {#if !submitted}
       <div class="flex gap-2 items-center">
         {#if blockNo > 0}
-          <button on:click={previousBlock} class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" title="Previous">
+          <button 
+            on:click={previousBlock} 
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
+            title="Previous"
+          >
             <ArrowUp size={16} />
           </button>
         {/if}
+
         {#if blockNo < blocks.length - 2}
-          <button on:click={nextBlock} class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" title="Next">
+          <button 
+            on:click={nextBlock} 
+            class="w-8 h-8 bg-gray-800 text-white rounded-md hover:bg-gray-700 flex items-center justify-center" 
+            title="Next"
+          >
             <ArrowDown size={16} />
           </button>
         {/if}
+      </div>
+    {/if}
 
-      <a
-  href="https://fabform.io"
-  target="_blank"
-  class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
->
-  <span class="text-gray-300">Powered by</span>
-  <span class="text-white">FabForm</span>
-</a>
-  
-</div>
-</div>
-    
-  
+    <a
+      href="https://fabform.io"
+      target="_blank"
+      class="bg-black text-white text-sm flex items-center gap-2 py-1 px-4 rounded-md hover:bg-gray-800"
+    >
+      <span class="text-gray-300">Powered by</span>
+      <span class="text-white">FabForm</span>
+    </a>
+  </div>
 </main>
