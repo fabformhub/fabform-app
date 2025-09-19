@@ -249,8 +249,8 @@ export const blockTemplates = [
   {
     blockTypeId: 99,
     label: 'ThankYou',
-    title: 'Thanks 😀', 
-    description: 'Thanks',
+    title: 'Thanks', 
+    description: 'We will get back to you soon',
     embed: '',
     component: 'ThankYou',
     buttonText: 'Submit',
