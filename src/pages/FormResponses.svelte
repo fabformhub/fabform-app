@@ -31,11 +31,13 @@
 
   const deleteSelected = async () => {
     const idsToDelete = [...selected];
-    for (const id of idsToDelete) {
-      await deleteResponseById(id);
+    try {
+      await Promise.all(idsToDelete.map(id => deleteResponseById(id)));
+      responses = responses.filter((r) => !selected.has(r.id));
+      selected = new Set();
+    } catch (err) {
+      error = "Failed to delete some responses.";
     }
-    responses = responses.filter((r) => !selected.has(r.id));
-    selected = new Set();
   };
 
   onMount(async () => {
@@ -47,6 +49,12 @@
     }
   });
 
+  function escapeCSV(value) {
+    if (value == null) return '';
+    const str = String(value).replace(/"/g, '""');
+    return `"${str}"`;
+  }
+
   function generateCSV() {
     if (responses.length === 0) return;
 
@@ -55,7 +63,11 @@
 
     const rows = responses.map((response) => {
       const map = new Map(response.meta?.map(m => [m.blockTypeId, m.answer || '']));
-      return [response.id, formatDate(response.created_at), ...answerKeys.map(k => map.get(k) || '')];
+      return [
+        response.id,
+        formatDate(response.created_at),
+        ...answerKeys.map(k => escapeCSV(map.get(k) || ''))
+      ];
     });
 
     const csvContent = [
@@ -121,20 +133,31 @@
               checked={selected.has(resp.id)}
               on:change={() => toggleSelection(resp.id)}
               class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              aria-label={`Select response ${resp.id}`}
             />
 
             <!-- Response Content -->
             <div class="pl-12 w-full">
               {#if resp.meta && resp.meta.length > 0}
                 {#each resp.meta as item}
-                  {#if getBlockIcon(item.blockTypeId) !== null}
-                    <svelte:component
-                      this={getBlockIcon(item.blockTypeId)}
-                      class={`w-6 h-6 text-gray-700 mr-2`}
-                    />
-                  {/if}
-                  <div class={`p-3 ${bgColors[item.blockTypeId] || 'bg-gray-100'} rounded-lg flex items-center space-x-3`}>
-                    <div class="text-gray-800 break-words">{item.answer || '---'}</div>
+                  <div class={`p-3 ${bgColors[item.blockTypeId] || 'bg-gray-100'} rounded-lg mb-4`}>
+                    <!-- Question (subtle header, only if it exists) -->
+                    {#if item.question || item.title}
+                      <div class="text-xs uppercase text-gray-500 tracking-wide mb-1">
+                        {item.question || item.title}
+                      </div>
+                    {/if}
+
+                    <!-- Answer with icon -->
+                    <div class="flex items-center gap-2 text-gray-800 break-words">
+                      {#if getBlockIcon(item.blockTypeId) !== null}
+                        <svelte:component
+                          this={getBlockIcon(item.blockTypeId)}
+                          class="w-5 h-5 text-gray-600"
+                        />
+                      {/if}
+                      <span>{item.answer || '---'}</span>
+                    </div>
                   </div>
                 {/each}
               {:else}

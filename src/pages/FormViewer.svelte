@@ -85,6 +85,7 @@
       .map(b => ({
         blockId: b.id,
         blockTypeId: b.meta.blockTypeId,
+        question: b.meta.question,
         answer: b.value
       }));
 
