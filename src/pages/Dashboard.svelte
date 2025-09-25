@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { authService } from '../services/authService.svelte.js';
+  import { getProfileByUserId } from '../services/profileService.js';
   import {
     createForm,
     getFormsByUserId,
@@ -10,37 +11,34 @@
     duplicateFormById,
     getFormViews
   } from '../services/formService.js';
-  const { state } = authService;
-
-  import { Plus, FileText } from 'lucide-svelte';
   import { countResponsesByFormId } from '../services/responseService.js';
+  import { createBlock } from '../services/blockService.js';
   import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '../components/dialogs';
-  import { openDialog } from '../utils/dialog.svelte.js';
   import { Navbar } from '../components/layouts';
+  import { openDialog } from '../utils/dialog.svelte.js';
   import { blockTemplates } from '../templates/blockTemplates';
-  import { createBlock } from '../services/blockService';
   import { APP_URL } from '../utils/global.js';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
+  import { Plus, FileText } from 'lucide-svelte';
 
-  // ---------------------
-  // Helper: generate random slug
-  // ---------------------
-  function generateRandomUrl() {
-    return uniqueNamesGenerator({
-      dictionaries: [adjectives, animals],
-      separator: '-',
-      length: 2,
-      style: 'lowerCase'
-    });
-  }
+  const { state: authState } = authService;
+  const userId = authState.user?.id;
 
-  // ---------------------
-  // Forms state
-  // ---------------------
+  // ----------------------
+  // Reactive state
+  // ----------------------
+  let profile = $state(null);
+  let isPaid = $state(false);
   let forms = [];
   let formResponseCounts = {};
   let formViewCounts = {};
+  let showCTA = true;
+  let countdown = "";
+
+  const price = "$59"; 
+  const ctaText = `Lifetime Access – Only ${price}!`;
+  const ctaSubText = "Grab this limited-time deal before it’s gone!";
 
   const uiMeta = {
     backgroundImage: '',
@@ -56,12 +54,60 @@
     fontSize: 'Medium'
   };
 
-  const userId = state.user.id;
+  const offerEnd = new Date();
+  offerEnd.setHours(23, 59, 59, 999);
 
-  // ---------------------
-  // Fetch forms on mount
-  // ---------------------
-  onMount(fetchForms);
+  // ----------------------
+  // Helpers
+  // ----------------------
+  function generateRandomUrl() {
+    return uniqueNamesGenerator({
+      dictionaries: [adjectives, animals],
+      separator: '-',
+      length: 2,
+      style: 'lowerCase'
+    });
+  }
+
+  function handleCTAClick() {
+    window.open("https://fabform.io/pricing", "_blank");
+  }
+
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = offerEnd.getTime() - now;
+
+    if (distance <= 0) {
+      countdown = "Offer expired";
+      showCTA = false;
+      return;
+    }
+
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    countdown = `${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  // ----------------------
+  // Fetch profile and forms
+  // ----------------------
+  async function fetchProfile() {
+    if (!userId) return;
+
+
+    const res = await getProfileByUserId(userId);
+    if (res.success) {
+      profile = res.profile;
+      isPaid = profile?.is_paid ?? false;
+    
+    } else {
+      profile = null;
+      isPaid = false;
+      console.warn('Failed to fetch profile', res.error);
+    }
+  }
 
   async function fetchForms() {
     if (!userId) return;
@@ -70,32 +116,31 @@
     forms = res.success ? res.data.forms : [];
 
     for (let form of forms) {
-      await getResponseCountForForm(form.id);
-      await getViewCountForForm(form.id);
+      await fetchFormCounts(form.id);
     }
   }
 
-  async function getResponseCountForForm(formId) {
-    const { success, data } = await countResponsesByFormId(formId);
-    formResponseCounts = {
-      ...formResponseCounts,
-      [formId]: success ? data.count : 0
-    };
+  async function fetchFormCounts(formId) {
+    const respRes = await countResponsesByFormId(formId);
+    formResponseCounts[formId] = respRes.success ? respRes.data.count : 0;
+
+    const viewRes = await getFormViews(formId);
+    formViewCounts[formId] = viewRes.success ? viewRes.data.views : 0;
   }
 
-  async function getViewCountForForm(formId) {
-    const { success, data } = await getFormViews(formId);
-    formViewCounts = {
-      ...formViewCounts,
-      [formId]: success ? data.views : 0
-    };
-  }
-
-  // ---------------------
+  // ----------------------
   // Form actions
-  // ---------------------
+  // ----------------------
+  async function renameForm(formId) {
+    const result = await openDialog('Rename form', '', 'Cancel', 'Rename', RenameDialog, { name: 'Untitled' });
+    if (result?.name?.trim()) {
+      const res = await updateForm({ id: formId, name: result.name });
+      if (res.success) await fetchForms();
+    }
+  }
+
   async function renameFormSlug(formId) {
-    const formResult = await openDialog(
+    const result = await openDialog(
       'Rename Form Link',
       '',
       'Cancel',
@@ -103,36 +148,14 @@
       RenameSlugDialog,
       { slugName: generateRandomUrl() }
     );
-
-    const mySlugName = formResult?.slugName;
-    if (!mySlugName) return;
-
-    const res = await updateFormSlug(formId, mySlugName);
-    if (res.success) fetchForms();
-  }
-
-  async function renameForm(formId) {
-    const result = await openDialog(
-      'Rename form',
-      '',
-      'Cancel',
-      'Rename',
-      RenameDialog,
-      { name: 'Untitled' }
-    );
-    if (result?.name?.trim()) {
-      const res = await updateForm({ id: formId, name: result.name });
-      if (res.success) fetchForms();
+    if (result?.slugName) {
+      const res = await updateFormSlug(formId, result.slugName);
+      if (res.success) await fetchForms();
     }
   }
 
   async function deleteForm(formId) {
-    const result = await openDialog(
-      'Delete Confirmation',
-      'Are you sure you want to delete this form?',
-      'No, keep it',
-      'Yes, delete it'
-    );
+    const result = await openDialog('Delete Confirmation', 'Are you sure you want to delete this form?', 'No, keep it', 'Yes, delete it');
     if (result) {
       const res = await deleteFormById(formId);
       if (res.success) await fetchForms();
@@ -171,49 +194,14 @@
     }
   }
 
-  // ---------------------
-  // Sticky Lifetime Offer CTA
-  // ---------------------
-  let showCTA = true;
-  const price = "$59"; // one-time payment
-  let ctaText = `Lifetime Access – Only ${price}!`;
-  let ctaSubText = "Grab this limited-time deal before it’s gone!";
-  let countdown = "";
-
-  // Set offer to end **today at 23:59:59**
-  const now = new Date();
-  const offerEnd = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    23, 59, 59
-  ).getTime();
-
-  function handleCTAClick() {
-    window.open("https://fabform.io/pricing", "_blank");
-  }
-
-  function updateCountdown() {
-    const now = new Date().getTime();
-    const distance = offerEnd - now;
-
-    if (distance <= 0) {
-      countdown = "Offer expired";
-      showCTA = false;
-      return;
-    }
-
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    countdown = `${hours}h ${minutes}m ${seconds}s`;
-  }
-
-  let interval;
+  // ----------------------
+  // Initialize
+  // ----------------------
   onMount(() => {
+    fetchProfile();
+    fetchForms();
     updateCountdown();
-    interval = setInterval(updateCountdown, 1000);
+    const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   });
 </script>
@@ -225,25 +213,35 @@
 
   <!-- Header -->
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">My Forms</h1>
+    <div>
+      <h1 class="text-2xl font-bold">My Forms</h1>
+      
 
-    <!-- Upgraded In-Page Buy/Upgrade Button -->
-    <button
-      on:click={handleCTAClick}
-      class="bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 font-semibold flex items-center justify-center gap-2"
-    >
-      <span>Get Lifetime Access – Only $59!</span>
-      <span class="text-xs bg-white/20 px-2 py-1 rounded uppercase font-bold">Limited Time</span>
-      <span class="ml-2 text-xs font-semibold">{countdown}</span>
-    </button>
+        <span class={`px-3 py-1 rounded-full text-sm font-semibold ${isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+          {isPaid ? 'Lifetime Plan User' : 'Trial User'}
+        </span>
 
-    <button
-      on:click={createNewForm}
-      class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-neutral-800 transition"
-    >
-      <Plus class="w-5 h-5" />
-      <span>New Form</span>
-    </button>
+    </div>
+
+    <div class="flex gap-4">
+      {#if !isPaid}
+      <button
+        on:click={handleCTAClick}
+        class="bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 font-semibold flex items-center justify-center gap-2"
+      >
+        <span>Get Lifetime Access – Only $59!</span>
+        <span class="text-xs bg-white/20 px-2 py-1 rounded uppercase font-bold">Limited Time</span>
+        <span class="ml-2 text-xs font-semibold">{countdown}</span>
+      </button>
+     {/if}
+      <button
+        on:click={createNewForm}
+        class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-neutral-800 transition"
+      >
+        <Plus class="w-5 h-5" />
+        <span>New Form</span>
+      </button>
+    </div>
   </div>
 
   <!-- No forms placeholder -->
@@ -252,10 +250,7 @@
       <FileText class="w-16 h-16 text-gray-400" />
       <h2 class="text-xl font-semibold text-gray-700">No forms created yet</h2>
       <p class="text-gray-500">Start by creating a new form to get started.</p>
-      <button
-        on:click={createNewForm}
-        class="bg-black text-white px-6 py-2 rounded-xl hover:bg-neutral-800 transition"
-      >
+      <button on:click={createNewForm} class="bg-black text-white px-6 py-2 rounded-xl hover:bg-neutral-800 transition">
         Create New Form
       </button>
     </div>
@@ -265,21 +260,16 @@
         <DashboardDetail
           form={form}
           responseCount={formResponseCounts[form.id]}
-          formViewCount={formViewCounts[form.id]}   
+          formViewCount={formViewCounts[form.id]}
           onOpen={() => openFormLink(form.id)}
           onCopy={() => copyFormLink(form.id)}
           onRenameForm={() => renameForm(form.id)}
           onRenameFormSlug={() => renameFormSlug(form.id)}
           onDuplicate={() => duplicateForm(form.id)}
           onDelete={() => deleteForm(form.id)}
-          onQRCode={() => openDialog(
-            'QR Code',
-            '',
-            'Close',
-            null,
-            QRCodeDialog,
-            { text: APP_URL + `/v/${form.slug || form.id}` }
-          )}
+          onQRCode={() =>
+            openDialog('QR Code', '', 'Close', null, QRCodeDialog, { text: APP_URL + `/v/${form.slug || form.id}` })
+          }
         />
       {/each}
     </div>
@@ -287,7 +277,7 @@
 </div>
 
 <!-- Sticky Lifetime Offer CTA -->
-{#if showCTA}
+{#if showCTA && !isPaid}
   <div
     class="fixed bottom-6 right-6 bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-4 rounded-xl shadow-lg cursor-pointer animate-bounce z-50 max-w-xs hover:scale-105 transition-transform duration-300"
     on:click={handleCTAClick}

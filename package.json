@@ -35,6 +35,7 @@
     "svelte-awesome-color-picker": "^4.0.2",
     "svelte-datepicker": "^1.0.0",
     "svelte-dnd-action": "^0.9.60",
+    "svelte-portal": "^2.2.1",
     "svelte-spa-router": "^4.0.1",
     "tailwindcss": "^4.1.4",
     "tippy.js": "^6.3.7",

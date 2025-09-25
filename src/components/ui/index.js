@@ -18,3 +18,5 @@ export { default as PageNotFound } from './PageNotFound.svelte';
 export { default as FontLoader } from './FontLoader.svelte';
 export { default as ColorPicker } from './ColorPicker.svelte';
 export { default as CopyCode } from './CopyCode.svelte';
+export { default as Popover } from './Popover.svelte';
+export { default as Portal } from './Portal.svelte';
