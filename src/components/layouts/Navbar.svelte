@@ -23,10 +23,7 @@
       <img src="/logo.png" alt="FabForm Logo" class="h-8 w-auto hover:opacity-80 transition" />
     </a>
 
-    <a href={APP_URL + '/pricing/'} target="_blank" rel="noopener noreferrer"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-2xl shadow-md flex items-center gap-2 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-      Buy Pro
-    </a>
+ 
 
     <div class="relative">
       <button on:click={toggleMenu} class="focus:outline-none">

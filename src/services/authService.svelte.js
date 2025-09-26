@@ -56,26 +56,33 @@ export const authService = (() => {
   };
 
   const createUser = async (email, password) => {
-    state.loading = true;
-    state.error = null;
-    state.message = null;
-    state.lastAction = 'signup';
-    state.lastProvider = 'email';
-    try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      state.user = data?.user || data?.session?.user || null;
-      state.message = data?.session
-        ? "Account created successfully!"
-        : "Signup successful! Please check your email to confirm your account.";
-      return true;
-    } catch (err) {
-      setError(err);
-      return false;
-    } finally {
-      state.loading = false;
-    }
-  };
+  state.loading = true;
+  state.error = null;
+  state.message = null;
+  state.lastAction = 'signup';
+  state.lastProvider = 'email';
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { isPaid: false }  // 👈 default metadata
+      }
+    });
+    if (error) throw error;
+
+    state.user = data?.user || data?.session?.user || null;
+    state.message = data?.session
+      ? "Account created successfully!"
+      : "Signup successful! Please check your email to confirm your account.";
+    return true;
+  } catch (err) {
+    setError(err);
+    return false;
+  } finally {
+    state.loading = false;
+  }
+};
 
   const resetPassword = async (email) => {
     state.loading = true;

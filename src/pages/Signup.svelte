@@ -1,6 +1,6 @@
 <script>
   import { authService } from '../services/authService.svelte.js';
-  import { createProfile } from '../services/profileService.js';
+ 
   import { goto } from '@mateothegreat/svelte5-router';
 
   const { state, createUser } = authService;
@@ -33,11 +33,7 @@
       const user = await createUser(email, password);
       if (!user) throw new Error('Signup failed');
 
-      // Create a profile for the new user
-      const profileResult = await createProfile(user.id);
-      if (!profileResult.success) {
-        console.warn('Profile creation failed:', profileResult.error);
-      }
+  
 
       state.user = user; // set session
       goto('/dashboard');

@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import { authService } from '../services/authService.svelte.js';
-  import { getProfileByUserId } from '../services/profileService.js';
   import {
     createForm,
     getFormsByUserId,
@@ -24,12 +23,12 @@
 
   const { state: authState } = authService;
   const userId = authState.user?.id;
+  const isUserPaid = authState.user?.user_metadata?.isPaid ?? false;
 
   // ----------------------
   // Reactive state
   // ----------------------
-  let profile = $state(null);
-  let isPaid = $state(false);
+  
   let forms = [];
   let formResponseCounts = {};
   let formViewCounts = {};
@@ -90,24 +89,7 @@
     countdown = `${hours}h ${minutes}m ${seconds}s`;
   }
 
-  // ----------------------
-  // Fetch profile and forms
-  // ----------------------
-  async function fetchProfile() {
-    if (!userId) return;
 
-
-    const res = await getProfileByUserId(userId);
-    if (res.success) {
-      profile = res.profile;
-      isPaid = profile?.is_paid ?? false;
-    
-    } else {
-      profile = null;
-      isPaid = false;
-      console.warn('Failed to fetch profile', res.error);
-    }
-  }
 
   async function fetchForms() {
     if (!userId) return;
@@ -163,7 +145,7 @@
   }
 
   async function createNewForm() {
-    if (!userId) return console.error("User ID missing");
+    //if (!userId) return console.error("User ID missing");
 
     const formData = { name: "Untitled Form", user_id: userId, meta: { ...uiMeta } };
     const res = await createForm(formData);
@@ -198,7 +180,7 @@
   // Initialize
   // ----------------------
   onMount(() => {
-    fetchProfile();
+  
     fetchForms();
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
@@ -215,18 +197,18 @@
   <div class="flex justify-between items-center mb-6">
     <div>
       <h1 class="text-2xl font-bold">My Forms</h1>
-      
+    
 
-        <span class={`px-3 py-1 rounded-full text-sm font-semibold ${isPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-          {isPaid ? 'Lifetime Plan User' : 'Trial User'}
+        <span class={`px-3 py-1 rounded-full text-sm font-semibold ${isUserPaid ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+          {isUserPaid ? 'Lifetime Plan User' : 'Trial User'}
         </span>
 
     </div>
 
     <div class="flex gap-4">
-      {#if !isPaid}
+      {#if !isUserPaid}
       <button
-        on:click={handleCTAClick}
+        onclick={handleCTAClick}
         class="bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 font-semibold flex items-center justify-center gap-2"
       >
         <span>Get Lifetime Access – Only $59!</span>
@@ -234,8 +216,8 @@
         <span class="ml-2 text-xs font-semibold">{countdown}</span>
       </button>
      {/if}
-      <button
-        on:click={createNewForm}
+
+      <button onclick={createNewForm}
         class="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-xl hover:bg-neutral-800 transition"
       >
         <Plus class="w-5 h-5" />
@@ -250,7 +232,7 @@
       <FileText class="w-16 h-16 text-gray-400" />
       <h2 class="text-xl font-semibold text-gray-700">No forms created yet</h2>
       <p class="text-gray-500">Start by creating a new form to get started.</p>
-      <button on:click={createNewForm} class="bg-black text-white px-6 py-2 rounded-xl hover:bg-neutral-800 transition">
+      <button onclick={createNewForm} class="bg-black text-white px-6 py-2 rounded-xl hover:bg-neutral-800 transition">
         Create New Form
       </button>
     </div>
@@ -277,10 +259,10 @@
 </div>
 
 <!-- Sticky Lifetime Offer CTA -->
-{#if showCTA && !isPaid}
+{#if showCTA && !isUserPaid}
   <div
     class="fixed bottom-6 right-6 bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-4 rounded-xl shadow-lg cursor-pointer animate-bounce z-50 max-w-xs hover:scale-105 transition-transform duration-300"
-    on:click={handleCTAClick}
+    onclick={handleCTAClick}
   >
     <div class="font-bold text-lg">{ctaText}</div>
     <div class="text-sm mt-1">{ctaSubText}</div>
