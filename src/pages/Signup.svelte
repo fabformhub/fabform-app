@@ -1,6 +1,5 @@
 <script>
   import { authService } from '../services/authService.svelte.js';
- 
   import { goto } from '@mateothegreat/svelte5-router';
 
   const { state, createUser } = authService;
@@ -9,10 +8,13 @@
   let password = '';
   let confirmPassword = '';
 
-  // Reactive computed value to check if passwords match
+  // Password match check
   $: passwordsMatch = password && confirmPassword && password === confirmPassword;
 
-  const handleSignup = async () => {
+  // Supabase project URL
+  const URL = 'https://lbwtzoxtlssyjeututrs.supabase.co';
+
+  async function handleSignup() {
     state.error = '';
 
     // Validate fields
@@ -21,7 +23,6 @@
       return;
     }
 
-    // Password match check
     if (!passwordsMatch) {
       state.error = 'Passwords do not match!';
       return;
@@ -30,19 +31,49 @@
     state.loading = true;
 
     try {
+      // 1. Create the user
       const user = await createUser(email, password);
       if (!user) throw new Error('Signup failed');
 
-  
+      state.user = user;
+      console.log('✅ Signup successful, sending welcome email to:', email);
 
-      state.user = user; // set session
+      // 2. Fire-and-forget welcome email (public Edge Function)
+      (async () => {
+        try {
+          console.log('📤 Calling Edge Function:', `${URL}/functions/v1/send_welcome_email`);
+          console.log('Payload:', { email });
+
+          const res = await fetch(`${URL}/functions/v1/send_welcome_email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+
+          console.log('Edge function response status:', res.status);
+          const text = await res.text();
+          console.log('Edge function raw response:', text);
+
+          try {
+            const data = JSON.parse(text);
+            console.log('Edge function parsed response:', data);
+          } catch (parseErr) {
+            console.warn('Failed to parse response JSON:', parseErr);
+          }
+
+        } catch (err) {
+          console.error('❌ Failed to call Edge Function:', err);
+        }
+      })();
+
+      // 3. Redirect immediately
       goto('/dashboard');
     } catch (err) {
       state.error = err?.message || 'Signup failed';
     } finally {
       state.loading = false;
     }
-  };
+  }
 </script>
 
 <div class="min-h-screen flex justify-center items-center bg-gray-100">
@@ -56,7 +87,7 @@
         type="email"
         placeholder="Email"
         bind:value={email}
-        on:input={() => state.error = ''}
+        on:input={() => (state.error = '')}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
         required
       />
@@ -66,7 +97,7 @@
         type="password"
         placeholder="Password"
         bind:value={password}
-        on:input={() => state.error = ''}
+        on:input={() => (state.error = '')}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
         required
       />
@@ -76,14 +107,14 @@
         type="password"
         placeholder="Confirm Password"
         bind:value={confirmPassword}
-        on:input={() => state.error = ''}
+        on:input={() => (state.error = '')}
         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
         required
       />
 
       <!-- Live password match feedback -->
       {#if confirmPassword}
-        <p class="text-sm text-right {passwordsMatch ? 'text-green-500' : 'text-red-500'}">
+        <p class={`text-sm text-right ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
           {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
         </p>
       {/if}
@@ -91,7 +122,7 @@
       <!-- Signup Button -->
       <button
         type="submit"
-        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         disabled={state.loading}
       >
         {state.loading ? 'Creating account…' : 'Sign Up'}
