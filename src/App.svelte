@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { Router } from '@mateothegreat/svelte5-router';
   import { authService } from './services/authService.svelte.js';
+import { Toaster } from 'svelte-5-french-toast';
+  
   import routes from './routes/routes.js';
 
   const { state, getUser } = authService;
@@ -25,7 +27,12 @@
   }
 </style>
 
+
+
 <main class="w-screen h-screen">
+<Toaster />
+
+
   {#if loading}
     <div class="flex items-center justify-center h-full text-gray-600">
       Loading...

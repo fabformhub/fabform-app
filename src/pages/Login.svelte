@@ -1,75 +1,57 @@
 <script>
-  import { authService } from '../services/authService.svelte.js'; // Importing your authentication service`
-  import { goto } from '@mateothegreat/svelte5-router'; // Using your router for navigation
+  import { authService } from '../services/authService.svelte.js';
 
-  const { state, loginWithEmail } = authService;
+  import { goto } from '@mateothegreat/svelte5-router';
+  import { onMount, onDestroy } from 'svelte';
 
   let email = '';
   let password = '';
-
-  const handleEmailLogin = async () => {
-    const success = await loginWithEmail(email, password);
-    if (success) {
-      goto('/dashboard'); // Redirect to the dashboard after successful login
-    }
-  };
-
+  let loginError = '';
+  let loading = false;
   
+  async function handleLogin() {
+    loginError = '';
+    if (!email || !password) {
+      loginError = 'Email and password are required';
+      return;
+    }
+
+    loading = true;
+    try {
+      const success = await authService.loginWithEmail(email, password);
+      if (success) {
+        goto('/dashboard');
+      } else {
+        loginError = authService.state.error || 'Login failed';
+      }
+    } catch (err) {
+      loginError = err.message || 'Login failed';
+    } finally {
+      loading = false;
+    }
+  }
+
+  function goToSignup() {
+    goto('/signup');
+  }
 </script>
 
-<!-- Full-screen login container -->
 <div class="min-h-screen flex justify-center items-center bg-gray-100">
+  <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg space-y-4">
+    <h2 class="text-2xl font-bold text-center">Login</h2>
 
-  <!-- Login Card -->
-  <div class="w-full max-w-sm bg-white p-8 space-y-6 rounded-xl shadow-lg">
-
-  
-    <!-- Header Section -->
-    <h2 class="text-3xl font-bold text-center text-gray-900">Sign into my account</h2>
-    <p class="text-sm text-center text-gray-500">Please sign in to your FabForm account</p>
-
-    <!-- Form Section -->
-    <div class="space-y-5">
-      
-      <!-- Email Input -->
-      <input
-        type="email"
-        placeholder="Email"
-        bind:value={email}
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-      />
-
-      <!-- Password Input -->
-      <input
-        type="password"
-        placeholder="Password"
-        bind:value={password}
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-      />
-
-      <!-- Email Login Button -->
-      <button
-        on:click={handleEmailLogin}
-        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        disabled={state.loading}
-      >
-        {state.loading ? 'Logging in…' : 'Login with Email'}
-      </button>
-    </div>
-
-    <!-- Sign Up Link -->
-    <div class="text-center mt-4">
-      <p class="text-sm text-gray-500">
-        Don't have an account? 
-        <a href="/signup" class="text-blue-600 hover:text-blue-700">Sign up</a>
-      </p>
-    </div>
-
-    <!-- Error Message Section -->
-    {#if state.error}
-      <p class="text-sm text-red-500 text-center">{state.error}</p>
-    {/if}
     
-  </div>
+    <form on:submit|preventDefault={handleLogin} class="space-y-3">
+      <input type="email" placeholder="Email" bind:value={email} class="w-full border px-3 py-2 rounded" />
+      <input type="password" placeholder="Password" bind:value={password} class="w-full border px-3 py-2 rounded" />
+      <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded" disabled={loading}>
+        {loading ? 'Logging in…' : 'Login'}
+      </button>
+    </form>
 
+    <p class="text-center text-sm text-gray-600 mt-2">
+      Don’t have an account? 
+      <span class="text-blue-600 cursor-pointer hover:underline" on:click={goToSignup}>Sign up</span>
+    </p>
+  </div>
 </div>

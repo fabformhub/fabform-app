@@ -1,136 +1,89 @@
 <script>
   import { authService } from '../services/authService.svelte.js';
   import { goto } from '@mateothegreat/svelte5-router';
-
-  const { state, createUser } = authService;
+  import toast from 'svelte-5-french-toast';
 
   let email = '';
   let password = '';
   let confirmPassword = '';
-
-  // Password match check
-  $: passwordsMatch = password && confirmPassword && password === confirmPassword;
-
-  // Supabase project URL
-  const URL = 'https://lbwtzoxtlssyjeututrs.supabase.co';
+  let error = '';
+  let loading = false;
 
   async function handleSignup() {
-    state.error = '';
+    error = '';
 
-    // Validate fields
     if (!email || !password || !confirmPassword) {
-      state.error = 'All fields are required!';
+      error = 'All fields are required';
+      toast.error(error, { duration: 4000, position: 'top-right', icon: '❌' });
       return;
     }
 
-    if (!passwordsMatch) {
-      state.error = 'Passwords do not match!';
+    if (password !== confirmPassword) {
+      error = 'Passwords do not match';
+      toast.error(error, { duration: 4000, position: 'top-right', icon: '❌' });
       return;
     }
 
-    state.loading = true;
-
+    loading = true;
     try {
-      // 1. Create the user
-      const user = await createUser(email, password);
-      if (!user) throw new Error('Signup failed');
+      const created = await authService.createUser(email, password);
+      if (!created) throw new Error(authService.state.error || 'Signup failed');
 
-      state.user = user;
-      console.log('✅ Signup successful, sending welcome email to:', email);
+      // Clear user from state so they have to log in
+      authService.state.user = null;
 
-      // 2. Fire-and-forget welcome email (public Edge Function)
-      (async () => {
-        try {
-          console.log('📤 Calling Edge Function:', `${URL}/functions/v1/send_welcome_email`);
-          console.log('Payload:', { email });
+      // Show success toast
+      toast.success(`Account created for ${email}. Please log in.`, {
+        duration: 5000,
+        position: 'top-right',
+        icon: '✅'
+      });
 
-          const res = await fetch(`${URL}/functions/v1/send_welcome_email`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email })
-          });
-
-          console.log('Edge function response status:', res.status);
-          const text = await res.text();
-          console.log('Edge function raw response:', text);
-
-          try {
-            const data = JSON.parse(text);
-            console.log('Edge function parsed response:', data);
-          } catch (parseErr) {
-            console.warn('Failed to parse response JSON:', parseErr);
-          }
-
-        } catch (err) {
-          console.error('❌ Failed to call Edge Function:', err);
-        }
-      })();
-
-      // 3. Redirect immediately
-      goto('/dashboard');
+      // Navigate to login page
+      goto('/login');
     } catch (err) {
-      state.error = err?.message || 'Signup failed';
+      error = err.message || 'Signup failed';
+      toast.error(error, { duration: 5000, position: 'top-right', icon: '❌' });
     } finally {
-      state.loading = false;
+      loading = false;
     }
   }
 </script>
 
 <div class="min-h-screen flex justify-center items-center bg-gray-100">
-  <div class="w-full max-w-sm bg-white p-8 space-y-6 rounded-xl shadow-lg">
-    <h2 class="text-3xl font-bold text-center text-gray-900">Create an Account</h2>
-    <p class="text-sm text-center text-gray-500">Sign up to start your journey</p>
+  <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg space-y-4">
+    <h2 class="text-2xl font-bold text-center">Sign Up</h2>
 
-    <form class="space-y-5" on:submit|preventDefault={handleSignup}>
-      <!-- Email -->
-      <input
-        type="email"
-        placeholder="Email"
-        bind:value={email}
-        on:input={() => (state.error = '')}
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-        required
+    {#if error}
+      <p class="text-red-500 text-center">{error}</p>
+    {/if}
+
+    <form on:submit|preventDefault={handleSignup} class="space-y-3">
+      <input 
+        type="email" 
+        placeholder="Email" 
+        bind:value={email} 
+        class="w-full border px-3 py-2 rounded" 
       />
-
-      <!-- Password -->
-      <input
-        type="password"
-        placeholder="Password"
-        bind:value={password}
-        on:input={() => (state.error = '')}
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-        required
+      <input 
+        type="password" 
+        placeholder="Password" 
+        bind:value={password} 
+        class="w-full border px-3 py-2 rounded" 
       />
-
-      <!-- Confirm Password -->
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        bind:value={confirmPassword}
-        on:input={() => (state.error = '')}
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-        required
+      <input 
+        type="password" 
+        placeholder="Confirm Password" 
+        bind:value={confirmPassword} 
+        class="w-full border px-3 py-2 rounded" 
       />
-
-      <!-- Live password match feedback -->
-      {#if confirmPassword}
-        <p class={`text-sm text-right ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
-          {passwordsMatch ? 'Passwords match' : 'Passwords do not match'}
-        </p>
-      {/if}
-
-      <!-- Signup Button -->
-      <button
-        type="submit"
-        class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-        disabled={state.loading}
+      <button 
+        type="submit" 
+        class="w-full py-2 bg-blue-600 text-white rounded" 
+        disabled={loading}
       >
-        {state.loading ? 'Creating account…' : 'Sign Up'}
+        {loading ? 'Creating…' : 'Sign Up'}
       </button>
     </form>
-
-    {#if state.error}
-      <p class="text-sm text-red-500 text-center">{state.error}</p>
-    {/if}
   </div>
 </div>
