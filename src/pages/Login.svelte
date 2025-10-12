@@ -1,6 +1,5 @@
 <script>
   import { authService } from '../services/authService.svelte.js';
-
   import { goto } from '@mateothegreat/svelte5-router';
   import { onMount, onDestroy } from 'svelte';
 
@@ -22,10 +21,12 @@
       if (success) {
         goto('/dashboard');
       } else {
-        loginError = authService.state.error || 'Login failed';
+        loginError = "Hmm… that email or password doesn’t look right. Please try again.";
+        setTimeout(() => (loginError = ''), 4000);
       }
     } catch (err) {
-      loginError = err.message || 'Login failed';
+      loginError = err.message || "Hmm… that email or password doesn’t look right. Please try again.";
+      setTimeout(() => (loginError = ''), 4000);
     } finally {
       loading = false;
     }
@@ -40,18 +41,40 @@
   <div class="w-full max-w-sm bg-white p-8 rounded-xl shadow-lg space-y-4">
     <h2 class="text-2xl font-bold text-center">Login</h2>
 
-    
+    {#if loginError}
+      <p class="text-red-500 text-center">{loginError}</p>
+    {/if}
+
     <form on:submit|preventDefault={handleLogin} class="space-y-3">
-      <input type="email" placeholder="Email" bind:value={email} class="w-full border px-3 py-2 rounded" />
-      <input type="password" placeholder="Password" bind:value={password} class="w-full border px-3 py-2 rounded" />
-      <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded" disabled={loading}>
+      <input
+        type="email"
+        placeholder="Email"
+        bind:value={email}
+        class="w-full border px-3 py-2 rounded"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        bind:value={password}
+        class="w-full border px-3 py-2 rounded"
+      />
+      <button
+        type="submit"
+        class="w-full py-2 bg-blue-600 text-white rounded"
+        disabled={loading}
+      >
         {loading ? 'Logging in…' : 'Login'}
       </button>
     </form>
 
     <p class="text-center text-sm text-gray-600 mt-2">
-      Don’t have an account? 
-      <span class="text-blue-600 cursor-pointer hover:underline" on:click={goToSignup}>Sign up</span>
+      Don’t have an account?
+      <span
+        class="text-blue-600 cursor-pointer hover:underline"
+        on:click={goToSignup}
+      >
+        Sign up
+      </span>
     </p>
   </div>
 </div>

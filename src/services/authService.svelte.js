@@ -75,6 +75,27 @@ export const authService = (() => {
       state.loading = false;
     }
   };
+const setUserPaidByEmail = async (email) => {
+  state.loading = true;
+  state.error = null;
+
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ isPaid: true })
+      .eq('email', email);
+
+    if (error) throw error;
+
+    state.message = `User ${email} marked as paid successfully.`;
+    return true;
+  } catch (err) {
+    setError(err);
+    return false;
+  } finally {
+    state.loading = false;
+  }
+};
 
   const logout = async () => {
     state.loading = true;
