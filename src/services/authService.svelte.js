@@ -1,6 +1,8 @@
+ // src/services/authService.js
 import { supabase } from '../lib/supabaseClient';
 
 export const authService = (() => {
+  // Reactive state (your original $state)
   const state = $state({
     user: null,
     loading: false,
@@ -12,10 +14,12 @@ export const authService = (() => {
     state.error = err?.message || String(err) || 'Unknown error';
   };
 
+  // Listen for auth changes
   supabase.auth.onAuthStateChange((_event, session) => {
     state.user = session?.user || null;
   });
 
+  // Get current logged-in user
   const getUser = async () => {
     state.loading = true;
     state.error = null;
@@ -33,6 +37,7 @@ export const authService = (() => {
     }
   };
 
+  // Login
   const loginWithEmail = async (email, password) => {
     state.loading = true;
     state.error = null;
@@ -50,6 +55,7 @@ export const authService = (() => {
     }
   };
 
+  // Signup
   const createUser = async (email, password) => {
     state.loading = true;
     state.error = null;
@@ -57,13 +63,11 @@ export const authService = (() => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { isPaid: false } }
+        options: { data: { isPaid: false } } // initial metadata
       });
       if (error) throw error;
 
-      // ✅ Do not auto-login
       state.user = null;
-
       state.message = data?.session
         ? "Account created successfully!"
         : "Signup successful! Please check your email to confirm your account.";
@@ -75,28 +79,8 @@ export const authService = (() => {
       state.loading = false;
     }
   };
-const setUserPaidByEmail = async (email) => {
-  state.loading = true;
-  state.error = null;
 
-  try {
-    const { error } = await supabase
-      .from('users')
-      .update({ isPaid: true })
-      .eq('email', email);
-
-    if (error) throw error;
-
-    state.message = `User ${email} marked as paid successfully.`;
-    return true;
-  } catch (err) {
-    setError(err);
-    return false;
-  } finally {
-    state.loading = false;
-  }
-};
-
+  // Logout
   const logout = async () => {
     state.loading = true;
     state.error = null;
@@ -114,12 +98,45 @@ const setUserPaidByEmail = async (email) => {
     }
   };
 
+  // Mark user as paid via user_metadata
+  const setUserPaidByEmail = async (email) => {
+    state.loading = true;
+    state.error = null;
+
+    try {
+      // ⚠️ This requires a Supabase service role key (server-side)
+      const { data: users, error: fetchError } = await supabase.auth.admin.listUsers();
+      if (fetchError) throw fetchError;
+
+      const user = users.find(u => u.email === email);
+      if (!user) {
+        setError(new Error(`User ${email} not found.`));
+        return false;
+      }
+
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
+        user_metadata: { ...user.user_metadata, isPaid: true }
+      });
+      if (updateError) throw updateError;
+
+      state.message = `User ${email} marked as paid successfully.`;
+      return true;
+    } catch (err) {
+      setError(err);
+      return false;
+    } finally {
+      state.loading = false;
+    }
+  };
+
   return {
     state,
     getUser,
-    createUser,
     loginWithEmail,
+    createUser,
     logout,
+    setUserPaidByEmail,
     supabase,
   };
 })();

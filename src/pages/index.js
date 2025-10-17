@@ -10,4 +10,3 @@ export { default as Settings } from './Settings.svelte';
 export { default as ChangeEmail } from './ChangeEmail.svelte';
 export { default as ChangePassword } from './ChangePassword.svelte';
 export { default as Integrate } from './Integrate.svelte';
-export { default as Order } from './Order.svelte';
