@@ -29,7 +29,7 @@
   let formResponseCounts = {};
   let formViewCounts = {};
   let showCTA = true;
-  let countdown = "";
+  let countdown = ""
   let isUserPaid = false;
   let userId = null;
 
@@ -221,7 +221,7 @@
           onclick={handleCTAClick}
           class="bg-gradient-to-r from-pink-600 to-red-500 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 font-semibold flex items-center justify-center gap-2"
         >
-          <span>Get Lifetime Access – Only $59!</span>
+          <span>Get Lifetime Access – Only $99</span>
           <span class="text-xs bg-white/20 px-2 py-1 rounded uppercase font-bold">Limited Time</span>
           <span class="ml-2 text-xs font-semibold">{countdown}</span>
         </button>
