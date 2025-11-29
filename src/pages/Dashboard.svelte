@@ -33,7 +33,7 @@
   let isUserPaid = false;
   let userId = null;
 
-  const price = "$59";
+  const price = "$99";
   const ctaText = `Lifetime Access – Only ${price}!`;
   const ctaSubText = "Grab this limited-time deal before it’s gone!";
 
