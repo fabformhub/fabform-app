@@ -57,7 +57,7 @@
 
   onMount(fetchData);
 
-  function changeColorOnForm(form) {
+  function formChanged(form) {
     uiMeta = form.meta;
   }
 
@@ -194,7 +194,7 @@ async function createBlockPick(block) {
 
       <div class="w-1/4 p-2 overflow-auto h-[400px] border-l border-gray-200">
         {#if showDesignPanel}
-          <DesignEditor formProp ={form} {changeColorOnForm} />
+          <DesignEditor {form} {formChanged} />
         {:else if blocks[blockNo]}
           <PropertyEditor bind:block={blocks[blockNo]} />
         {/if}

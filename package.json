@@ -41,6 +41,7 @@
     "tailwindcss": "^4.1.4",
     "tippy.js": "^6.3.7",
     "unique-names-generator": "^4.7.1",
+    "webfontloader": "^1.6.28",
     "zod": "^3.24.3"
   }
 }

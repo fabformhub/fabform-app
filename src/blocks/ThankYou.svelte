@@ -5,15 +5,15 @@
 
   //{canAnswer ? '' : 'opacity-50 pointer-events-none'}"
 </script>
+<div class="mt-10">
+<a
+  href={canAnswer ? "https://fabform.io" : "#"} 
+  target="_blank" 
+  class="text-sm px-6 py-3 rounded-md bg-black text-white hover:bg-gray-800"
+>
+  Create your own FabForm
+</a>
+</div>
 
-
-  <a 
-    href={canAnswer ? "https://fabform.io" : "#"} 
-    target="_blank" 
-    class="text-sm px-6 py-3 rounded-md bg-black text-white hover:bg-gray-800"
-           
-  >
-    Create your own FabForm
-  </a>
 
 

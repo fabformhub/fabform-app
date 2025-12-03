@@ -1,41 +1,39 @@
 <script>
   import { onMount } from 'svelte';
-  import FontFaceObserver from 'fontfaceobserver';
-  let {fontName = 'Roboto', fontScale = 'medium',  fallback = 'sans-serif'} =$props();
+  import WebFont from 'webfontloader';
+
+  let { uiMeta} = $props();
 
   const sizeMap = {
-    small: '1rem',
-    medium: '1.5rem',
-    large: '2rem'
+    Small: '0.875rem',      // ~14px
+    Medium: '1rem',         // ~16px
+    Large: '1.75rem',       // ~28px
+    'Extra Large': '2.5rem' // ~40px
   };
 
-  let fontSize = $derived(sizeMap[fontScale] || '1.5rem');
+  let fontSize = $derived(sizeMap[uiMeta.fontSize] || '1rem');
   let loaded = $state(false);
 
-  function loadGoogleFont(font) {
-    const formatted = font.replace(/ /g, '+');
-    if (!document.getElementById(`gf-${formatted}`)) {
-      const link = document.createElement('link');
-      link.id = `gf-${formatted}`;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${formatted}&display=swap`;
-      document.head.appendChild(link);
-    }
+  function loadGoogleFont() {
+  
+    WebFont.load({
+      google: { families: [uiMeta.fontFamily] },
+      active: () => { loaded = true; },
+      inactive: () => { loaded = false; }
+    });
   }
 
   onMount(() => {
-    loadGoogleFont(fontName);
-    const observer = new FontFaceObserver(fontName);
-    observer.load(null, 10000).then(() => {
-      loaded = true;
-    }).catch(() => {
-      loaded = false;
-    });
+    loadGoogleFont();
   });
 </script>
-
+{uiMeta}
 {#if loaded}
-  <div style="font-family: '{fontName}', {fallback}; font-size: {fontSize}; transition: opacity 0.3s;">
+<p>****************</p>
+<p> fontFamily {uiMeta.fontFamily}</p>
+<p> fontSize {uiMeta.fontSize}</p>
+
+  <div style="font-family: '{uiMeta.fontFamily}', {fallback}; font-size: {fontSize}; transition: opacity 0.3s;">
     <slot />
   </div>
 {:else}

@@ -3,21 +3,23 @@
     choices = [], 
     choiceSelected, 
     value = $bindable(), 
-    canAnswer = false, 
+    canAnswer = true,   // ✅ default to true
     props 
   } = $props();
 
   let selectedValue = $state(value ?? '');
 
-  $effect(() => {
-    choiceSelected(selectedValue);
-    value = selectedValue;
-  });
+  function handleChange(e) {
+    selectedValue = e.target.value;
+    value = selectedValue;            // keep bind:value in sync
+    choiceSelected?.(selectedValue);  // notify parent
+  }
 </script>
 
 <div class="relative w-full m-0 p-0">
   <select
     bind:value={selectedValue}
+    on:change={handleChange}
     disabled={!canAnswer}
     class={`block w-full bg-transparent border-0 border-b-2 text-xl py-2 px-0 outline-none transition-all duration-300
       ${canAnswer 
