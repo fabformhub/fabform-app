@@ -39,13 +39,13 @@
 
   const uiMeta = {
     backgroundImage: '',
-    backgroundColor: '#f9fafb',
-    questionColor: '#1f2937',
-    answerColor: '#374151',
-    buttonColor: '#2563eb',
-    buttonTextColor: '#ffffff',
-    starRatingColor: '#facc15',
-    font: 'Inter',
+    backgroundColor: '#fffffe',
+    questionColor: '#094067',
+    answerColor: '#094067',
+    buttonColor: '#3da9fc',
+    buttonTextColor: '#fffffe',
+    starRatingColor: '##3da9fc',
+    font: 'Roboto',
     logo: null,
     roundedCorner: true,
     fontSize: 'Medium'
