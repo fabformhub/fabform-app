@@ -186,7 +186,7 @@ async function createBlockPick(block) {
       <!-- BlockLayout canAnswer defaults to false as we dont want to edit the fields-->
       <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
         {#if blocks[blockNo]}
-          <BlockLayout canAnswer={false} bind:block={blocks[blockNo]} on:updateBlock={handleBlockUpdate} />
+          <BlockLayout uiMeta={uiMeta} canAnswer={false} bind:block={blocks[blockNo]} on:updateBlock={handleBlockUpdate} />
         {:else}
           <p class="text-gray-400">No blocks to display</p>
         {/if}
