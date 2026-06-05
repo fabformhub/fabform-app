@@ -3,15 +3,32 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-// https://vite.dev/config/
 export default defineConfig({
-	 build: {
+  build: {
     sourcemap: true
   },
-  plugins: [svelte(), tailwindcss()],
+
+  plugins: [
+    svelte(),
+    tailwindcss()
+  ],
+
   resolve: {
     alias: {
-      $lib: path.resolve('src/lib'), // Ensure $lib is mapped to src/lib
-    },
+      $lib: path.resolve('src/lib')
+    }
   },
+
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+
+    hmr: {
+      host: 'dev.fabform.io',
+      protocol: 'wss',
+      clientPort: 443
+    }
+  }
 })
+
