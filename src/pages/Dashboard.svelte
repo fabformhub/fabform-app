@@ -2,17 +2,8 @@
   import { onMount } from 'svelte';
   import { authService } from '../services/authService.svelte.js';
   import { checkUserSubscribed } from '../services/subscriptionService.js';
-  import {
-    createForm,
-    getFormsByUserId,
-    deleteFormById,
-    updateForm,
-    updateFormSlug,
-    duplicateFormById,
-    getFormViews
-  } from '../services/formService.js';
+  import { createForm, getFormsByUserId, deleteFormById, updateForm, updateFormSlug, duplicateFormById, getFormViews,createBlock} from '../services/formService.js';
   import { countResponsesByFormId } from '../services/responseService.js';
-  import { createBlock } from '../services/blockService.js';
   import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '../components/dialogs';
   import { Navbar } from '../components/layouts';
@@ -152,9 +143,9 @@
     navigator.clipboard.writeText(APP_URL + `/v/${id}`);
   }
 
-  function openFormLink(id) {
-    window.location.href = APP_URL + `/v/${id}`;
-  }
+function openFormLink(id) {
+  window.open(`${APP_URL}/v/${id}`, "_blank");
+}
 
   async function duplicateForm(formId) {
     const { success, data } = await duplicateFormById(formId);
@@ -257,8 +248,8 @@
           form={form}
           responseCount={formResponseCounts[form.id]}
           formViewCount={formViewCounts[form.id]}
-          onOpen={() => openFormLink(form.id)}
-          onCopy={() => copyFormLink(form.id)}
+          onOpen={() => openFormLink(form.slug)}
+          onCopy={() => copyFormLink(form.slug)}
           onRenameForm={() => renameForm(form.id)}
           onRenameFormSlug={() => renameFormSlug(form.id)}
           onDuplicate={() => duplicateForm(form.id)}

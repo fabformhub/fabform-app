@@ -1,38 +1,64 @@
 import { supabase } from "../lib/supabaseClient.js";
+import { nanoid } from "nanoid";
+
+/* ---------------------------------------------
+   Shared Helpers
+--------------------------------------------- */
+const apiSuccess = (data) => ({ success: true, data });
+const apiError = (error) => ({
+  success: false,
+  error: error?.message || error || "Unknown error",
+});
+
+/* ---------------------------------------------
+   FORM FUNCTIONS
+--------------------------------------------- */
+
+// Generate a unique slug (collision‑safe)
+async function generateUniqueSlug() {
+  let slug;
+  let exists = true;
+
+  while (exists) {
+    slug = nanoid(6); // short, URL‑friendly ID
+    const { data } = await supabase
+      .from("forms")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    exists = !!data;
+  }
+
+  return slug;
+}
 
 // Get a form by ID or slug
 export async function getForm(identifier) {
   if (!identifier) return apiError("Form identifier is required");
 
-  // First try fetching by ID
+  // Try by UUID
   let { data, error } = await supabase
     .from("forms")
     .select("*")
     .eq("id", identifier)
-    .maybeSingle();  // <-- changed here
+    .maybeSingle();
 
-  if (data) {
-    return apiSuccess({ form: data });
-  }
+  if (data) return apiSuccess({ form: data });
 
-  // If not found by ID, try fetching by slug
+  // Try by slug
   ({ data, error } = await supabase
     .from("forms")
     .select("*")
     .eq("slug", identifier)
-    .maybeSingle());  // <-- changed here
+    .maybeSingle());
 
-  if (!data) {
-    return apiError(error || "Form not found");
-  }
+  if (!data) return apiError(error || "Form not found");
 
   return apiSuccess({ form: data });
 }
 
-
-
-
-// Get all forms by user ID
+// Get all forms for a user
 export async function getFormsByUserId(userId) {
   const { data, error } = await supabase
     .from("forms")
@@ -43,26 +69,22 @@ export async function getFormsByUserId(userId) {
   return error ? apiError(error) : apiSuccess({ forms: data });
 }
 
-// Helpers
-const apiSuccess = (data) => ({ success: true, data });
-const apiError = (error) => ({ success: false, error: error?.message || error || "Unknown error" });
-
-/** -----------------------------
- * FORM FUNCTIONS
- * ----------------------------- */
- 
-// Create a new form
+// Create a new form (with auto slug)
 export async function createForm(form) {
+  const slug = await generateUniqueSlug();
+
   const { data, error } = await supabase
     .from("forms")
-    .insert(form)
+    .insert({ ...form, slug })
     .select()
     .single();
 
-  return error ? apiError(error) : apiSuccess({ id: data.id });
+  return error
+    ? apiError(error)
+    : apiSuccess({ id: data.id, slug: data.slug });
 }
 
-// Update a form (supports name, meta, slug, etc.)
+// Update a form
 export async function updateForm(form) {
   if (!form?.id) return apiError("Form ID is required");
 
@@ -76,7 +98,7 @@ export async function updateForm(form) {
   return error ? apiError(error) : apiSuccess({ form: data });
 }
 
-// Delete a form by ID
+// Delete a form
 export async function deleteFormById(formId) {
   const { data, error } = await supabase
     .from("forms")
@@ -90,7 +112,7 @@ export async function deleteFormById(formId) {
   return apiSuccess({ id: data[0].id });
 }
 
-// Duplicate a form by ID
+// Duplicate a form
 export async function duplicateFormById(formId) {
   const { data: form, error: fetchError } = await supabase
     .from("forms")
@@ -100,102 +122,23 @@ export async function duplicateFormById(formId) {
 
   if (fetchError) return apiError(fetchError);
 
-  const { id, created_at, ...formDataToDuplicate } = form;
+  const { id, created_at, slug, ...copy } = form;
+
+  const newSlug = await generateUniqueSlug();
 
   const { data, error: insertError } = await supabase
     .from("forms")
-    .insert([{ ...formDataToDuplicate, created_at: new Date() }])
+    .insert([{ ...copy, slug: newSlug, created_at: new Date() }])
     .select()
     .single();
 
   return insertError ? apiError(insertError) : apiSuccess({ form: data });
 }
 
-
-/** -----------------------------
- * BLOCK FUNCTIONS
- * ----------------------------- */
-
-// Create a block for a form
-export async function createBlock(formId, template) {
-  const meta = { ...template };
-
-  // Get the current max position
-  const { data: lastBlock, error: maxError } = await supabase
-    .from("blocks")
-    .select("position")
-    .eq("form_id", formId)
-    .order("position", { ascending: false })
-    .limit(1)
-    .single();
-
-  if (maxError && maxError.code !== "PGRST116") return apiError(maxError);
-
-  const nextPosition = lastBlock ? lastBlock.position + 1 : 0;
-
-  const { data, error } = await supabase
-    .from("blocks")
-    .insert({
-      form_id: formId,
-      position: nextPosition,
-      meta,
-    })
-    .select()
-    .single();
-
-  return error ? apiError(error) : apiSuccess({ blockId: data.id });
-}
-
-// Get all blocks for a form
-export async function getBlocksByFormId(formId) {
-  const { data, error } = await supabase
-    .from("blocks")
-    .select("*")
-    .eq("form_id", formId)
-    .order("position", { ascending: true });
-
-  return error ? apiError(error) : apiSuccess({ blocks: data });
-}
-
-// Update a block (partial updates supported)
-export async function updateBlock(block) {
-  const { id, meta, position } = block;
-  if (!id) return apiError("Missing block ID");
-
-  const updateData = {};
-  if (meta !== undefined) updateData.meta = meta;
-  if (position !== undefined) updateData.position = position;
-
-  const { data, error } = await supabase
-    .from("blocks")
-    .update(updateData)
-    .eq("id", id)
-    .select()
-    .single();
-
-  return error ? apiError(error) : apiSuccess({ block: data });
-}
-
-// Delete a block by ID
-export async function deleteBlockById(blockId) {
-  const { data, error } = await supabase
-    .from("blocks")
-    .delete()
-    .eq("id", blockId)
-    .select();
-
-  if (error) return apiError(error);
-  if (!data?.length) return apiError("Block not found");
-
-  return apiSuccess({ id: data[0].id });
-}
-
-
+// Update slug manually
 export async function updateFormSlug(formId, newSlug) {
-  if (!formId) return { success: false, error: "Form ID is required" };
-  if (!newSlug) return { success: false, error: "New slug is required" };
-
-  console.log("Updating slug:", formId, newSlug);
+  if (!formId) return apiError("Form ID is required");
+  if (!newSlug) return apiError("New slug is required");
 
   const { data, error } = await supabase
     .from("forms")
@@ -205,20 +148,17 @@ export async function updateFormSlug(formId, newSlug) {
     .single();
 
   if (error) {
-    console.error("Supabase error:", error);
-    if (error.code === "23505") return { success: false, error: "Slug already exists" };
-    return { success: false, error: error.message || error };
+    if (error.code === "23505") return apiError("Slug already exists");
+    return apiError(error);
   }
 
-  console.log("Updated data:", data);
-  return { success: true, form: data };
+  return apiSuccess({ form: data });
 }
 
-// Increment form views by 1
+// Increment views
 export async function incrementFormViews(formId) {
   if (!formId) return apiError("Form ID is required");
 
-  // Simple increment: fetch current count, then update
   const { data: current, error: fetchError } = await supabase
     .from("forms")
     .select("views")
@@ -237,7 +177,7 @@ export async function incrementFormViews(formId) {
   return error ? apiError(error) : apiSuccess({ views: data.views });
 }
 
-// Get current form view count
+// Get view count
 export async function getFormViews(formId) {
   if (!formId) return apiError("Form ID is required");
 
@@ -249,3 +189,79 @@ export async function getFormViews(formId) {
 
   return error ? apiError(error) : apiSuccess({ views: data.views });
 }
+
+/* ---------------------------------------------
+   BLOCK FUNCTIONS 
+--------------------------------------------- */
+
+// Create a block
+export async function createBlock(formId, template) {
+  const meta = { ...template };
+
+  const { data: lastBlock } = await supabase
+    .from("blocks")
+    .select("position")
+    .eq("form_id", formId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const nextPosition = lastBlock ? lastBlock.position + 1 : 0;
+
+  const { data, error } = await supabase
+    .from("blocks")
+    .insert({
+      form_id: formId,
+      position: nextPosition,
+      meta,
+    })
+    .select()
+    .single();
+
+  return error ? apiError(error) : apiSuccess({ blockId: data.id });
+}
+
+// Get blocks for a form
+export async function getBlocksByFormId(formId) {
+  const { data, error } = await supabase
+    .from("blocks")
+    .select("*")
+    .eq("form_id", formId)
+    .order("position", { ascending: true });
+
+  return error ? apiError(error) : apiSuccess({ blocks: data });
+}
+
+// Update a block
+export async function updateBlock(block) {
+  const { id, meta, position } = block;
+  if (!id) return apiError("Missing block ID");
+
+  const updateData = {};
+  if (meta !== undefined) updateData.meta = meta;
+  if (position !== undefined) updateData.position = position;
+
+  const { data, error } = await supabase
+    .from("blocks")
+    .update(updateData)
+    .eq("id", id)
+    .select()
+    .single();
+
+  return error ? apiError(error) : apiSuccess({ block: data });
+}
+
+// Delete a block
+export async function deleteBlockById(blockId) {
+  const { data, error } = await supabase
+    .from("blocks")
+    .delete()
+    .eq("id", blockId)
+    .select();
+
+  if (error) return apiError(error);
+  if (!data?.length) return apiError("Block not found");
+
+  return apiSuccess({ id: data[0].id });
+}
+

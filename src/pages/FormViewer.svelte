@@ -4,8 +4,7 @@
   import { ArrowDown, ArrowUp } from 'lucide-svelte';
   import { BlockLayout } from '../components/form-builder';
   import { SplashScreen } from '../components/ui';
-  import { getBlocksByFormId } from '../services/blockService.js';
-  import { getForm, incrementFormViews } from '../services/formService.js';
+  import { getForm, incrementFormViews, getBlocksByFormId} from '../services/formService.js';
   import { createResponse } from '../services/responseService.js';
   import { validateBlock } from '../utils/validation.js';
 

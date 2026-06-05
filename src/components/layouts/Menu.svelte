@@ -3,15 +3,15 @@
   import { route } from '@mateothegreat/svelte5-router';
   import { DashboardButton, OpenFormLinkButton, CopyLinkButton } from '../../components/ui';
   import { APP_URL } from '../../utils/global.js';
-  let { formName = '', activeMenuLabel = '', currentFormId = '', formId = '' } = $props();
+  let {  form, activeMenuLabel = '' }  = $props();
 
   const navigationItems = [
-    { icon: Hammer, label: "Build", url: `/form/build/${currentFormId}` },
-    { icon: PenTool, label: "Design", url: `/form/design/${currentFormId}` },
-    { icon: Link, label: "Integrate", url: `/integrate/${currentFormId}` },
-    // { icon: Settings, label: "Settings", url: `/settings/${currentFormId}` },
-    { icon: Share2, label: "Share", url: `/share/${currentFormId}` },
-    { icon: BarChart2, label: "Responses", url: `/responses/${currentFormId}` }
+    { icon: Hammer, label: "Build", url: `/form/build/${form.id}` },
+    { icon: PenTool, label: "Design", url: `/form/design/${form.id}` },
+    { icon: Link, label: "Integrate", url: `/integrate/${form.id}` },
+    // { icon: Settings, label: "Settings", url: `/settings/${form.id}` },
+    { icon: Share2, label: "Share", url: `/share/${form.id}` },
+    { icon: BarChart2, label: "Responses", url: `/responses/${form.id}` }
   ];
 </script>
 
@@ -21,7 +21,7 @@
 
     <div class="flex items-center space-x-2">
   <DashboardButton />
-  <p class="ml-4 font-semibold ">{formName}</p>
+  <p class="ml-4 font-semibold ">{form.name}</p>
 </div>
 
     <!-- Navigation center -->
@@ -42,8 +42,8 @@
 
     <!-- Link buttons (right) -->
 <div class="flex items-center gap-2">
-  <OpenFormLinkButton url={`${APP_URL}/v/${currentFormId}`} />
-  <CopyLinkButton link={`${APP_URL}/v/${currentFormId}`} />
+  <OpenFormLinkButton url={`${APP_URL}/v/${form.slug}`} />
+  <CopyLinkButton link={`${APP_URL}/v/${form.slug}`} />
 </div>
   </nav>
 </div>
