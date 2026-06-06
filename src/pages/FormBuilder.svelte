@@ -20,8 +20,8 @@
   let formId = $state(route?.result?.path?.params?.id);
   let form = $state();
   let isLoaded = $state(false);
-  let lastBlockSnapshot = "";
   let activeMenuLabel = $state("Build");
+  const blockSnapshots = {};
 
   function setActive(label) {
     activeMenuLabel = label;
@@ -36,19 +36,19 @@
   }
 
   const debouncedSaveBlock = debounce(saveToDatabase, 2000);
-  //const debouncedSaveUiMeta = debounce(saveUiMeta, 2000);
 
-  // ✅ Effect to watch block changes and save
-  $effect(() => {
-    const block = blocks[blockNo];
-    if (!isLoaded || !block) return;
+$effect(() => {
+  const block = blocks[blockNo];
 
-    const blockSnapshot = JSON.stringify(block);
-    if (blockSnapshot !== lastBlockSnapshot) {
-      lastBlockSnapshot = blockSnapshot;
-      debouncedSaveBlock(block);
-    }
-  });
+  if (!isLoaded || !block?.id) return;
+
+  const snapshot = JSON.stringify(block);
+
+  if (blockSnapshots[block.id] !== snapshot) {
+    blockSnapshots[block.id] = snapshot;
+    debouncedSaveBlock(block);
+  }
+});
 
   async function fetchData() {
     console.log("=== FETCH START ===");
