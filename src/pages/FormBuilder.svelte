@@ -7,14 +7,8 @@
   import { Dialog } from "../components/dialogs";
   import { DesignEditor } from "../components/design-editor";
   import { PropertyEditor } from "../components/property-editor";
-
-  import {
-    createBlock,
-    getBlocksByFormId,
-    deleteBlockById,
-    getForm
-  } from "../services/formService.js";
-
+  import { debounce } from '../utils/debounce.js';
+  import { createBlock, getBlocksByFormId,updateBlock, deleteBlockById, getForm } from "../services/formService.js";
   import { openDialog } from "../utils/dialog.svelte.js";
 
   let { route } = $props();
@@ -26,12 +20,35 @@
   let formId = $state(route?.result?.path?.params?.id);
   let form = $state();
   let isLoaded = $state(false);
-
+  let lastBlockSnapshot = "";
   let activeMenuLabel = $state("Build");
 
   function setActive(label) {
     activeMenuLabel = label;
   }
+
+  async function saveToDatabase(block) {
+    try {
+      await updateBlock(block);
+    } catch (error) {
+      console.error("Failed to save block:", error);
+    }
+  }
+
+  const debouncedSaveBlock = debounce(saveToDatabase, 2000);
+  //const debouncedSaveUiMeta = debounce(saveUiMeta, 2000);
+
+  // ✅ Effect to watch block changes and save
+  $effect(() => {
+    const block = blocks[blockNo];
+    if (!isLoaded || !block) return;
+
+    const blockSnapshot = JSON.stringify(block);
+    if (blockSnapshot !== lastBlockSnapshot) {
+      lastBlockSnapshot = blockSnapshot;
+      debouncedSaveBlock(block);
+    }
+  });
 
   async function fetchData() {
     console.log("=== FETCH START ===");
@@ -152,7 +169,7 @@
 
         <div class="w-1/4 p-2 overflow-auto h-[400px] border-l border-gray-200">
           {#if activeMenuLabel === "Design" && form?.meta}
-            <DesignEditor {form} {formChanged} />
+            <DesignEditor bind:form {formChanged} />
           {:else if blocks[blockNo]}
             <PropertyEditor bind:block={blocks[blockNo]} />
           {:else}
