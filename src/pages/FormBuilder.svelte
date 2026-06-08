@@ -7,24 +7,36 @@
   import { Dialog } from "../components/dialogs";
   import { DesignEditor } from "../components/design-editor";
   import { PropertyEditor } from "../components/property-editor";
-  import { debounce } from '../utils/debounce.js';
-  import { createBlock, getBlocksByFormId,updateBlock, deleteBlockById, getForm } from "../services/formService.js";
+  import { debounce } from "../utils/debounce.js";
+  import {
+    createBlock,
+    getBlocksByFormId,
+    updateBlock,
+    deleteBlockById,
+    getForm
+  } from "../services/formService.js";
   import { openDialog } from "../utils/dialog.svelte.js";
+  import { PenTool } from "lucide-svelte";
 
   let { route } = $props();
 
   let showBlockPicker = $state(false);
   let blocks = $state([]);
   let blockNo = $state(0);
-  let uiMeta = $state();
   let formId = $state(route?.result?.path?.params?.id);
   let form = $state();
   let isLoaded = $state(false);
   let activeMenuLabel = $state("Build");
+  let designEditorOpen = $state(false);
+
   const blockSnapshots = {};
 
   function setActive(label) {
     activeMenuLabel = label;
+  }
+
+  function toggleEditor() {
+    designEditorOpen = !designEditorOpen;
   }
 
   async function saveToDatabase(block) {
@@ -37,49 +49,34 @@
 
   const debouncedSaveBlock = debounce(saveToDatabase, 2000);
 
-$effect(() => {
-  const block = blocks[blockNo];
+  $effect(() => {
+    const block = blocks[blockNo];
+    if (!isLoaded || !block?.id) return;
 
-  if (!isLoaded || !block?.id) return;
+    const snapshot = JSON.stringify(block);
 
-  const snapshot = JSON.stringify(block);
-
-  if (blockSnapshots[block.id] !== snapshot) {
-    blockSnapshots[block.id] = snapshot;
-    debouncedSaveBlock(block);
-  }
-});
+    if (blockSnapshots[block.id] !== snapshot) {
+      blockSnapshots[block.id] = snapshot;
+      debouncedSaveBlock(block);
+    }
+  });
 
   async function fetchData() {
-    console.log("=== FETCH START ===");
-    console.log("formId:", formId);
-    console.log("route:", route);
-
     try {
       const formRes = await getForm(formId);
-      console.log("FORM RESPONSE:", formRes);
-
       form = formRes?.data?.form;
 
-      if (form) {
-        uiMeta = form.meta ?? {};
-      } else {
-        console.warn("Form is NULL or undefined");
-      }
-
       const blocksRes = await getBlocksByFormId(formId);
-      console.log("BLOCKS RESPONSE:", blocksRes);
 
-      blocks = blocksRes?.data?.blocks
-        ?.slice()
-        ?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
+      blocks =
+        blocksRes?.data?.blocks
+          ?.slice()
+          ?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
 
       if (blocks.length === 0) blockNo = 0;
       else if (blockNo >= blocks.length) blockNo = blocks.length - 1;
 
       isLoaded = true;
-      console.log("=== FETCH COMPLETE ===");
-
     } catch (err) {
       console.error("FETCH ERROR:", err);
       form = null;
@@ -87,10 +84,6 @@ $effect(() => {
   }
 
   onMount(fetchData);
-
-  function formChanged(updatedForm) {
-    uiMeta = updatedForm.meta;
-  }
 
   async function createBlockPick(block) {
     await createBlock(formId, block);
@@ -116,7 +109,9 @@ $effect(() => {
   };
 
   const handleBlockUpdate = (e) => {
-    blocks[blockNo] = e.detail;
+    blocks = blocks.map((b, i) =>
+      i === blockNo ? e.detail : b
+    );
   };
 
   setContext("blockPickerClick", createBlockPick);
@@ -130,18 +125,31 @@ $effect(() => {
 
 {:else}
   <DefaultLayout {setActive} {form}>
-    <main class="flex flex-col h-full mt-17">
+    <!-- FULL HEIGHT ROOT -->
+    <main class="flex flex-col h-screen mt-17">
 
+      <DesignEditor bind:form bind:open={designEditorOpen} />
       <BlockPicker show={showBlockPicker} close={() => (showBlockPicker = false)} />
       <Dialog />
 
-      <div class="flex justify-center">
+      <!-- TOP ACTION BAR -->
+      <div class="flex justify-center gap-2 py-2">
         <AddBlockButton largeIcon clickHandler={() => (showBlockPicker = true)} />
+
+        <button
+          class="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
+          onclick={() => (designEditorOpen = !designEditorOpen)}
+        >
+          <PenTool class="w-4 h-4 text-gray-600" />
+          <span class="text-sm font-medium">Design</span>
+        </button>
       </div>
 
-      <div class="flex flex-1 overflow-hidden mt-2 min-h-[400px]">
+      <!-- BUILDER GRID -->
+      <div class="flex flex-1 overflow-hidden items-stretch">
 
-        <div class="w-1/4 p-2 overflow-auto min-h-0">
+        <!-- LEFT SIDEBAR -->
+        <div class="w-1/4 p-2 overflow-auto border-r border-gray-200">
           <div class="flex justify-end mb-2">
             <AddBlockButton clickHandler={() => (showBlockPicker = true)} />
           </div>
@@ -154,10 +162,11 @@ $effect(() => {
           />
         </div>
 
-        <div class="w-1/2 h-[400px] overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
+        <!-- CENTER CANVAS -->
+        <div class="w-1/2 overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
           {#if blocks[blockNo]}
             <BlockLayout
-              uiMeta={uiMeta}
+              form={form}
               canAnswer={false}
               bind:block={blocks[blockNo]}
               on:updateBlock={handleBlockUpdate}
@@ -167,11 +176,12 @@ $effect(() => {
           {/if}
         </div>
 
-        <div class="w-1/4 p-2 overflow-auto h-[400px] border-l border-gray-200">
-          {#if activeMenuLabel === "Design" && form?.meta}
-            <DesignEditor bind:form {formChanged} />
-          {:else if blocks[blockNo]}
-            <PropertyEditor bind:block={blocks[blockNo]} />
+        <!-- RIGHT PROPERTY PANEL (FIXED) -->
+        <div class="w-1/4 p-2 overflow-auto border-l border-gray-200 flex flex-col">
+          {#if blocks[blockNo]}
+            <div class="flex-1 overflow-auto">
+              <PropertyEditor bind:block={blocks[blockNo]} />
+            </div>
           {:else}
             <p class="text-gray-400">Loading...</p>
           {/if}
@@ -181,4 +191,3 @@ $effect(() => {
     </main>
   </DefaultLayout>
 {/if}
-
