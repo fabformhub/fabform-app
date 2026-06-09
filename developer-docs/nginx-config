@@ -8,7 +8,7 @@ server {
 
     include snippets/ssl-fabform.conf;
 
-    root /var/www/fabform-app/dist;
+    root /var/www/app/dist;
     index index.html;
 
     location / {
@@ -90,7 +90,7 @@ server {
 
     include snippets/ssl-fabform.conf;
 
-    root /var/www/fabform-static-site/dist;
+    root /var/www/static-site/dist;
     index index.html;
 
     # Proxy /v/ routes to app.fabform.io
@@ -106,7 +106,7 @@ server {
 
     # Serve SPA assets from app build
     location /assets/ {
-        alias /var/www/fabform-app/dist/assets/;
+        alias /var/www/app/dist/assets/;
         try_files $uri =404;
     }
 

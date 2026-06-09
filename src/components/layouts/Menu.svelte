@@ -8,7 +8,13 @@
 
   const navigationItems = [
     { icon: Hammer, label: "Build", url: `/form/build/${form.id}` },
-    { icon: PenTool, label: "Design", url: `/form/design/${form.id}` },
+
+/* Temporarily disabled
+  
+  { icon: PenTool, label: "Design", url: `/form/design/${form.id}` },
+
+*/
+
     { icon: Link, label: "Integrate", url: `/integrate/${form.id}` },
     { icon: Share2, label: "Share", url: `/share/${form.id}` },
     { icon: BarChart2, label: "Responses", url: `/responses/${form.id}` }

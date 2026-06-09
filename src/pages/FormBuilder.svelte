@@ -1,6 +1,5 @@
 <script>
   import { onMount, setContext } from "svelte";
-
   import { BlockLayout, BlockPicker } from "../components/form-builder";
   import { AddBlockButton } from "../components/ui";
   import { DefaultLayout, Sidebar } from "../components/layouts";
@@ -16,18 +15,16 @@
     getForm
   } from "../services/formService.js";
   import { openDialog } from "../utils/dialog.svelte.js";
-  import { PenTool } from "lucide-svelte";
-
+   import { Button } from "$lib/components/ui/button/index.js";
   let { route } = $props();
 
   let showBlockPicker = $state(false);
   let blocks = $state([]);
   let blockNo = $state(0);
   let formId = $state(route?.result?.path?.params?.id);
-  let form = $state();
+  let form = $state({});
   let isLoaded = $state(false);
   let activeMenuLabel = $state("Build");
-  let designEditorOpen = $state(false);
 
   const blockSnapshots = {};
 
@@ -35,9 +32,6 @@
     activeMenuLabel = label;
   }
 
-  function toggleEditor() {
-    designEditorOpen = !designEditorOpen;
-  }
 
   async function saveToDatabase(block) {
     try {
@@ -128,22 +122,16 @@
     <!-- FULL HEIGHT ROOT -->
     <main class="flex flex-col h-screen mt-17">
 
-      <DesignEditor bind:form bind:open={designEditorOpen} />
+    <div class="flex justify-center">
+    <AddBlockButton largeIcon clickHandler={() => showBlockPicker = true} />
+  </div>
+      <DesignEditor bind:form />
       <BlockPicker show={showBlockPicker} close={() => (showBlockPicker = false)} />
       <Dialog />
 
-      <!-- TOP ACTION BAR -->
+     <!-- TOP ACTION BAR -->
       <div class="flex justify-center gap-2 py-2">
-        <AddBlockButton largeIcon clickHandler={() => (showBlockPicker = true)} />
 
-        <button
-          class="flex items-center gap-2 px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
-          onclick={() => (designEditorOpen = !designEditorOpen)}
-        >
-          <PenTool class="w-4 h-4 text-gray-600" />
-          <span class="text-sm font-medium">Design</span>
-        </button>
-      </div>
 
       <!-- BUILDER GRID -->
       <div class="flex flex-1 overflow-hidden items-stretch">

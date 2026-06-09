@@ -15,7 +15,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      $lib: path.resolve('src/lib')
+      $lib: path.resolve('./src/lib')
     }
   },
 
