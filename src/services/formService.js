@@ -98,19 +98,24 @@ export async function updateForm(form) {
   return error ? apiError(error) : apiSuccess({ form: data });
 }
 
-// Delete a form
+
 export async function deleteFormById(formId) {
+  console.log("Deleting form:", formId);
+
   const { data, error } = await supabase
     .from("forms")
     .delete()
     .eq("id", formId)
     .select();
 
+  console.log({ data, error });
+
   if (error) return apiError(error);
   if (!data?.length) return apiError("Form not found");
 
   return apiSuccess({ id: data[0].id });
 }
+
 
 // Duplicate a form
 export async function duplicateFormById(formId) {
@@ -251,17 +256,19 @@ export async function updateBlock(block) {
   return error ? apiError(error) : apiSuccess({ block: data });
 }
 
-// Delete a block
 export async function deleteBlockById(blockId) {
+  console.log("Deleting block:", blockId);
+
   const { data, error } = await supabase
     .from("blocks")
     .delete()
     .eq("id", blockId)
     .select();
 
+  console.log("Delete result:", { data, error });
+
   if (error) return apiError(error);
   if (!data?.length) return apiError("Block not found");
 
   return apiSuccess({ id: data[0].id });
 }
-
