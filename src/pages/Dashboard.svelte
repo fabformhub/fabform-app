@@ -28,20 +28,22 @@
   const ctaText = `Lifetime Access – Only ${price}!`;
   const ctaSubText = "Grab this limited-time deal before it’s gone!";
 
-  const uiMeta = {
-    backgroundImage: '',
-    backgroundColor: '#fffffe',
-    questionColor: '#094067',
-    answerColor: '#094067',
-    buttonColor: '#3da9fc',
-    buttonTextColor: '#fffffe',
-    starRatingColor: '##3da9fc',
-    font: 'Roboto',
-    logo: null,
-    roundedCorner: true,
-    fontSize: 'Medium'
-  };
+const uiMeta = {
+  backgroundColor: '#f8fafc', // Slate 50
+  backgroundImage: '',
+  color: '#0f172a',
+  fontFamily: 'Inter',
+  fontSize: '16px',
 
+  answerColor: '#334155',
+  buttonColor: '#2563eb',
+  buttonTextColor: '#ffffff',
+  starRatingColor: '#f59e0b',
+
+  borderRadius: '12px',
+
+  logo: null
+};
   const offerEnd = new Date();
   offerEnd.setHours(23, 59, 59, 999);
 

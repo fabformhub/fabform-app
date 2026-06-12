@@ -1,80 +1,78 @@
 <script>
-  import { getComponent } from "../../utils/getComponent.js";
-  import { Button } from '../ui/index.js';
+  import { getComponent } from '../../utils/getComponent.js';
   import { AlertTriangle } from 'lucide-svelte';
 
-  let { block = $bindable({}), uiMeta= $bindable({}), canAnswer, clickHandler, errorMessage } = $props();
-  let SvelteComponent = $derived(getComponent(block?.meta?.component));
+  let {
+    block = $bindable({}),
+    uiMeta = $bindable({}),
+    canAnswer = false,
+    clickHandler,
+    errorMessage = ''
+  } = $props();
+
+  const SvelteComponent = $derived(
+    getComponent(block?.meta?.component)
+  );
 </script>
 
-<!-- Outer container -->
 <div
-  class={`relative ${canAnswer 
-    ? 'flex items-center justify-center w-screen h-screen px-6' 
-    : 'max-w-lg px-4 pt-8 mx-auto mt-5'
+  class={`relative ${
+    canAnswer
+      ? 'flex items-center justify-center min-h-screen px-6'
+      : 'max-w-lg mx-auto mt-5 px-4 pt-8'
   }`}
 >
-  <!-- Inner form block wrapper -->
+
   <div class="w-full max-w-md">
 
-    {#if block.meta?.title}
-      <div>
-        <label 
-          for="title" 
-          class={`block text-${uiMeta.fontSize} font-medium`} 
-          style={`color: ${uiMeta.questionColor};`}
-        >
-          {block.meta?.title}
-        </label>
-      </div>      
+    {#if block?.meta?.title}
+      <h2 class="mb-2">
+        {block.meta.title}
+      </h2>
     {/if}
 
-    {#if block.meta?.question}
-      <div>
-        <label 
-          for="question" 
-          class={`block text-${uiMeta.fontSize} font-medium`} 
-          style={`color: ${uiMeta.questionColor};`}
-        >
-          {block.meta?.question}
-        </label>
-      </div>      
+    {#if block?.meta?.question}
+      <p class="mb-2">
+        {block.meta.question}
+      </p>
     {/if}
 
     {#if block?.meta?.description}
-      <div>
-        <label 
-          for="description" 
-          class={`block text-${uiMeta.fontSize} font-normal`} 
-          style={`color: ${uiMeta.questionColor};`}
-        >
-          {block.meta?.description}
-        </label>
-      </div>      
+      <p class="mb-4">
+        {block.meta.description}
+      </p>
     {/if}
-    
-    {#if block && SvelteComponent}
-      <SvelteComponent
-        bind:value={block.value}
-        canAnswer={canAnswer}
-        props={block.meta?.props}
-      />
+
+    {#if SvelteComponent}
+      <div class="mb-4">
+        <SvelteComponent
+          bind:value={block.value}
+          canAnswer={canAnswer}
+          props={block?.meta?.props ?? {}}
+        />
+      </div>
     {/if}
 
     {#if block?.meta?.blockTypeId !== 99}
-  <button
-    style={`background-color: ${uiMeta.buttonColor}; color: ${uiMeta.buttonTextColor};`}
-    on:click={clickHandler}
-    class="px-4 py-2 rounded font-medium"
-  >
-    {block?.meta?.buttonText}
-  </button>
-{/if}
-
+      <button
+        type="button"
+        onclick={clickHandler}
+        class="rounded px-4 py-2"
+        style={`
+          background-color: ${uiMeta?.buttonColor};
+          color: ${uiMeta?.buttonTextColor};
+        `}
+      >
+        {block?.meta?.buttonText || 'Continue'}
+      </button>
+    {/if}
 
     {#if errorMessage}
-      <div class="mt-4 flex items-center gap-2 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
-        <AlertTriangle size={20} class="text-red-600 flex-shrink-0" />
+      <div
+        class="mt-4 flex items-start gap-2 rounded border border-red-300 bg-red-50 px-4 py-3 text-red-700"
+        role="alert"
+      >
+        <AlertTriangle size={20} class="mt-0.5 flex-shrink-0" />
         <p class="text-sm">{errorMessage}</p>
       </div>
     {/if}

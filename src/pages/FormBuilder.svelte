@@ -8,6 +8,7 @@
   import { DesignEditor } from "../components/design-editor";
   import { PropertyEditor } from "../components/property-editor";
 
+
   import {
     createBlock,
     getBlocksByFormId,
@@ -29,7 +30,8 @@
   let form = $state({});
   let isLoaded = $state(false);
 
-  // SNAPSHOTS
+  
+ // SNAPSHOTS
   let lastFormSnapshot = "";
   let lastBlockSnapshot = "";
 

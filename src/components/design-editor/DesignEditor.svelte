@@ -1,20 +1,56 @@
 <script>
-        let { form = $bindable() } = $props();
+let { form = $bindable() } = $props();
+import { loadGoogleFont } from "$lib/fontLoader";
+import * as Sheet from "$lib/components/ui/sheet";
+import { Button } from "$lib/components/ui/button";
+import { Palette } from "lucide-svelte";
+import { Dropdown } from "../ui";
 
-        import * as Sheet from "$lib/components/ui/sheet";
-        import { Button } from "$lib/components/ui/button";
-        import { Palette } from "lucide-svelte";
+const googleFonts = [
+                // UI / modern system
+                "Inter",
+                "Roboto",
+                "DM Sans",
+                "Manrope",
+                "Work Sans",
+                "Lexend",
 
-        import { Dropdown } from "../ui";
+                // geometric sans
+                "Poppins",
+                "Montserrat",
+                "Rubik",
+                "Outfit",
 
-        const googleFonts = [
-                "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins", "Nunito", "Inter",
-                "Source Sans Pro", "Raleway", "Oswald", "Playfair Display", "Merriweather",
-                "Ubuntu", "Work Sans", "Quicksand", "Fira Sans", "Heebo", "Noto Sans",
-                "Noto Serif", "Rubik", "Mulish", "Josefin Sans", "DM Sans", "Inconsolata",
-                "Space Grotesk", "Lexend", "Exo 2", "Overpass", "Signika", "Asap", "Hind",
-                "Titillium Web", "Manrope", "Crimson Text", "Spectral", "Bitter"
+                // humanist / friendly
+                "Open Sans",
+                "Lato",
+                "Nunito",
+                "Quicksand",
+
+                // serif (strong contrast)
+                "Playfair Display",
+                "Merriweather",
+                "Source Serif 4",
+                "Crimson Text",
+
+                // display / personality
+                "Oswald",
+                "Space Grotesk",
+                "Raleway",
+                "Exo 2",
+
+                // monospace
+                "JetBrains Mono",
+                "IBM Plex Mono"
         ];
+
+      $effect(() => {
+	const font = form?.meta?.fontFamily;
+
+	if (!font) return;
+
+	loadGoogleFont(font);
+        });
 </script>
 
 <!-- CENTERED TRIGGER -->
