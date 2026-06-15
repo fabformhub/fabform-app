@@ -10,7 +10,7 @@ export const blockTemplates = [
   {
     blockTypeId: 1,
     label: 'Welcome',
-    title: 'Hello There 😀', 
+    question: 'Hello There 😀', 
     description: 'Mind giving this form a quick fill?',
     embed: '',
     buttonText: 'Let´s Start',

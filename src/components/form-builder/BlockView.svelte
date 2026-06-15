@@ -11,7 +11,7 @@
   } = $props();
 
   const SvelteComponent = $derived(
-    getComponent(block?.meta?.component)
+  getComponent(block?.meta?.component)
   );
 </script>
 
@@ -25,20 +25,14 @@
 
   <div class="w-full max-w-md">
 
-    {#if block?.meta?.title}
-      <h2 class="mb-2">
-        {block.meta.title}
-      </h2>
-    {/if}
-
     {#if block?.meta?.question}
-      <p class="mb-2">
+      <p class="mb-2" style={` color: ${uiMeta?.questionColor}; `}>
         {block.meta.question}
       </p>
     {/if}
 
     {#if block?.meta?.description}
-      <p class="mb-4">
+      <p class="mb-4" style={`color: ${uiMeta?.questionColor}; `}>
         {block.meta.description}
       </p>
     {/if}

@@ -21,19 +21,28 @@
     block?.meta?.coverImageProps?.layout || ''
   );
 
-  // simple font-size mapper (ONLY thing we need)
-  const fontSize = $derived(() => {
-    switch (meta.fontSize) {
+  /**
+   * Desktop-optimized Tailwind typography scale
+   * (bigger, more readable on large screens)
+   */
+  const fontSizeClass = $derived.by(() => {
+    const size = meta?.fontSize;
+
+    switch (size) {
       case 'Small':
-        return '14px';
+        return 'text-sm md:text-base leading-relaxed';
+
       case 'Medium':
-        return '16px';
+        return 'text-base md:text-xl leading-relaxed';
+
       case 'Large':
-        return '18px';
+        return 'text-lg md:text-2xl leading-relaxed';
+
       case 'Extra Large':
-        return '22px';
+        return 'text-xl md:text-3xl leading-relaxed';
+
       default:
-        return '16px';
+        return 'text-base md:text-xl leading-relaxed';
     }
   });
 </script>
@@ -49,12 +58,11 @@
 {/snippet}
 
 <div
-  class="w-full min-h-screen"
+  class={`w-full min-h-screen ${fontSizeClass}`}
   style={`
-    background-color: ${meta.backgroundColor || '#ffffff'};
-    color: ${meta.color || '#0f172a'};
-    font-family: ${meta.fontFamily || 'system-ui'};
-    font-size: ${fontSize()};
+    background-color: ${meta.backgroundColor || 'transparent'};
+    color: ${meta.color || 'inherit'};
+    font-family: ${meta.fontFamily || 'inherit'};
   `}
 >
 
