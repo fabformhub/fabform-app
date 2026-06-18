@@ -33,31 +33,39 @@ async function generateUniqueSlug() {
   return slug;
 }
 
-// Get a form by ID or slug
 export async function getForm(identifier) {
   if (!identifier) return apiError("Form identifier is required");
 
-  // Try by UUID
-  let { data, error } = await supabase
-    .from("forms")
-    .select("*")
-    .eq("id", identifier)
-    .maybeSingle();
+  const isUuid =
+    typeof identifier === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      .test(identifier);
 
-  if (data) return apiSuccess({ form: data });
+  let query;
 
-  // Try by slug
-  ({ data, error } = await supabase
-    .from("forms")
-    .select("*")
-    .eq("slug", identifier)
-    .maybeSingle());
+  if (isUuid) {
+    // Safe UUID lookup
+    query = supabase
+      .from("forms")
+      .select("*")
+      .eq("id", identifier)
+      .maybeSingle();
+  } else {
+    // Safe slug lookup
+    query = supabase
+      .from("forms")
+      .select("*")
+      .eq("slug", identifier)
+      .maybeSingle();
+  }
 
-  if (!data) return apiError(error || "Form not found");
+  const { data, error } = await query;
+
+  if (error) return apiError(error);
+  if (!data) return apiError("Form not found");
 
   return apiSuccess({ form: data });
 }
-
 // Get all forms for a user
 export async function getFormsByUserId(userId) {
   const { data, error } = await supabase

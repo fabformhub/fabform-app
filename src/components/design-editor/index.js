@@ -1,1 +1,1 @@
-export { default as DesignEditor } from './DesignEditor.svelte';
+export { default as DesignEditor} from './DesignEditor.svelte';

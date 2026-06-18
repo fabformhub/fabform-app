@@ -16,7 +16,7 @@
   let blockNo = $state(0);
   let submitted = $state(false);
   let formId;
-  let uiMeta;
+  let form = $state(null);
 
   let direction = $state('bottom');
   let flyParams = $state({ y: 0, duration: 1000, opacity: 0.7 });
@@ -55,9 +55,8 @@
       return;
     }
 
-    const form = formRes.data.form;
+    form = formRes.data.form;
     formId = form.id;       // numeric/internal ID
-    uiMeta = form.meta;     // form metadata
 
     incrementFormViews(formId);
 
@@ -143,7 +142,7 @@
     {#key blockNo}
       <div in:fly="{flyParams}">
         <BlockLayout 
-          uiMeta={uiMeta} 
+          form={form} 
           canAnswer={true} 
           bind:block={blocks[blockNo]} 
           {errorMessage} 
