@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte';
-  import { authService } from '../services/authService.svelte.js';
-  import { checkUserSubscribed } from '../services/subscriptionService.js';
-  import { createForm, getFormsByUserId, deleteFormById, updateForm, updateFormSlug, duplicateFormById, getFormViews,createBlock} from '../services/formService.js';
-  import { countResponsesByFormId } from '../services/responseService.js';
+  import { authService } from '$lib/services/authService.svelte.js';
+  import { checkUserSubscribed } from '$lib/services/subscriptionService.js';
+  import { createForm, getFormsByUserId, deleteFormById, updateForm, updateFormSlug, duplicateFormById, getFormViews,createBlock} from '$lib/services/formService.js';
+  import { countResponsesByFormId } from '$lib/services/responseService.js';
   import { DashboardDetail } from '../components/ui';
   import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '../components/dialogs';
   import { Navbar } from '../components/layouts';

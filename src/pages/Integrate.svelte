@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
-  import { authService } from '../services/authService.svelte.js';
-  import { checkUserSubscribed } from '../services/subscriptionService.js';
+  import { authService } from '$lib/services/authService.svelte.js';
+  import { checkUserSubscribed } from '$lib/services/subscriptionService.js';
 
   let showPreview = false;
   let userPaid = false;

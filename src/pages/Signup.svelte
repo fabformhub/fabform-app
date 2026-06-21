@@ -1,5 +1,5 @@
 <script>
-  import { authService } from '../services/authService.svelte.js';
+  import { authService } from '$lib/services/authService.svelte.js';
   import { goto } from '@mateothegreat/svelte5-router';
   import toast from 'svelte-5-french-toast';
 

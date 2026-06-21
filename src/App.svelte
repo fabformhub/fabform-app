@@ -1,8 +1,8 @@
 <script>
   import { onMount } from 'svelte';
   import { Router } from '@mateothegreat/svelte5-router';
-  import { authService } from './services/authService.svelte.js';
-import { Toaster } from 'svelte-5-french-toast';
+  import { authService } from '$lib/services/authService.svelte.js';
+  import { Toaster } from 'svelte-5-french-toast';
   
   import routes from './routes/routes.js';
 

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { getResponsesByFormId, deleteResponseById } from '../services/responseService.js';
+  import { getResponsesByFormId, deleteResponseById } from '$lib/services/responseService.js';
   import { bgColors } from '../constants/colors.js';
   import { Inbox, Download, Trash } from 'lucide-svelte';
   import { DefaultLayout } from '../components/layouts/';

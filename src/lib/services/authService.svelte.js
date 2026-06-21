@@ -1,5 +1,5 @@
  // src/services/authService.js
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '$lib/supabaseClient';
 
 export const authService = (() => {
   // Reactive state (your original $state)

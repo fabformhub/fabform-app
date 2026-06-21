@@ -1,6 +1,6 @@
 import { Dashboard, Login, Signup, FormViewer, FormResponses, FormBuilder, Test, Share,Integrate, Settings, ChangeEmail, ChangePassword  } from '../pages';
 import { goto } from '@mateothegreat/svelte5-router';
-import { authService } from '../services/authService.svelte.js';
+import { authService } from '$lib/services/authService.svelte.js';
 
 const requireAuth = () => {
   if (!authService.state.user) {

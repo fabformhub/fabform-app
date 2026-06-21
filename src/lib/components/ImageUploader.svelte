@@ -1,313 +1,199 @@
 <script>
-    import { CloudUpload, X } from 'lucide-svelte';
-    import { onDestroy } from 'svelte';
+  import { CloudUpload, X } from "lucide-svelte";
+  import { onDestroy, onMount } from "svelte";
+  import { updateForm }  from "$lib/services/formService.js";
+  import { uploadImage, getImageUrl, deleteImage } from "$lib/storage";
 
-    let input;
-    let image = null;
+  let {
+    id,
+    imageType = "form", // "form" | "block"
+    backgroundImage = $bindable()
+  } = $props();
 
-    let isDragging = false;
+  let input;
+  let image = null;
+  let isDragging = false;
 
-    function openPicker() {
-        input.click();
+  function openPicker() {
+    input.click();
+  }
+
+  async function processImageFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const localPreview = URL.createObjectURL(file);
+
+    image = {
+      file,
+      preview: localPreview,
+      uploading: true
+    };
+
+    try {
+      // 1. Upload to Supabase Storage
+      const path = await uploadImage({
+        file,
+        folder: imageType === "form" ? "f" : "b",
+        id
+      });
+
+      const url = getImageUrl(path);
+
+      URL.revokeObjectURL(localPreview);
+
+      const payload = { path, url };
+
+      // 2. Update UI state
+      image = {
+        file,
+        ...payload,
+        preview: url
+      };
+
+      backgroundImage = payload;
+
+      // 3. Persist to DB via service layer
+      if (imageType === "form") {
+        await updateForm(id, {
+          backgroundImage: payload
+        });
+      } else {
+        await formService.updateBlock(id, {
+          backgroundImage: payload
+        });
+      }
+
+    } catch (err) {
+      console.error("Image upload failed:", err);
+
+      URL.revokeObjectURL(localPreview);
+      image = null;
+    }
+  }
+
+  function handleChange(e) {
+    const file = e.target.files?.[0];
+    processImageFile(file);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    isDragging = false;
+
+    const file = e.dataTransfer.files?.[0];
+    processImageFile(file);
+  }
+
+  async function removeImage(e) {
+    e.stopPropagation();
+
+    try {
+      if (image?.path) {
+        await deleteImage(image.path);
+      }
+
+      if (imageType === "form") {
+        await formService.updateForm(id, {
+          backgroundImage: null
+        });
+      } else {
+        await formService.updateBlock(id, {
+          backgroundImage: null
+        });
+      }
+
+    } catch (err) {
+      console.error("Delete failed:", err);
     }
 
-    function setFile(file) {
-
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            return;
-        }
-
-        if (image?.preview) {
-            URL.revokeObjectURL(image.preview);
-        }
-
-        image = {
-            file,
-            preview: URL.createObjectURL(file)
-        };
+    if (image?.preview?.startsWith("blob:")) {
+      URL.revokeObjectURL(image.preview);
     }
 
-    function handleChange(e) {
+    image = null;
+    backgroundImage = null;
 
-        const file = e.target.files[0];
+    input.value = "";
+  }
 
-        setFile(file);
+  onMount(() => {
+    if (backgroundImage?.path) {
+      const url =
+        backgroundImage.url || getImageUrl(backgroundImage.path);
+
+      image = {
+        path: backgroundImage.path,
+        url,
+        preview: url
+      };
     }
+  });
 
-    function handleDrop(e) {
-
-        e.preventDefault();
-
-        isDragging = false;
-
-        const file = e.dataTransfer.files[0];
-
-        setFile(file);
+  onDestroy(() => {
+    if (image?.preview?.startsWith("blob:")) {
+      URL.revokeObjectURL(image.preview);
     }
-
-    function removeImage(e) {
-
-        e.stopPropagation();
-
-        if (image?.preview) {
-
-            URL.revokeObjectURL(image.preview);
-        }
-
-        image = null;
-
-        input.value = '';
-    }
-
-    onDestroy(() => {
-
-        if (image?.preview) {
-
-            URL.revokeObjectURL(image.preview);
-        }
-
-    });
+  });
 </script>
 
+<!-- hidden file input -->
 <input
-    bind:this={input}
-    type="file"
-    accept="image/*"
-    class="hidden"
-    on:change={handleChange}
+  bind:this={input}
+  type="file"
+  accept="image/*"
+  class="hidden"
+  on:change={handleChange}
 />
 
 {#if !image}
+  <!-- UPLOAD STATE -->
+  <div
+    class="group relative w-full rounded-[32px] border border-dashed border-slate-200 bg-white hover:border-slate-300 transition-all duration-300 cursor-pointer overflow-hidden"
+    class:border-sky-400={isDragging}
+    class:bg-sky-50={isDragging}
+    on:click={openPicker}
+    on:dragover|preventDefault={() => (isDragging = true)}
+    on:dragleave={() => (isDragging = false)}
+    on:drop={handleDrop}
+  >
+    <div class="py-24 px-8 text-center">
+      <div
+        class="w-24 h-24 rounded-full bg-slate-50 mx-auto flex items-center justify-center transition group-hover:scale-105"
+      >
+        <CloudUpload size={42} class="text-slate-400" />
+      </div>
 
-<div
-
-class="
-group
-relative
-
-w-full
-
-rounded-[32px]
-
-border
-border-dashed
-
-border-slate-200
-
-bg-white
-
-hover:border-slate-300
-
-transition-all
-duration-300
-
-cursor-pointer
-
-overflow-hidden
-"
-
-class:border-sky-400={isDragging}
-class:bg-sky-50={isDragging}
-
-on:click={openPicker}
-
-on:dragover|preventDefault={() => isDragging = true}
-
-on:dragleave={() => isDragging = false}
-
-on:drop={handleDrop}
-
->
-
-<div class="py-24 px-8">
-
-    <div
-
-    class="
-    w-24
-    h-24
-
-    rounded-full
-
-    bg-slate-50
-
-    mx-auto
-
-    flex
-    items-center
-    justify-center
-
-    transition
-
-    group-hover:scale-105
-    "
-
-    >
-
-        <CloudUpload
-
-        size={42}
-
-        class="text-slate-400"
-
-        />
-
-    </div>
-
-    <h3
-
-    class="
-    mt-8
-
-    text-center
-
-    text-2xl
-
-    font-semibold
-
-    tracking-tight
-
-    text-slate-900
-    "
-
-    >
-
+      <h3 class="mt-8 text-2xl font-semibold text-slate-900">
         Drop your image here
+      </h3>
 
-    </h3>
-
-    <p
-
-    class="
-    mt-3
-
-    text-center
-
-    text-slate-500
-    "
-
-    >
-
+      <p class="mt-3 text-slate-500">
         or click to upload
-
-    </p>
-
-</div>
-
-</div>
+      </p>
+    </div>
+  </div>
 
 {:else}
+  <!-- PREVIEW STATE -->
+  <div
+    class="group relative overflow-hidden rounded-[32px] cursor-pointer bg-white"
+    on:click={openPicker}
+  >
+    <img
+      src={image.preview}
+      alt="Uploaded image"
+      class="w-full aspect-[16/9] object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+    />
 
-<div
+    <div
+      class="absolute inset-0 bg-black/0 group-hover:bg-black/[0.04] transition duration-300"
+    />
 
-class="
-group
-
-relative
-
-overflow-hidden
-
-rounded-[32px]
-
-cursor-pointer
-
-bg-white
-"
-
-on:click={openPicker}
-
->
-
-<img
-
-src={image.preview}
-
-alt="Uploaded image"
-
-class="
-w-full
-
-aspect-[16/9]
-
-object-cover
-
-transition-transform
-
-duration-700
-
-group-hover:scale-[1.02]
-"
-
-/>
-
-<div
-
-class="
-absolute
-
-inset-0
-
-bg-black/0
-
-group-hover:bg-black/[0.04]
-
-transition
-
-duration-300
-"
-
-></div>
-
-<button
-
-on:click={removeImage}
-
-class="
-absolute
-
-top-5
-right-5
-
-w-10
-h-10
-
-rounded-full
-
-bg-white/85
-
-backdrop-blur-md
-
-shadow-sm
-
-opacity-0
-
-group-hover:opacity-100
-
-transition-all
-
-duration-300
-
-flex
-
-items-center
-
-justify-center
-"
-
->
-
-<X
-
-size={18}
-
-class="text-slate-700"
-
-/>
-
-</button>
-
-</div>
-
+    <button
+      on:click={removeImage}
+      class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/85 backdrop-blur-md shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center"
+    >
+      <X size={18} class="text-slate-700" />
+    </button>
+  </div>
 {/if}

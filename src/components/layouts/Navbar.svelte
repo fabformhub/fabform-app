@@ -1,5 +1,5 @@
 <script>
-  import { authService } from '../../services/authService.svelte.js';
+  import { authService } from '$lib/services/authService.svelte.js';
   import { goto, route } from '@mateothegreat/svelte5-router';
   import { clickOutside } from '../../utils/clickOutside.js'; 
   import { APP_URL } from '../../utils/global.js';

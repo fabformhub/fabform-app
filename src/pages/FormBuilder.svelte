@@ -16,7 +16,7 @@
     deleteBlockById,
     getForm,
     updateForm
-  } from "../services/formService.js";
+  } from "$lib/services/formService.js";
 
   import { debounce } from "../utils/debounce.js";
 

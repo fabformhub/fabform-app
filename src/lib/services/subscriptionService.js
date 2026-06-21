@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient.js";
+import { supabase } from "$lib/supabaseClient.js";
 
 const apiSuccess = (data) => ({ success: true, data });
 const apiError = (error) => ({
