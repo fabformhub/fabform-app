@@ -1,142 +1,131 @@
 <script>
-  import { CloudUpload, X } from "lucide-svelte";
-  import { onDestroy, onMount } from "svelte";
-  import { updateForm }  from "$lib/services/formService.js";
-  import { uploadImage, getImageUrl, deleteImage } from "$lib/storage";
+  import { CloudUpload, X, RefreshCw } from "lucide-svelte";
+  import { onDestroy } from "svelte";
+  import { uploadImage, deleteImage } from "$lib/storage";
 
-  let {
-    id,
-    imageType = "form", // "form" | "block"
-    backgroundImage = $bindable()
-  } = $props();
+  let { id, imageType = "form", backgroundImage = $bindable() } = $props();
 
   let input;
-  let image = null;
-  let isDragging = false;
 
-  function openPicker() {
-    input.click();
+  // ─────────────────────────────────────────────
+  // STATE (runes-only)
+  // ─────────────────────────────────────────────
+  let dragging = $state(false);
+  let uploading = $state(false);
+  let activeUploadId = 0;
+
+  let blobUrl = $state(null);
+
+  const DEV = false;
+  const log = (...a) => DEV && console.log(...a);
+  const err = (...a) => DEV && console.error(...a);
+
+  // ─────────────────────────────────────────────
+  // DERIVED STATE
+  // ─────────────────────────────────────────────
+  let preview = $derived(blobUrl || backgroundImage || null);
+  let hasImage = $derived(!!preview);
+
+  // ─────────────────────────────────────────────
+  // CLEANUP
+  // ─────────────────────────────────────────────
+  function cleanupBlob() {
+    if (blobUrl) {
+      URL.revokeObjectURL(blobUrl);
+      blobUrl = null;
+    }
   }
 
-  async function processImageFile(file) {
+  onDestroy(() => {
+    cleanupBlob();
+  });
+
+  // ─────────────────────────────────────────────
+  // FILE PICKER
+  // ─────────────────────────────────────────────
+  function openPicker() {
+    input?.click();
+  }
+
+  function handleChange(e) {
+    handleFile(e.target.files?.[0]);
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    dragging = false;
+    handleFile(e.dataTransfer.files?.[0]);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    dragging = true;
+  }
+
+  function handleDragLeave() {
+    dragging = false;
+  }
+
+  // ─────────────────────────────────────────────
+  // UPLOAD FLOW
+  // ─────────────────────────────────────────────
+  async function handleFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
 
-    const localPreview = URL.createObjectURL(file);
+    const uploadId = ++activeUploadId;
 
-    image = {
-      file,
-      preview: localPreview,
-      uploading: true
-    };
+    cleanupBlob();
+
+    blobUrl = URL.createObjectURL(file);
+    uploading = true;
 
     try {
-      // 1. Upload to Supabase Storage
-      const path = await uploadImage({
+      const result = await uploadImage({
         file,
         folder: imageType === "form" ? "f" : "b",
         id
       });
 
-      const url = getImageUrl(path);
+      if (uploadId !== activeUploadId) return;
 
-      URL.revokeObjectURL(localPreview);
+      backgroundImage = result.url;
+      log("Uploaded:", result.url);
 
-      const payload = { path, url };
+    } catch (e) {
+      err("Upload failed:", e);
 
-      // 2. Update UI state
-      image = {
-        file,
-        ...payload,
-        preview: url
-      };
+      if (uploadId !== activeUploadId) return;
 
-      backgroundImage = payload;
-
-      // 3. Persist to DB via service layer
-      if (imageType === "form") {
-        await updateForm(id, {
-          backgroundImage: payload
-        });
-      } else {
-        await formService.updateBlock(id, {
-          backgroundImage: payload
-        });
+      cleanupBlob();
+    } finally {
+      if (uploadId === activeUploadId) {
+        uploading = false;
       }
-
-    } catch (err) {
-      console.error("Image upload failed:", err);
-
-      URL.revokeObjectURL(localPreview);
-      image = null;
     }
   }
 
-  function handleChange(e) {
-    const file = e.target.files?.[0];
-    processImageFile(file);
-  }
-
-  function handleDrop(e) {
-    e.preventDefault();
-    isDragging = false;
-
-    const file = e.dataTransfer.files?.[0];
-    processImageFile(file);
-  }
-
+  // ─────────────────────────────────────────────
+  // REMOVE
+  // ─────────────────────────────────────────────
   async function removeImage(e) {
-    e.stopPropagation();
+    e?.stopPropagation();
 
     try {
-      if (image?.path) {
-        await deleteImage(image.path);
+      if (backgroundImage) {
+        await deleteImage(backgroundImage);
       }
-
-      if (imageType === "form") {
-        await formService.updateForm(id, {
-          backgroundImage: null
-        });
-      } else {
-        await formService.updateBlock(id, {
-          backgroundImage: null
-        });
-      }
-
-    } catch (err) {
-      console.error("Delete failed:", err);
+    } catch (e) {
+      err("Delete failed:", e);
     }
 
-    if (image?.preview?.startsWith("blob:")) {
-      URL.revokeObjectURL(image.preview);
-    }
-
-    image = null;
+    cleanupBlob();
     backgroundImage = null;
 
-    input.value = "";
+    if (input) input.value = "";
   }
-
-  onMount(() => {
-    if (backgroundImage?.path) {
-      const url =
-        backgroundImage.url || getImageUrl(backgroundImage.path);
-
-      image = {
-        path: backgroundImage.path,
-        url,
-        preview: url
-      };
-    }
-  });
-
-  onDestroy(() => {
-    if (image?.preview?.startsWith("blob:")) {
-      URL.revokeObjectURL(image.preview);
-    }
-  });
 </script>
 
-<!-- hidden file input -->
+<!-- hidden input -->
 <input
   bind:this={input}
   type="file"
@@ -145,21 +134,21 @@
   on:change={handleChange}
 />
 
-{#if !image}
-  <!-- UPLOAD STATE -->
+<!-- ───────────────────────────────────────────── -->
+<!-- EMPTY STATE -->
+<!-- ───────────────────────────────────────────── -->
+{#if !hasImage}
   <div
-    class="group relative w-full rounded-[32px] border border-dashed border-slate-200 bg-white hover:border-slate-300 transition-all duration-300 cursor-pointer overflow-hidden"
-    class:border-sky-400={isDragging}
-    class:bg-sky-50={isDragging}
+    class="group relative w-full rounded-[32px] border border-dashed border-slate-200 bg-white cursor-pointer overflow-hidden transition hover:border-slate-400 hover:shadow-sm"
+    class:border-sky-400={dragging}
+    class:bg-sky-50={dragging}
     on:click={openPicker}
-    on:dragover|preventDefault={() => (isDragging = true)}
-    on:dragleave={() => (isDragging = false)}
+    on:dragover={handleDragOver}
+    on:dragleave={handleDragLeave}
     on:drop={handleDrop}
   >
-    <div class="py-24 px-8 text-center">
-      <div
-        class="w-24 h-24 rounded-full bg-slate-50 mx-auto flex items-center justify-center transition group-hover:scale-105"
-      >
+    <div class="py-24 text-center">
+      <div class="w-24 h-24 rounded-full bg-slate-50 mx-auto flex items-center justify-center">
         <CloudUpload size={42} class="text-slate-400" />
       </div>
 
@@ -173,27 +162,68 @@
     </div>
   </div>
 
+<!-- ───────────────────────────────────────────── -->
+<!-- IMAGE STATE -->
+<!-- ───────────────────────────────────────────── -->
 {:else}
-  <!-- PREVIEW STATE -->
   <div
-    class="group relative overflow-hidden rounded-[32px] cursor-pointer bg-white"
+    class="group relative overflow-hidden rounded-[32px] cursor-pointer bg-black"
     on:click={openPicker}
   >
+    <!-- IMAGE -->
     <img
-      src={image.preview}
+      src={preview}
       alt="Uploaded image"
-      class="w-full aspect-[16/9] object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+      class="w-full aspect-[16/9] object-cover transition duration-500 group-hover:scale-[1.04] group-hover:brightness-75"
     />
 
-    <div
-      class="absolute inset-0 bg-black/0 group-hover:bg-black/[0.04] transition duration-300"
-    />
+    <!-- cinematic ring -->
+    <div class="absolute inset-0 ring-1 ring-white/0 group-hover:ring-white/15 transition rounded-[32px]" />
 
-    <button
-      on:click={removeImage}
-      class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/85 backdrop-blur-md shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center"
-    >
-      <X size={18} class="text-slate-700" />
-    </button>
+    <!-- gradient -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition" />
+
+    <!-- ───────────────────────────────────────────── -->
+    <!-- PREMIUM ACTION DOCK -->
+    <!-- ───────────────────────────────────────────── -->
+    <div class="absolute top-5 right-5 flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition duration-200">
+
+      <div class="flex gap-2">
+
+        <!-- REPLACE -->
+        <button
+          type="button"
+          on:click|stopPropagation={openPicker}
+          class="group/btn relative w-11 h-11 rounded-full bg-black/45 hover:bg-black/75 backdrop-blur-xl border border-white/10 shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          <RefreshCw size={16} class="text-white/90" />
+
+          <div class="absolute top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition text-[11px] text-white/80 bg-black/70 px-2 py-1 rounded-md backdrop-blur-md whitespace-nowrap">
+            Replace
+          </div>
+        </button>
+
+        <!-- DELETE -->
+        <button
+          type="button"
+          on:click|stopPropagation={removeImage}
+          class="group/btn relative w-11 h-11 rounded-full bg-black/45 hover:bg-red-500/80 backdrop-blur-xl border border-white/10 shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+        >
+          <X size={18} class="text-white/90" />
+
+          <div class="absolute top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition text-[11px] text-white/80 bg-black/70 px-2 py-1 rounded-md backdrop-blur-md whitespace-nowrap">
+            Remove
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- UPLOADING OVERLAY -->
+    {#if uploading}
+      <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm backdrop-blur-sm">
+        Uploading...
+      </div>
+    {/if}
   </div>
 {/if}
