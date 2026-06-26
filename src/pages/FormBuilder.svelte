@@ -7,18 +7,9 @@
   import { Dialog } from "../components/dialogs";
   import { DesignEditor } from "../components/design-editor";
   import { PropertyEditor } from "../components/property-editor";
-
-
-  import {
-    createBlock,
-    getBlocksByFormId,
-    updateBlock,
-    deleteBlockById,
-    getForm,
-    updateForm
-  } from "$lib/services/formService.js";
-
   import { debounce } from "../utils/debounce.js";
+
+  import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById, getForm, updateForm } from "$lib/services/formService.js";
 
   let { route } = $props();
 
@@ -28,69 +19,30 @@
   let blockNo = $state(0);
   let formId = $state(route?.result?.path?.params?.id);
   let form = $state({});
-  let isLoaded = $state(false);
 
-  
- // SNAPSHOTS
-  let lastFormSnapshot = "";
-  let lastBlockSnapshot = "";
 
-  // -----------------------------
-  // SAVE SYSTEM (KISS)
-  // -----------------------------
+let isLoaded = $state(false);
 
-  const save = debounce(async () => {
-    try {
-      if (!isLoaded) return;
+const autoSaveForm = debounce(() => {
+  console.log("Form autosaved");
+  updateForm(form);
+}, 5000);
 
-      // FORM SAVE
-      const formSnap = JSON.stringify(form);
+const autoSaveBlock = debounce(() => {
+  console.log("Block autosaved");
+  updateBlock(blocks[blockNo]);
+}, 5000);
 
-      if (formSnap !== lastFormSnapshot) {
-        await updateForm(form);
-        lastFormSnapshot = formSnap;
-      }
+$effect(() => {
+const dummy = JSON.stringify(form,null,2)
 
-      // ACTIVE BLOCK SAVE
-      const block = blocks[blockNo];
+  if (form) autoSaveForm();
+});
 
-      if (block?.id) {
-        const blockSnap = JSON.stringify(block);
-
-        if (blockSnap !== lastBlockSnapshot) {
-          await updateBlock(block);
-          lastBlockSnapshot = blockSnap;
-        }
-      }
-
-    } catch (err) {
-      console.error("SAVE FAILED:", err);
-    }
-  }, 1500);
-
-  // -----------------------------
-  // CHANGE DETECTION
-  // -----------------------------
-
-  $effect(() => {
-    if (!isLoaded || !form?.id) return;
-
-    const snap = JSON.stringify(form);
-
-    if (snap !== lastFormSnapshot) {
-      save();
-    }
-  });
-
-  $effect(() => {
-    if (!isLoaded || !blocks[blockNo]) return;
-
-    const snap = JSON.stringify(blocks[blockNo]);
-
-    if (snap !== lastBlockSnapshot) {
-      save();
-    }
-  });
+$effect(() => {
+const dummy = JSON.stringify(blocks[blockNo],null,2)
+  if (blocks[blockNo]) autoSaveBlock();
+});
 
   // -----------------------------
   // FETCH DATA
@@ -108,12 +60,7 @@
           ?.slice()
           ?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
 
-      if (blocks.length === 0) blockNo = 0;
-      else if (blockNo >= blocks.length) blockNo = blocks.length - 1;
-
-      lastFormSnapshot = "";
-      lastBlockSnapshot = "";
-
+      blockNo = Math.max(0, blocks.length - 2);
       isLoaded = true;
     } catch (err) {
       console.error("FETCH ERROR:", err);
@@ -159,13 +106,8 @@
   setContext("blockPickerClick", createBlockPick);
 </script>
 
-{#if form === null}
-  <p class="text-red-500 p-4">Failed to load form.</p>
 
-{:else if !isLoaded}
-  <p class="text-gray-500 p-4">Loading form...</p>
-
-{:else}
+{#if form }
   <DefaultLayout {form}>
 
     <main class="flex flex-col h-screen mt-17">
@@ -223,8 +165,6 @@
             <div class="flex-1 overflow-auto">
               <PropertyEditor bind:block={blocks[blockNo]} />
             </div>
-          {:else}
-            <p class="text-gray-400">Loading...</p>
           {/if}
 
         </div>
