@@ -9,68 +9,88 @@
     errorMessage = ''
   } = $props();
 
-  // form-level meta (single source of truth)
-  const meta = $derived(form?.meta ?? {});
+  /* -----------------------------
+   * Reactive state (safe access)
+   * ----------------------------- */
 
-  const coverImage = $derived(
-    block?.meta?.coverImageProps?.coverImage ||
-    meta?.backgroundImage ||
-    ''
-  );
+  const blockMeta = $derived(block?.meta);
 
-const layout = $derived(
-    block?.meta?.coverImageProps?.layout || ''
-  );
-
-  const formBackgroundImage= $derived(
+  const formBackgroundImage = $derived(
     form?.meta?.backgroundImage
   );
 
-  // clean font size mapping
-  const fontSizeClass = $derived(
-    {
+  const layout = $derived(
+    blockMeta?.coverImageProps?.layout
+  );
+
+  const coverImage = $derived(
+    blockMeta?.coverImageProps?.coverImage
+  );
+
+  /* -----------------------------
+   * Typography scaling
+   * ----------------------------- */
+
+  const fontSizeClass = $derived.by(() => {
+    const size = blockMeta?.fontSize;
+
+    const map = {
       Small: 'text-sm md:text-base leading-relaxed',
       Medium: 'text-base md:text-xl leading-relaxed',
       Large: 'text-lg md:text-2xl leading-relaxed',
       'Extra Large': 'text-xl md:text-3xl leading-relaxed'
-    }[meta?.fontSize] ?? 'text-base md:text-xl leading-relaxed'
-  );
+    };
+
+    return map[size] || 'text-base md:text-xl leading-relaxed';
+  });
+
+  /* -----------------------------
+   * Block renderer (pure snippet)
+   * ----------------------------- */
 </script>
 
-{#snippet blockContent()}
-  <BlockView
-    uiMeta={meta}
-    block={block}
-    canAnswer={canAnswer}
-    clickHandler={nextBlock}
-    {errorMessage}
-  />
-{/snippet}
+<!-- Main container -->
 <div
   class={`w-full min-h-screen ${fontSizeClass}`}
-  style:background-image={meta?.backgroundImage
-    ? `url("${meta.backgroundImage}")`
-    : undefined}
-  style:background-repeat="no-repeat"
-  style:background-size="cover"
-  style:background-position="center"
+  style={`
+    /* background-image: url("${formBackgroundImage}"); */
+    background-color: ${blockMeta?.backgroundColor || 'transparent'};
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    color: ${blockMeta?.color || 'inherit'};
+    font-family: ${blockMeta?.fontFamily || 'inherit'};
+  `}
 >
+
+  <!-- Debug (safe to remove later) -->
+  <p class="text-xs opacity-60">Hello</p>
+  <p class="text-xs opacity-60">layout: {layout}</p>
+
+  {#snippet blockContent()}
+    <BlockView
+      uiMeta={blockMeta}
+      canAnswer={canAnswer}
+      bind:block={block}
+      clickHandler={nextBlock}
+      {errorMessage}
+    />
+  {/snippet}
 
   {#if layout === 'Wallpaper'}
     <div
       class="flex items-center justify-center w-full min-h-screen bg-cover bg-center"
-      style={coverImage ? `background-image: url(${coverImage})` : undefined}
+      style={`background-image: url('${coverImage}')`}
     >
       {@render blockContent()}
     </div>
 
   {:else if layout === 'Stack'}
     <div class="flex flex-col w-full min-h-screen">
-
       {#if coverImage}
         <div
           class="w-full h-48 md:h-72 bg-cover bg-center"
-          style={`background-image: url(${coverImage})`}
+          style={`background-image: url('${coverImage}')`}
         />
       {/if}
 
@@ -81,23 +101,20 @@ const layout = $derived(
 
   {:else if layout === 'Split-left'}
     <div class="flex flex-col md:flex-row w-full min-h-screen">
-
       {#if coverImage}
         <div
           class="w-full md:w-1/2 min-h-[250px] md:min-h-screen bg-cover bg-center"
-          style={`background-image: url(${coverImage})`}
+          style={`background-image: url('${coverImage}')`}
         />
       {/if}
 
       <div class="w-full md:w-1/2 flex items-center justify-center p-4">
         {@render blockContent()}
       </div>
-
     </div>
 
   {:else if layout === 'Split-right'}
     <div class="flex flex-col md:flex-row w-full min-h-screen">
-
       <div class="w-full md:w-1/2 flex items-center justify-center p-4">
         {@render blockContent()}
       </div>
@@ -105,10 +122,9 @@ const layout = $derived(
       {#if coverImage}
         <div
           class="w-full md:w-1/2 min-h-[250px] md:min-h-screen bg-cover bg-center"
-          style={`background-image: url(${coverImage})`}
+          style={`background-image: url('${coverImage}')`}
         />
       {/if}
-
     </div>
 
   {:else}

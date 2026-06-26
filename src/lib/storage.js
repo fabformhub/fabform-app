@@ -5,23 +5,27 @@ import { nanoid } from 'nanoid';
 
 const BUCKET = 'media';
 
-
+/**
+ * Get public URL from storage path
+ */
 export function getImageUrl(path) {
-  if (!path) return '';
+  if (!path) return null;
 
-  return supabase.storage
+  const { data } = supabase.storage
     .from(BUCKET)
-    .getPublicUrl(path)
-    .data
-    .publicUrl;
+    .getPublicUrl(path);
+
+  return data.publicUrl;
 }
 
-
+/**
+ * Upload image → returns { path, url }
+ */
 export async function uploadImage({ file, folder, id }) {
+  if (!file) throw new Error('No file provided');
+
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-
   const filename = `${nanoid()}.${ext}`;
-
   const path = `${folder}/${id}/${filename}`;
 
   const { error } = await supabase.storage
@@ -32,14 +36,16 @@ export async function uploadImage({ file, folder, id }) {
       contentType: file.type
     });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
-  return path;
+  const url = getImageUrl(path);
+
+  return { path, url };
 }
 
-
+/**
+ * Delete image by path
+ */
 export async function deleteImage(path) {
   if (!path) return;
 
@@ -47,7 +53,5 @@ export async function deleteImage(path) {
     .from(BUCKET)
     .remove([path]);
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 }
