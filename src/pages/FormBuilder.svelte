@@ -1,176 +1,184 @@
 <script>
-  import { onMount, setContext } from "svelte";
+	import { onMount, setContext } from "svelte";
 
-  import { BlockLayout, BlockPicker } from "../components/form-builder";
-  import { AddBlockButton } from "../components/ui";
-  import { DefaultLayout, Sidebar } from "../components/layouts";
-  import { Dialog } from "../components/dialogs";
-  import { DesignEditor } from "../components/design-editor";
-  import { PropertyEditor } from "../components/property-editor";
-  import { debounce } from "../utils/debounce.js";
+	import { BlockLayout, BlockPicker } from "../components/form-builder";
+	import { AddBlockButton } from "../components/ui";
+	import { DefaultLayout, Sidebar } from "../components/layouts";
+	import { Dialog } from "../components/dialogs";
+	import { DesignEditor } from "../components/design-editor";
+	import { PropertyEditor } from "../components/property-editor";
+	import { debounce } from "../utils/debounce.js";
 
-  import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById, getForm, updateForm } from "$lib/services/formService.js";
+	import {
+		createBlock,
+		getBlocksByFormId,
+		updateBlock,
+		deleteBlockById,
+		getForm,
+		updateForm
+	} from "$lib/services/formService.js";
 
-  let { route } = $props();
+	let { route } = $props();
 
-  // STATE
-  let showBlockPicker = $state(false);
-  let blocks = $state([]);
-  let blockNo = $state(0);
-  let formId = $state(route?.result?.path?.params?.id);
-  let form = $state({});
+	// STATE
+	let showBlockPicker = $state(false);
+	let blocks = $state([]);
+	let blockNo = $state(0);
+	let formId = $state(route?.result?.path?.params?.id);
+	let form = $state({});
+	let isLoaded = $state(false);
 
+	// -----------------------------
+	// AUTOSAVE
+	// -----------------------------
 
-let isLoaded = $state(false);
+	const autoSaveForm = debounce(() => {
+		updateForm(form);
+	}, 3000);
 
-const autoSaveForm = debounce(() => {
-  //console.log("Form autosaved");
-  updateForm(form);
-}, 3000);
+	const autoSaveBlock = debounce(() => {
+		if (blocks[blockNo]) {
+			updateBlock(blocks[blockNo]);
+		}
+	}, 3000);
 
-const autoSaveBlock = debounce(() => {
-  //console.log("Block autosaved");
-  updateBlock(blocks[blockNo]);
-}, 3000);
+	$effect(() => {
+		if (form) autoSaveForm();
+	});
 
-$effect(() => {
-const dummy = JSON.stringify(form,null,2)
+	$effect(() => {
+		if (blocks[blockNo]) autoSaveBlock();
+	});
 
-  if (form) autoSaveForm();
-});
+	// -----------------------------
+	// FETCH DATA
+	// -----------------------------
 
-$effect(() => {
-const dummy = JSON.stringify(blocks[blockNo],null,2)
-  if (blocks[blockNo]) autoSaveBlock();
-});
+	async function fetchData() {
+		try {
+			const formRes = await getForm(formId);
+			form = formRes?.data?.form;
 
-  // -----------------------------
-  // FETCH DATA
-  // -----------------------------
+			const blocksRes = await getBlocksByFormId(formId);
 
-  async function fetchData() {
-    try {
-      const formRes = await getForm(formId);
-      form = formRes?.data?.form;
+			blocks =
+				blocksRes?.data?.blocks
+					?.slice()
+					?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
 
-      const blocksRes = await getBlocksByFormId(formId);
+			blockNo = Math.max(0, blocks.length - 2);
+			isLoaded = true;
+		} catch (err) {
+			console.error("FETCH ERROR:", err);
+			form = null;
+		}
+	}
 
-      blocks =
-        blocksRes?.data?.blocks
-          ?.slice()
-          ?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
+	onMount(fetchData);
 
-      blockNo = Math.max(0, blocks.length - 2);
-      isLoaded = true;
-    } catch (err) {
-      console.error("FETCH ERROR:", err);
-      form = null;
-    }
-  }
+	// -----------------------------
+	// BLOCK ACTIONS
+	// -----------------------------
 
-  onMount(fetchData);
+	async function createBlockPick(block) {
+		await createBlock(formId, block);
+		await fetchData();
+	}
 
-  // -----------------------------
-  // BLOCK ACTIONS
-  // -----------------------------
+	async function deleteBlock(blockId) {
+		const confirmed = await openDialog(
+			"Delete Confirmation",
+			"Are you sure you want to delete this block?",
+			"Cancel",
+			"Yes! Delete it"
+		);
 
-  async function createBlockPick(block) {
-    await createBlock(formId, block);
-    await fetchData();
-  }
+		if (confirmed) {
+			await deleteBlockById(blockId);
+			await fetchData();
+		}
+	}
 
-  async function deleteBlock(blockId) {
-    const confirmed = await openDialog(
-      "Delete Confirmation",
-      "Are you sure you want to delete this block?",
-      "Cancel",
-      "Yes! Delete it"
-    );
+	const changeBlock = (i) => {
+		blockNo = i;
+	};
 
-    if (confirmed) {
-      await deleteBlockById(blockId);
-      await fetchData();
-    }
-  }
+	const handleBlockUpdate = (e) => {
+		blocks = blocks.map((b, i) =>
+			i === blockNo ? { ...b, ...e.detail } : b
+		);
+	};
 
-  const changeBlock = (i) => {
-    blockNo = i;
-  };
-
-  const handleBlockUpdate = (e) => {
-    blocks = blocks.map((b, i) =>
-      i === blockNo ? { ...b, ...e.detail } : b
-    );
-  };
-
-  setContext("blockPickerClick", createBlockPick);
+	setContext("blockPickerClick", createBlockPick);
 </script>
 
+{#if form}
+	<DefaultLayout {form}>
 
-{#if form }
-  <DefaultLayout {form}>
+		<!-- ROOT LAYOUT (FIXED) -->
+		<main class="flex flex-col h-[100dvh]">
 
-    <main class="flex flex-col h-screen mt-17">
+			<!-- top toolbar -->
+			<div class="flex justify-center py-2">
+				<AddBlockButton largeIcon clickHandler={() => (showBlockPicker = true)} />
+			</div>
 
-      <div class="flex justify-center">
-        <AddBlockButton largeIcon clickHandler={() => showBlockPicker = true} />
-      </div>
+			<DesignEditor bind:form />
 
-      <DesignEditor bind:form />
+			<BlockPicker
+				show={showBlockPicker}
+				close={() => (showBlockPicker = false)}
+			/>
 
-      <BlockPicker
-        show={showBlockPicker}
-        close={() => (showBlockPicker = false)}
-      />
+			<Dialog />
 
-      <Dialog />
+			<!-- MAIN 3-COLUMN LAYOUT -->
+			<div class="flex flex-1 min-h-0">
 
-      <div class="flex flex-1 overflow-hidden items-stretch">
+				<!-- LEFT SIDEBAR -->
+				<div class="w-1/4 p-2 border-r border-gray-200 overflow-y-auto min-h-0">
 
-        <!-- LEFT SIDEBAR -->
-        <div class="w-1/4 p-2 overflow-auto border-r border-gray-200">
+					<div class="flex justify-end mb-2">
+						<AddBlockButton clickHandler={() => (showBlockPicker = true)} />
+					</div>
 
-          <div class="flex justify-end mb-2">
-            <AddBlockButton clickHandler={() => (showBlockPicker = true)} />
-          </div>
+					<Sidebar
+						bind:blockNo={blockNo}
+						bind:blocks={blocks}
+						{changeBlock}
+						{deleteBlock}
+					/>
+				</div>
 
-          <Sidebar
-            bind:blockNo={blockNo}
-            bind:blocks={blocks}
-            {changeBlock}
-            {deleteBlock}
-          />
-        </div>
+				<!-- CENTER PREVIEW -->
+				<div class="w-1/2 m-1 border border-dotted border-gray-400 rounded-xl shadow-sm bg-white overflow-y-auto min-h-0 flex items-center justify-center">
 
-        <!-- CENTER -->
-        <div class="w-1/2 overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
+					{#if blocks[blockNo]}
+						<BlockLayout
+							form={form}
+							canAnswer={false}
+							bind:block={blocks[blockNo]}
+							on:updateBlock={handleBlockUpdate}
+						/>
+					{:else}
+						<p class="text-gray-400">No blocks to display</p>
+					{/if}
 
-          {#if blocks[blockNo]}
-            <BlockLayout
-              form={form}
-              canAnswer={false}
-              bind:block={blocks[blockNo]}
-              on:updateBlock={handleBlockUpdate}
-            />
-          {:else}
-            <p class="text-gray-400">No blocks to display</p>
-          {/if}
+				</div>
 
-        </div>
+				<!-- RIGHT PROPERTY EDITOR -->
+				<div class="w-1/4 p-2 border-l border-gray-200 flex flex-col min-h-0">
 
-        <!-- RIGHT -->
-        <div class="w-1/4 p-2 overflow-auto border-l border-gray-200 flex flex-col">
+					{#if blocks[blockNo]}
+						<div class="flex-1 min-h-0 overflow-y-auto">
+							<PropertyEditor bind:block={blocks[blockNo]} />
+						</div>
+					{/if}
 
-          {#if blocks[blockNo]}
-            <div class="flex-1 overflow-auto">
-              <PropertyEditor bind:block={blocks[blockNo]} />
-            </div>
-          {/if}
+				</div>
 
-        </div>
+			</div>
+		</main>
 
-      </div>
-    </main>
-
-  </DefaultLayout>
+	</DefaultLayout>
 {/if}

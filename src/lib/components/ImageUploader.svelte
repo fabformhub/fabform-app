@@ -3,7 +3,7 @@
   import { onDestroy } from "svelte";
   import { uploadImage, deleteImage } from "$lib/storage";
 
-  let { id, imageType = "form", image = $bindable() } = $props();
+  let { id, imageType = "block", image = $bindable() } = $props();
   let input;
 
   // ─────────────────────────────────────────────
