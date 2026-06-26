@@ -113,7 +113,7 @@
     <ImageUploader
       id={block.id}
       imageType="block"
-      bind:coverImage={block.meta.coverImageProps.coverImage}
+      bind:image={block.meta.coverImageProps.coverImage}
     />
     {#if block.meta.coverImageProps.coverImage != null && block.meta.coverImageProps.coverImage !== ""}
       <label class="block text-gray-700 font-medium">Layout</label>

@@ -24,14 +24,14 @@
 let isLoaded = $state(false);
 
 const autoSaveForm = debounce(() => {
-  console.log("Form autosaved");
+  //console.log("Form autosaved");
   updateForm(form);
-}, 5000);
+}, 3000);
 
 const autoSaveBlock = debounce(() => {
-  console.log("Block autosaved");
+  //console.log("Block autosaved");
   updateBlock(blocks[blockNo]);
-}, 5000);
+}, 3000);
 
 $effect(() => {
 const dummy = JSON.stringify(form,null,2)

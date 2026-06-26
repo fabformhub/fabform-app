@@ -173,7 +173,7 @@
         <ImageUploader
           id={form.id}
           imageType="form"
-          bind:backgroundImage={form.meta.backgroundImage}
+          bind:image={form.meta.backgroundImage}
         />
         <div class="h-6"></div>
       </div>

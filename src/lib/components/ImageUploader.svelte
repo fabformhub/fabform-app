@@ -3,8 +3,7 @@
   import { onDestroy } from "svelte";
   import { uploadImage, deleteImage } from "$lib/storage";
 
-  let { id, imageType = "form", backgroundImage = $bindable() } = $props();
-
+  let { id, imageType = "form", image = $bindable() } = $props();
   let input;
 
   // ─────────────────────────────────────────────
@@ -22,7 +21,7 @@
   // ─────────────────────────────────────────────
   // DERIVED STATE
   // ─────────────────────────────────────────────
-  let preview = $derived(blobUrl || backgroundImage || null);
+  let preview = $derived(blobUrl || image);
   let hasImage = $derived(!!preview);
 
   // ─────────────────────────────────────────────
@@ -85,7 +84,7 @@
 
       if (uploadId !== activeUploadId) return;
 
-      backgroundImage = result.url;
+      image = result.url;
 
     } catch (e) {
       err("Upload failed:", e);
@@ -107,15 +106,15 @@
     e?.stopPropagation();
 
     try {
-      if (backgroundImage) {
-        await deleteImage(backgroundImage);
+      if (image) {
+        await deleteImage(image);
       }
     } catch (e) {
       err("Delete failed:", e);
     }
 
     cleanupBlob();
-    backgroundImage = null;
+    image = null;
 
     if (input) input.value = "";
   }

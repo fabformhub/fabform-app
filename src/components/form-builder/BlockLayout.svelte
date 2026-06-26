@@ -13,13 +13,11 @@
   const meta = $derived(form?.meta ?? {});
 
   const coverImage = $derived(
-    block?.meta?.coverImageProps?.coverImage ||
-    meta?.backgroundImage ||
-    ''
+    block?.meta?.coverImageProps?.coverImage 
   );
 
 const layout = $derived(
-    block?.meta?.coverImageProps?.layout || ''
+    block?.meta?.coverImageProps?.layout 
   );
 
   const formBackgroundImage= $derived(
@@ -56,15 +54,17 @@ const layout = $derived(
   style:background-position="center"
 >
 
-  {#if layout === 'Wallpaper'}
+  {#if layout === 'Wallpaper'} 
     <div
       class="flex items-center justify-center w-full min-h-screen bg-cover bg-center"
-      style={coverImage ? `background-image: url(${coverImage})` : undefined}
+      style={`background-image: url(${coverImage})`}
     >
       {@render blockContent()}
     </div>
 
-  {:else if layout === 'Stack'}
+// default if no layout selected 
+
+  {:else if layout === 'Stack' || layout ===''}
     <div class="flex flex-col w-full min-h-screen">
 
       {#if coverImage}
