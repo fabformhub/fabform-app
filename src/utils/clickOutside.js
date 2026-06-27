@@ -1,19 +1,22 @@
 // src/lib/utils/clickOutside.js
 export function clickOutside(node, callbackFn) {
-  const handleClick = (event) => {
-    if (!node.contains(event.target)) {
-      callbackFn?.(); // optional chaining in case it's undefined
+  const handlePointerDown = (event) => {
+    const path = event.composedPath?.() || [];
+
+    // works correctly with portals
+    if (!path.includes(node)) {
+      callbackFn?.();
     }
   };
 
-  document.addEventListener('mousedown', handleClick, true);
+  document.addEventListener('pointerdown', handlePointerDown, true);
 
   return {
     update(newCallback) {
       callbackFn = newCallback;
     },
     destroy() {
-      document.removeEventListener('mousedown', handleClick, true);
+      document.removeEventListener('pointerdown', handlePointerDown, true);
     }
   };
 }

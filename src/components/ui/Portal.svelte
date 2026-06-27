@@ -1,24 +1,19 @@
 <script>
-  export let content; // a function returning markup (like a snippet)
-  export let parent = document.body;
+  import { onMount, onDestroy } from 'svelte';
 
-  let portalNode;
+  let { children, target = document.body } = $props();
 
-  // Portal action: append node to parent and clean up automatically
-  function portalAction(node) {
-    portalNode = node;
-    parent.appendChild(node);
+  let host;
 
-    return {
-      destroy() {
-        if (portalNode?.parentNode) {
-          portalNode.parentNode.removeChild(portalNode);
-        }
-      }
-    };
-  }
+  onMount(() => {
+    target.appendChild(host);
+  });
+
+  onDestroy(() => {
+    host?.remove();
+  });
 </script>
 
-<div use:portalAction>
-  {@render content()} <!-- render the passed function/snippet -->
+<div bind:this={host}>
+  {@render children?.()}
 </div>

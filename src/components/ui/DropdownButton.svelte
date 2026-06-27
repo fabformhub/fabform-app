@@ -1,13 +1,25 @@
 <script>
-  import { onMount } from 'svelte';
-  import { MoreVertical as Dots, Copy, Trash, SquarePen, Link, ExternalLink, QrCode } from 'lucide-svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import {
+    MoreVertical as Dots,
+    Copy,
+    Trash,
+    SquarePen,
+    Link,
+    ExternalLink,
+    QrCode
+  } from 'lucide-svelte';
+
+import { clickOutside } from '../../utils/clickOutside';
 
   export let dropdownItems = [];
 
-  let isDropdownOpen = false;
+  let isOpen = false;
   let buttonEl;
-  let dropdownStyles = "";
-  const dropdownWidth = 192; // w-48
+  let dropdownEl;
+
+  const WIDTH = 192;
+  let coords = { top: 0, left: 0 };
 
   const icons = {
     Duplicate: Copy,
@@ -19,63 +31,84 @@
     QRCode: QrCode
   };
 
-  function toggleDropdown() {
-    isDropdownOpen = !isDropdownOpen;
+  function updatePosition() {
+    if (!buttonEl) return;
 
-    if (isDropdownOpen && buttonEl) {
-      const rect = buttonEl.getBoundingClientRect();
+    const rect = buttonEl.getBoundingClientRect();
 
-      // position relative to button
-      let left = 0;
-      let top = rect.height + 4; // 4px gap below button
-
-      dropdownStyles = `top:${top}px; left:${left}px;`;
-    }
+    coords = {
+      top: rect.bottom + 6,
+      left: Math.min(rect.left, window.innerWidth - WIDTH - 8)
+    };
   }
 
-  function handleClickOutside(event) {
-    if (buttonEl && !buttonEl.contains(event.target)) {
-      isDropdownOpen = false;
-    }
+  function open() {
+    isOpen = true;
+
+    requestAnimationFrame(() => {
+      updatePosition();
+
+      // PORTAL: move to body AFTER render
+      if (dropdownEl && dropdownEl.parentNode !== document.body) {
+        document.body.appendChild(dropdownEl);
+      }
+    });
+  }
+
+  function close() {
+    isOpen = false;
+  }
+
+  function toggle() {
+    isOpen ? close() : open();
+  }
+
+  function handleScrollOrResize() {
+    if (isOpen) updatePosition();
   }
 
   onMount(() => {
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+  });
+
+  onDestroy(() => {
+    dropdownEl?.remove();
   });
 </script>
 
 <!-- Trigger -->
 <div class="relative inline-block" bind:this={buttonEl}>
   <button
-    on:click={toggleDropdown}
+    on:click={toggle}
     class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
-    aria-label="More options"
   >
-    <Dots class="w-4 h-4 text-gray-500 hover:text-black cursor-pointer" />
+    <Dots class="w-4 h-4 text-gray-500 hover:text-black" />
   </button>
-
-  <!-- Dropdown -->
-  {#if isDropdownOpen}
-    <div
-      class="absolute w-48 bg-white rounded-md shadow-lg z-50"
-      style={dropdownStyles}
-    >
-      {#each dropdownItems as { icon, label, onClick }}
-        <button
-          class="w-full flex items-center gap-2 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          on:click={async () => {
-            await onClick?.();
-            isDropdownOpen = false;
-          }}
-        >
-          {#if icons[icon]}
-            {@const Icon = icons[icon]}
-            <Icon class="w-4 h-4 text-gray-500" />
-          {/if}
-          {label}
-        </button>
-      {/each}
-    </div>
-  {/if}
 </div>
+
+<!-- DROPDOWN (PORTAL) -->
+{#if isOpen}
+  <div
+    bind:this={dropdownEl}
+    use:clickOutside={() => close()}
+    class="fixed w-48 bg-white rounded-md shadow-lg z-[999999] border border-gray-100 py-1"
+    style="top: {coords.top}px; left: {coords.left}px;"
+  >
+    {#each dropdownItems as { icon, label, onClick }}
+      <button
+        class="w-full flex items-center gap-2 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        on:click={() => {
+          close();        // IMPORTANT: close first
+          onClick?.();    // then run action
+        }}
+      >
+        {#if icons[icon]}
+          {@const Icon = icons[icon]}
+          <Icon class="w-4 h-4 text-gray-500" />
+        {/if}
+        {label}
+      </button>
+    {/each}
+  </div>
+{/if}

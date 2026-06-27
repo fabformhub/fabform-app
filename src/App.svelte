@@ -27,10 +27,8 @@
   }
 </style>
 
-
-
 <main class="w-screen h-screen">
-<Toaster />
+  <Toaster />
 
 
   {#if loading}

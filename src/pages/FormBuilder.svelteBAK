@@ -1,0 +1,255 @@
+<script>
+  import { onMount, setContext } from "svelte";
+
+  import { BlockLayout, BlockPicker } from "../components/form-builder";
+  import { AddBlockButton } from "../components/ui";
+  import { DefaultLayout } from "../components/layouts";
+  import { Dialog } from "../components/dialogs";
+  import { DesignEditor } from "../components/design-editor";
+  import { PropertyEditor } from "../components/property-editor";
+  import { debounce } from "../utils/debounce.js";
+
+  import {
+    createBlock,
+    getBlocksByFormId,
+    updateBlock,
+    deleteBlockById,
+    getForm,
+    updateForm
+  } from "$lib/services/formService.js";
+
+  let { route } = $props();
+
+  // -----------------------------
+  // STATE
+  // -----------------------------
+  let showBlockPicker = $state(false);
+  let blocks = $state([]);
+  let blockNo = $state(0);
+
+  let formId = $state(route?.result?.path?.params?.id);
+  let form = $state(null);
+  let isLoaded = $state(false);
+
+  // -----------------------------
+  // DELETE STATE (CLEAN)
+  // -----------------------------
+  let deleteOpen = $state(false);
+  let blockToDelete = $state(null);
+
+  // -----------------------------
+  // AUTOSAVE
+  // -----------------------------
+  const autoSaveForm = debounce(() => {
+    if (form) updateForm(form);
+  }, 3000);
+
+  const autoSaveBlock = debounce(() => {
+    if (blocks[blockNo]) updateBlock(blocks[blockNo]);
+  }, 3000);
+
+  $effect(() => {
+    if (form) autoSaveForm();
+  });
+
+  $effect(() => {
+    if (blocks[blockNo]) autoSaveBlock();
+  });
+
+  // -----------------------------
+  // FETCH DATA
+  // -----------------------------
+  async function fetchData() {
+    try {
+      const formRes = await getForm(formId);
+      form = formRes?.data?.form;
+
+      const blocksRes = await getBlocksByFormId(formId);
+
+      blocks =
+        blocksRes?.data?.blocks
+          ?.slice()
+          ?.sort((a, b) => a.meta.blockTypeId - b.meta.blockTypeId) ?? [];
+
+      // keep index safe
+      blockNo = Math.min(blockNo, Math.max(blocks.length - 1, 0));
+
+      isLoaded = true;
+
+    } catch (err) {
+      console.error("FETCH ERROR:", err);
+      form = null;
+      blocks = [];
+    }
+  }
+
+  onMount(fetchData);
+
+  // -----------------------------
+  // BLOCK ACTIONS
+  // -----------------------------
+  async function createBlockPick(block) {
+    await createBlock(formId, block);
+    await fetchData();
+  }
+
+  function changeBlock(i) {
+    blockNo = i;
+  }
+
+  function handleBlockUpdate(e) {
+    blocks = blocks.map((b, i) =>
+      i === blockNo ? { ...b, ...e.detail } : b
+    );
+  }
+
+  setContext("blockPickerClick", createBlockPick);
+
+  // -----------------------------
+  // DELETE FLOW (PRODUCTION SAFE)
+  // -----------------------------
+  function deleteBlock(blockId) {
+    blockToDelete = blockId;
+    deleteOpen = true;
+  }
+
+  function cancelDelete() {
+    deleteOpen = false;
+    blockToDelete = null;
+  }
+
+  async function confirmDelete() {
+    if (!blockToDelete) return;
+
+    const id = blockToDelete;
+
+    // close immediately to avoid UI lag / double clicks
+    deleteOpen = false;
+    blockToDelete = null;
+
+    await deleteBlockById(id);
+    await fetchData();
+  }
+
+  // -----------------------------
+  // DUPLICATE BLOCK
+  // -----------------------------
+  async function duplicateBlock(blockId) {
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return;
+
+    const newBlock = structuredClone(block);
+    delete newBlock.id;
+
+    newBlock.meta = {
+      ...newBlock.meta,
+      title: (newBlock.meta.title || "Block") + " (Copy)"
+    };
+
+    await createBlock(formId, newBlock);
+    await fetchData();
+  }
+</script>
+
+<!-- ================= MAIN ================= -->
+{#if form}
+  <DefaultLayout {form}>
+
+    <main class="flex flex-col h-[100dvh] isolate">
+
+      <!-- TOP TOOLBAR -->
+      <div class="flex justify-center py-2">
+        <AddBlockButton largeIcon clickHandler={() => (showBlockPicker = true)} />
+      </div>
+
+      <DesignEditor bind:form />
+
+      <BlockPicker
+        show={showBlockPicker}
+        close={() => (showBlockPicker = false)}
+      />
+
+      <!-- DELETE DIALOG -->
+      <Dialog.Root bind:open={deleteOpen}>
+        <Dialog.Content class="max-w-md p-6 bg-white rounded-2xl border shadow-xl">
+
+          <Dialog.Title class="text-sm font-bold">
+            Delete Block?
+          </Dialog.Title>
+
+          <Dialog.Description class="text-xs text-gray-500 mt-2">
+            This action cannot be undone.
+          </Dialog.Description>
+
+          <div class="flex justify-end gap-2 mt-6">
+
+            <button
+              class="px-3 py-1 text-sm border rounded"
+              on:click={cancelDelete}
+            >
+              Cancel
+            </button>
+
+            <button
+              class="px-3 py-1 text-sm bg-red-600 text-white rounded"
+              on:click={confirmDelete}
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </Dialog.Content>
+      </Dialog.Root>
+
+      <!-- MAIN LAYOUT -->
+      <div class="flex flex-1 min-h-0">
+
+        <!-- LEFT -->
+        <div class="w-1/4 p-2 border-r overflow-y-auto min-h-0">
+          <div class="flex justify-end mb-2">
+            <AddBlockButton clickHandler={() => (showBlockPicker = true)} />
+          </div>
+
+          <Sidebar
+            bind:blockNo={blockNo}
+            bind:blocks={blocks}
+            {changeBlock}
+            {deleteBlock}
+            {duplicateBlock}
+          />
+        </div>
+
+        <!-- CENTER -->
+        <div class="w-1/2 m-1 border border-dotted rounded-xl bg-white overflow-y-auto min-h-0 flex items-center justify-center">
+
+          {#if blocks[blockNo]}
+            <BlockLayout
+              form={form}
+              canAnswer={false}
+              bind:block={blocks[blockNo]}
+              on:updateBlock={handleBlockUpdate}
+            />
+          {:else}
+            <p class="text-gray-400">No blocks to display</p>
+          {/if}
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="w-1/4 p-2 border-l flex flex-col min-h-0">
+
+          {#if blocks[blockNo]}
+            <div class="flex-1 overflow-y-auto">
+              <PropertyEditor bind:block={blocks[blockNo]} />
+            </div>
+          {/if}
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </DefaultLayout>
+{/if}
