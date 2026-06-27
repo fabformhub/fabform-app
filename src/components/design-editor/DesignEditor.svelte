@@ -96,7 +96,7 @@
               <label class="text-sm text-gray-700">Background</label>
               <input
                 type="color"
-                bind:value={form.meta.backgroundColor}
+                bind:value={form.meta.bgColor}
                 class="w-10 h-8 p-0 border-0 bg-transparent cursor-pointer"
               />
             </div>

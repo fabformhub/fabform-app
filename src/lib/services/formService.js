@@ -92,20 +92,44 @@ export async function createForm(form) {
     : apiSuccess({ id: data.id, slug: data.slug });
 }
 
-// Update a form
 export async function updateForm(form) {
-  if (!form?.id) return apiError("Form ID is required");
+  if (!form?.id) {
+    console.error("updateForm ERROR: missing form.id");
+    return apiError("Form ID is required");
+  }
+
+  const { id, user_id, created_at, ...updates } = form;
+
+  console.log("updateForm called with:");
+  console.log("id:", id);
+  console.log("updates:", updates);
+
+  const user = await supabase.auth.getUser();
+
+  console.log("auth user:", user?.data?.user);
 
   const { data, error } = await supabase
     .from("forms")
-    .update(form)
-    .eq("id", form.id)
+    .update(updates)
+    .eq("id", id)
+    .eq("user_id", user?.data?.user?.id)
     .select()
     .single();
 
+  console.log("supabase response:");
+  console.log("data:", data);
+  console.log("error:", error);
+
+  if (error) {
+    console.error("updateForm FAILED:");
+    console.error("code:", error.code);
+    console.error("message:", error.message);
+    console.error("details:", error.details);
+    console.error("hint:", error.hint);
+  }
+
   return error ? apiError(error) : apiSuccess({ form: data });
 }
-
 
 export async function deleteFormById(formId) {
   console.log("Deleting form:", formId);

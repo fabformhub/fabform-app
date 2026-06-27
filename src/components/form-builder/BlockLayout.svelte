@@ -16,12 +16,17 @@
     block?.meta?.coverImageProps?.coverImage 
   );
 
+
 const layout = $derived(
     block?.meta?.coverImageProps?.layout 
   );
 
   const formBackgroundImage= $derived(
     form?.meta?.backgroundImage
+  );
+
+  const formBackgroundColor= $derived(
+    form?.meta?.bgColor
   );
 
   // clean font size mapping
@@ -33,6 +38,8 @@ const layout = $derived(
       'Extra Large': 'text-xl md:text-3xl leading-relaxed'
     }[meta?.fontSize] ?? 'text-base md:text-xl leading-relaxed'
   );
+
+
 </script>
 
 {#snippet blockContent()}
@@ -46,15 +53,16 @@ const layout = $derived(
 {/snippet}
 <div
   class={`w-full min-h-screen ${fontSizeClass}`}
-  style:background-image={meta?.backgroundImage
-    ? `url("${meta.backgroundImage}")`
-    : undefined}
-  style:background-repeat="no-repeat"
-  style:background-size="cover"
-  style:background-position="center"
+  style={`
+    background-image: url(${formBackgroundImage}); 
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-color: ${formBackgroundColor};
+  `}
 >
 
-  {#if layout === 'Wallpaper'} 
+{#if layout === 'Wallpaper'} 
     <div
       class="flex items-center justify-center w-full min-h-screen bg-cover bg-center"
       style={`background-image: url(${coverImage})`}
