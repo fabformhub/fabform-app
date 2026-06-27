@@ -1,5 +1,5 @@
 <script>
-  import { APP_URL } from '../utils/global.js';
+  import { APP_URL } from '$lib/utils/global.js';
 
   export let canAnswer;
 

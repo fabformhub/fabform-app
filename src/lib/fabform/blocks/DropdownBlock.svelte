@@ -1,8 +1,8 @@
 <script>
   import { ChevronDown } from 'lucide-svelte';
   import { fly, scale } from 'svelte/transition';
-  import { clickOutside } from '../utils/clickOutside.js';
-  import { debounce } from '../utils/debounce.js';
+  import { clickOutside } from '$lib/utils/clickOutside.js';
+  import { debounce } from '$lib/utils/debounce.js';
 
   let { canAnswer, value = $bindable(), props } = $props();
   let { choices = [], label = '' } = props;

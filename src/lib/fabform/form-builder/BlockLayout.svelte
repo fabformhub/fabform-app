@@ -1,13 +1,7 @@
 <script>
   import { BlockView } from '.';
 
-  let {
-    form,
-    block,
-    canAnswer = false,
-    nextBlock = () => {},
-    errorMessage = ''
-  } = $props();
+  let { form, block, canAnswer = false, nextBlock = () => {}, errorMessage = '' } = $props();
 
   // form-level meta (single source of truth)
   const meta = $derived(form?.meta ?? {});

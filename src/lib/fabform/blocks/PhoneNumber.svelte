@@ -1,6 +1,6 @@
 <script>
-  import { countries } from '../constants/countries.js';
-  import { clickOutside } from '../utils/clickOutside.js';
+  import { countries } from '$lib/fabform/constants/countries.js';
+  import { clickOutside } from '$lib//utils/clickOutside.js';
 
   let { value = $bindable(), canAnswer = false, props } = $props();
   

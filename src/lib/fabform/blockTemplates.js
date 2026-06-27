@@ -4,7 +4,7 @@ import {
   ScrollText, Link, Upload, Mail, ToggleLeft, SquareCheck, Smile, CalendarCheck, Signature, PartyPopper, 
   ListChecks, CalendarClock
 } from 'lucide-svelte';
-import { bgColors } from '../constants/colors.js';
+import { bgColors } from '$lib/fabform/constants/colors.js';
 
 export const blockTemplates = [
   {

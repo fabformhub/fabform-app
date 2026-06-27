@@ -1,10 +1,10 @@
 <script>
   import { onMount } from 'svelte';
   import { getResponsesByFormId, deleteResponseById } from '$lib/services/responseService.js';
-  import { bgColors } from '../constants/colors.js';
+  import { bgColors } from '$lib/fabform/constants/colors.js';
   import { Inbox, Download, Trash } from 'lucide-svelte';
-  import { DefaultLayout } from '../components/layouts/';
-  import { blockTemplates } from '../templates/blockTemplates.js';
+  import { DefaultLayout } from '$lib/fabform/layouts/';
+  import { blockTemplates } from '$lib/fabform/blockTemplates.js';
 
   let { route } = $props();
   let formId = $state(route.result.path.params.id);

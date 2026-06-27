@@ -1,25 +1,16 @@
 <script>
   import { onMount, setContext } from "svelte";
 
-  import { BlockLayout, BlockPicker } from "../components/form-builder";
-  import { AddBlockButton } from "../components/ui";
-  import { DefaultLayout, Sidebar } from "../components/layouts";
-  import { Dialog } from "../components/dialogs";
-  import { DesignEditor } from "../components/design-editor";
-  import { PropertyEditor } from "../components/property-editor";
+  import { BlockLayout, BlockPicker } from "$lib/fabform/form-builder";
+  import { AddBlockButton } from "$lib/fabform/ui";
+  import { DefaultLayout, Sidebar } from "$lib/fabform/layouts";
+  import { Dialog } from "$lib/fabform/dialogs";
+  import { DesignEditor } from "$lib/fabform/design-editor";
+  import { PropertyEditor } from "$lib/fabform/property-editor";
+  import { openDialog } from '$lib/utils/dialog.svelte.js';
+  import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById, getForm, updateForm } from "$lib/services/formService.js";
 
-  import { openDialog } from '../utils/dialog.svelte.js';
-
-  import {
-    createBlock,
-    getBlocksByFormId,
-    updateBlock,
-    deleteBlockById,
-    getForm,
-    updateForm
-  } from "$lib/services/formService.js";
-
-  import { debounce } from "../utils/debounce.js";
+  import { debounce } from "$lib/utils/debounce.js";
 
   let { route } = $props();
 

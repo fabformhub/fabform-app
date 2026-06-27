@@ -1,6 +1,6 @@
 <script>
   import { PlusSquare } from 'lucide-svelte';
-  import { tooltip } from '../../utils/tooltip.js';
+  import { tooltip } from '$lib/utils/tooltip.js';
 
   let { clickHandler, largeIcon = false } = $props();
 

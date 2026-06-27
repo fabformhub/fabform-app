@@ -1,5 +1,5 @@
-import { Button, Input, TextArea, Checkbox, Dropdown, } from '../components/ui';
-import { Welcome, ShortText, LongText, Select, DatePicker, DropdownBlock, OpinionScale, StarRating, Number, PhoneNumber, Statement, Website, Scheduler, FileUploader, Email, YesNo, CheckboxBlock, Signature, MoodMeter,TimeSlotPicker,ThankYou } from '../blocks';
+import { Button, Input, TextArea, Checkbox, Dropdown, } from '$lib/fabform/ui';
+import { Welcome, ShortText, LongText, Select, DatePicker, DropdownBlock, OpinionScale, StarRating, Number, PhoneNumber, Statement, Website, Scheduler, FileUploader, Email, YesNo, CheckboxBlock, Signature, MoodMeter,TimeSlotPicker,ThankYou } from '$lib/fabform/blocks';
 
 export function getComponent(componentName) {
   const components = {

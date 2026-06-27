@@ -1,7 +1,7 @@
 <script>
 let { route } = $props();
 let formId = $state(route.result.path.params.id);
-import { DefaultLayout } from '../components/layouts/';
+import { DefaultLayout } from '$lib/fabform/layouts/';
   
 </script>
 

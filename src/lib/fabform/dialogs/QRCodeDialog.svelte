@@ -1,5 +1,5 @@
 <script>
-  import { dialog, closeDialog } from '../../utils/dialog.svelte.js';
+  import { dialog, closeDialog } from '$lib/utils/dialog.svelte.js';
   import { fade, scale } from 'svelte/transition';
   import { onMount, tick } from 'svelte';
   import { Download } from 'lucide-svelte';

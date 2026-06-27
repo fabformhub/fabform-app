@@ -1,5 +1,5 @@
 <script>
-  import { Menu } from '../../components/layouts';
+  import { Menu } from '$lib/fabform/layouts';
   let { setActive, form, children } = $props();
 </script>
 

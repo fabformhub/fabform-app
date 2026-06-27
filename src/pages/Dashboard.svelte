@@ -4,12 +4,12 @@
   import { checkUserSubscribed } from '$lib/services/subscriptionService.js';
   import { createForm, getFormsByUserId, deleteFormById, updateForm, updateFormSlug, duplicateFormById, getFormViews,createBlock} from '$lib/services/formService.js';
   import { countResponsesByFormId } from '$lib/services/responseService.js';
-  import { DashboardDetail } from '../components/ui';
-  import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '../components/dialogs';
-  import { Navbar } from '../components/layouts';
-  import { openDialog } from '../utils/dialog.svelte.js';
-  import { blockTemplates } from '../templates/blockTemplates';
-  import { APP_URL } from '../utils/global.js';
+  import { DashboardDetail } from '$lib/fabform/ui';
+  import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '$lib/fabform/dialogs';
+  import { Navbar } from '$lib/fabform/layouts';
+  import { openDialog } from '$lib/utils/dialog.svelte.js';
+  import { blockTemplates } from '$lib/fabform/blockTemplates';
+  import { APP_URL } from '$lib/utils/global.js';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
   import { Plus, FileText } from 'lucide-svelte';
 

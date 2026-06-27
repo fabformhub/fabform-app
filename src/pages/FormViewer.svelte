@@ -2,9 +2,8 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
-
-	import { BlockLayout } from '../components/form-builder';
-	import { SplashScreen } from '../components/ui';
+	import { BlockLayout } from '$lib/fabform/form-builder';
+	import { SplashScreen } from '$lib/fabform/ui';
 
 	import {
 		getForm,
@@ -13,7 +12,7 @@
 	} from '$lib/services/formService.js';
 
 	import { createResponse } from '$lib/services/responseService.js';
-	import { validateBlock } from '../utils/validation.js';
+	import { validateBlock } from '$lib/utils/validation.js';
 
 	let { route } = $props();
 

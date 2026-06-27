@@ -10,7 +10,7 @@
     QrCode
   } from 'lucide-svelte';
 
-import { clickOutside } from '../../utils/clickOutside';
+import { clickOutside } from '$lib/utils/clickOutside';
 
   export let dropdownItems = [];
 

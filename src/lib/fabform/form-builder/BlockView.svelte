@@ -1,5 +1,5 @@
 <script>
-  import { getComponent } from '../../utils/getComponent.js';
+  import { getComponent } from '$lib/utils/getComponent.js';
   import { AlertTriangle } from 'lucide-svelte';
 
   let {

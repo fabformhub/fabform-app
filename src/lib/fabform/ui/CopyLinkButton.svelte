@@ -1,7 +1,7 @@
 <script>
   import {Link as LinkIcon} from 'lucide-svelte';  // Changed icon to Link
-  import { tooltip } from '../../utils/tooltip.js'; 
-  import {Toast} from "../../components/ui";
+  import { tooltip } from '$lib/utils/tooltip.js'; 
+  import {Toast} from "$lib/fabform/ui";
 
   let { link = '' } = $props();
   let copied = $state(false);

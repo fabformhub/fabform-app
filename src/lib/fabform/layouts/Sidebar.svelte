@@ -1,7 +1,7 @@
 <script>
   import { flip } from 'svelte/animate';
   import { dndzone } from 'svelte-dnd-action';
-  import { DropdownButton } from '../../components/ui';
+  import { DropdownButton } from '$lib/fabform/ui';
 
   // Svelte 5: bindable props so reassignments to blocks/blockNo propagate correctly
   let {

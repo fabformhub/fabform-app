@@ -1,8 +1,8 @@
 <script>
   import { authService } from '$lib/services/authService.svelte.js';
   import { goto, route } from '@mateothegreat/svelte5-router';
-  import { clickOutside } from '../../utils/clickOutside.js'; 
-  import { APP_URL } from '../../utils/global.js';
+  import { clickOutside } from '$lib/utils/clickOutside.js'; 
+  import { APP_URL } from '$lib/utils/global.js';
   import { Mail, Key, LogOut, LogIn, User } from 'lucide-svelte';
 
   const { state, logout } = authService;
