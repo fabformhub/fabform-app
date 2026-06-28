@@ -5,8 +5,8 @@
   import { AddBlockButton } from "$lib/fabform/ui";
   import { DefaultLayout, Sidebar } from "$lib/fabform/layouts";
   import { Dialog } from "$lib/fabform/dialogs";
-  import { DesignEditor } from "$lib/fabform/design-editor";
-  import { PropertyEditor } from "$lib/fabform/property-editor";
+  import { FormProperties  } from "$lib/fabform/form-properties";
+  import { BlockProperties } from "$lib/fabform/block-properties";
   import { openDialog } from '$lib/utils/dialog.svelte.js';
   import { createBlock, getBlocksByFormId, updateBlock, deleteBlockById, getForm, updateForm } from "$lib/services/formService.js";
 
@@ -165,7 +165,7 @@
         <AddBlockButton largeIcon clickHandler={() => showBlockPicker = true} />
       </div>
 
-      <DesignEditor bind:form />
+      <FormProperties bind:form />
 
       <BlockPicker
         show={showBlockPicker}
@@ -212,7 +212,7 @@
 
           {#if blocks[blockNo]}
             <div class="flex-1 overflow-auto">
-              <PropertyEditor bind:block={blocks[blockNo]} />
+              <BlockProperties bind:block={blocks[blockNo]} />
             </div>
           {:else}
             <p class="text-gray-400">Loading...</p>
