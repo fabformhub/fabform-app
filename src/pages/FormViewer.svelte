@@ -2,15 +2,9 @@
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
-	import { BlockLayout } from '$lib/fabform/form-builder';
+	import { FormView } from '$lib/fabform/form-builder';
 	import { SplashScreen } from '$lib/fabform/ui';
-
-	import {
-		getForm,
-		incrementFormViews,
-		getBlocksByFormId
-	} from '$lib/services/formService.js';
-
+	import { getForm, incrementFormViews, getBlocksByFormId } from '$lib/services/formService.js';
 	import { createResponse } from '$lib/services/responseService.js';
 	import { validateBlock } from '$lib/utils/validation.js';
 
@@ -174,7 +168,7 @@
 
 			{#key blockNo}
 				<div in:fly={flyParams} class="w-full h-full flex items-center justify-center">
-					<BlockLayout
+					<FormView
 						form={form}
 						canAnswer={true}
 						bind:block={blocks[blockNo]}

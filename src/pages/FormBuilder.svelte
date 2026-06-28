@@ -1,9 +1,8 @@
 <script>
   import { onMount, setContext } from "svelte";
-
-  import { BlockLayout, BlockPicker } from "$lib/fabform/form-builder";
-  import { AddBlockButton } from "$lib/fabform/ui";
   import { DefaultLayout, Sidebar } from "$lib/fabform/layouts";
+  import { FormView, BlockPicker } from "$lib/fabform/form-builder";
+  import { AddBlockButton } from "$lib/fabform/ui";
   import { Dialog } from "$lib/fabform/dialogs";
   import { FormProperties  } from "$lib/fabform/form-properties";
   import { BlockProperties } from "$lib/fabform/block-properties";
@@ -195,14 +194,14 @@
         <div class="w-1/2 overflow-auto bg-white m-1 border border-dotted border-gray-400 rounded-xl shadow-sm flex items-center justify-center">
 
           {#if blocks[blockNo]}
-            <BlockLayout
+            <FormView
               form={form}
               canAnswer={false}
               bind:block={blocks[blockNo]}
               on:updateBlock={handleBlockUpdate}
             />
           {:else}
-            <p class="text-gray-400">No blocks to display</p>
+           <p class="text-gray-400">No blocks to display</p>
           {/if}
 
         </div>
