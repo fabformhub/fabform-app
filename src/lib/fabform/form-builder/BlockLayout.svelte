@@ -56,7 +56,9 @@ const layout = $derived(
   `}
 >
 
-{#if layout === 'Wallpaper'} 
+<!--  default if no layout selected -->
+
+{#if layout === 'Wallpaper' || layout ===''} 
     <div
       class="flex items-center justify-center w-full min-h-screen bg-cover bg-center"
       style={`background-image: url(${coverImage})`}
@@ -64,9 +66,7 @@ const layout = $derived(
       {@render blockContent()}
     </div>
 
-// default if no layout selected 
-
-  {:else if layout === 'Stack' || layout ===''}
+  {:else if layout === 'Stack' } 
     <div class="flex flex-col w-full min-h-screen">
 
       {#if coverImage}
