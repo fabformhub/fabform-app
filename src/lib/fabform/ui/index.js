@@ -19,3 +19,4 @@ export { default as ColorPicker } from './ColorPicker.svelte';
 export { default as CopyCode } from './CopyCode.svelte';
 export { default as Popover } from './Popover.svelte';
 export { default as Portal } from './Portal.svelte';
+export { default as ImageUploader } from './ImageUploader.svelte';

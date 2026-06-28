@@ -8,7 +8,7 @@
   import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '$lib/fabform/dialogs';
   import { Navbar } from '$lib/fabform/layouts';
   import { openDialog } from '$lib/utils/dialog.svelte.js';
-  import { blockTemplates } from '$lib/fabform/blockTemplates';
+  import { blockTemplates } from '$lib/utils/blockTemplates';
   import { APP_URL } from '$lib/utils/global.js';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
   import { Plus, FileText } from 'lucide-svelte';

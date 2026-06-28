@@ -1,6 +1,6 @@
 <script>
   import { getContext } from 'svelte';
-  import { blockTemplates } from "$lib/fabform/blockTemplates.js";
+  import { blockTemplates } from "$lib/utils/blockTemplates.js";
   import { X } from 'lucide-svelte';
 
   const { show, close } = $props();

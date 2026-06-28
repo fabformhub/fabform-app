@@ -1,9 +1,8 @@
 <script>
-	let { block = $bindable() } = $props();
-
-	import { Input, TextArea, Checkbox, Dropdown } from "../ui";
-	import { AlignmentControl, ChoicesControl } from ".";
-	import { ImageUploader } from "$lib/components";
+let { block = $bindable() } = $props();
+import { Input, TextArea, Checkbox, Dropdown } from "$lib/fabform/ui";
+import { AlignmentControl, ChoicesControl } from ".";
+import { ImageUploader } from "$lib/fabform/ui";
 </script>
 
 <!-- OUTER LAYOUT: ensures proper flex + height handling -->
@@ -117,7 +116,6 @@
 			<Input bind:value={block.meta.validation.maxLength} />
 		{/if}
 
-		{#if block?.meta?.coverImageProps?.coverImage}
 			<label class="block text-gray-700 font-medium">Cover Image</label>
 
 			<ImageUploader
@@ -126,6 +124,7 @@
 				bind:image={block.meta.coverImageProps.coverImage}
 			/>
 
+		{#if block?.meta?.coverImageProps?.coverImage}
 			<label class="block text-gray-700 font-medium mt-2">Layout</label>
 
 			<Dropdown
@@ -133,6 +132,5 @@
 				bind:value={block.meta.coverImageProps.layout}
 			/>
 		{/if}
-
 	</div>
 </div>

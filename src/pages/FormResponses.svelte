@@ -4,7 +4,7 @@
   import { bgColors } from '$lib/fabform/constants/colors.js';
   import { Inbox, Download, Trash } from 'lucide-svelte';
   import { DefaultLayout } from '$lib/fabform/layouts/';
-  import { blockTemplates } from '$lib/fabform/blockTemplates.js';
+  import { blockTemplates } from '$lib/utils/blockTemplates.js';
 
   let { route } = $props();
   let formId = $state(route.result.path.params.id);
