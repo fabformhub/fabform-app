@@ -1,55 +1,54 @@
 <script>
-  import { Trash2 } from 'lucide-svelte';
+  let {
+    choices = [],
+    value = $bindable(),
+    placeholder = "Select..."
+  } = $props();
 
-  let { choices = $bindable(), selected = [], multiple = 0, ...props } = $props();
+  let open = $state(false);
 
-  function addChoice() {
-    choices = [...choices, `New Choice ${choices.length}`];
+  const selected = $derived(
+    choices.find(c => c.value === value)
+  );
+
+  function select(option) {
+    value = option.value; // IMPORTANT: store string only
+    open = false;
   }
 
-  function deleteChoice(index) {
-    choices = choices.filter((_, i) => i !== index);
-  }
-
-  function handleKeydown(event) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      addChoice();
-    }
+  function toggle() {
+    open = !open;
   }
 </script>
 
-<div class="container mx-auto p-4 relative">
-  <div class="absolute top-4 right-4">
-    <button
-      onclick={addChoice}
-      class="w-8 h-8 rounded-full bg-blue-500 text-white shadow-md hover:bg-blue-600 flex items-center justify-center"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />
-      </svg>
-    </button>
-  </div>
+<div class="relative w-full">
+  <!-- Trigger -->
+  <button
+    type="button"
+    class="w-full flex items-center justify-between px-3 py-2 border rounded-md bg-white hover:bg-gray-50"
+    on:click={toggle}
+  >
+    <span class="text-sm text-gray-700">
+      {selected?.label ?? placeholder}
+    </span>
 
-  <div class="mt-12">
-    <ul class="space-y-2">
-      {#each choices as choice, index}
-        <li class="flex items-center space-x-2">
-          <input
-            bind:value={choices[index]}
-            onkeydown={handleKeydown}
-            class="border px-2 py-1 rounded w-full"
-            placeholder="Enter your choice"
-            {...props}
-          />
-          <button
-            onclick={() => deleteChoice(index)}
-            class="text-red-500 hover:text-red-700"
-          >
-            <Trash2 class="w-4 h-4" />
-          </button>
-        </li>
+    <svg class="w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.94a.75.75 0 111.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+    </svg>
+  </button>
+
+  <!-- Dropdown -->
+  {#if open}
+    <div class="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg overflow-hidden">
+      {#each choices as option}
+        <button
+          type="button"
+          class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+          on:click={() => select(option)}
+        >
+          {option.label}
+        </button>
       {/each}
-    </ul>
-  </div>
+    </div>
+  {/if}
 </div>

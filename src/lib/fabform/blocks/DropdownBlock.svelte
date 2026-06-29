@@ -1,5 +1,5 @@
 <script>
-  import { ChevronDown } from 'lucide-svelte';
+  import { ChevronDown } from '@lucide/svelte';
   import { fly, scale } from 'svelte/transition';
   import { clickOutside } from '$lib/utils/clickOutside.js';
   import { debounce } from '$lib/utils/debounce.js';

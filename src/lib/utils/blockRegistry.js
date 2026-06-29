@@ -1,261 +1,304 @@
-// src/constants/blockTemplates.js
-import { 
-  Sparkle, RectangleHorizontal, CircleDot, Check, ChevronDownSquare, Star, Hash, Gauge, Phone, 
-  ScrollText, Link, Upload, Mail, ToggleLeft, SquareCheck, Smile, CalendarCheck, Signature, PartyPopper, 
+import {
+  Sparkle, RectangleHorizontal, CircleDot, Check, ChevronDownSquare, Star, Hash, Gauge, Phone,
+  ScrollText, Link, Upload, Mail, ToggleLeft, SquareCheck, Smile, CalendarCheck, Signature, PartyPopper,
   ListChecks, CalendarClock
-} from 'lucide-svelte';
+} from '@lucide/svelte';
+
 import { bgColors } from '$lib/fabform/constants/colors.js';
 
-export const blockTemplates = [
+export const COVER_LAYOUTS = {
+  WALLPAPER: 'wallpaper',
+  STACK: 'stack',
+  SPLIT_LEFT: 'split-left',
+  SPLIT_RIGHT: 'split-right'
+};
+
+const createCoverImageProps = () => ({
+  coverImage: '',
+  layout: COVER_LAYOUTS.WALLPAPER
+});
+
+export const blockRegistry = [
   {
     blockTypeId: 1,
     label: 'Welcome',
-    question: 'Hello There 😀', 
+    question: 'Hello There 😀',
     description: 'Mind giving this form a quick fill?',
     embed: '',
     buttonText: 'Let´s Start',
     component: 'Welcome',
     textAlign: 'center',
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[0],
     icon: Sparkle
   },
+
   {
     blockTypeId: 2,
     label: 'Short Text Block',
-    question: 'Your question here...', 
+    question: 'Your question here...',
     component: 'ShortText',
-    buttonText: 'Next', 
+    buttonText: 'Next',
     validation: { required: false },
     props: { placeholder: 'Your answer here...' },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[1],
     icon: RectangleHorizontal
   },
+
   {
     blockTypeId: 3,
     label: 'Long Text Block',
     question: 'Your question here...',
     component: 'LongText',
-    buttonText: 'Next', 
+    buttonText: 'Next',
     validation: { required: false },
-    props: { placeholder: 'Your answer here...', maxCharacters: '', size: 'Medium' },
+    props: {
+      placeholder: 'Your answer here...',
+      maxCharacters: '',
+      size: 'Medium'
+    },
     textAlign: 'left',
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[2],
     icon: CircleDot
   },
+
   {
     blockTypeId: 4,
     label: 'Single Select Option',
-    question: 'Which do you prefer?', 
+    question: 'Which do you prefer?',
     component: 'Select',
     buttonText: 'Next',
     validation: { required: false },
     props: { choices: [], multiple: false },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[3],
     icon: Check
   },
+
   {
     blockTypeId: 5,
     label: 'Multi Select Option',
-    question: 'Please choose at least one option', 
+    question: 'Please choose at least one option',
     component: 'Select',
     buttonText: 'Next',
     validation: { required: false },
     props: { choices: [], multiple: true },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[4],
     icon: ListChecks
   },
+
   {
     blockTypeId: 6,
-    label: 'Dropdown', 
-    question: 'Please choose', 
+    label: 'Dropdown',
+    question: 'Please choose',
     component: 'DropdownBlock',
     buttonText: 'Next',
     validation: { required: false },
-    props: { choices: ['One', 'Two', 'Three'] },
-    coverImageProps: { coverImage: '', layout: '' },
+    props: {
+      choices: ['One', 'Two', 'Three']
+    },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[5],
     icon: ChevronDownSquare
   },
+
   {
     blockTypeId: 7,
-    label: 'StarRating', 
-    question: 'How would you rate your experience?', 
+    label: 'StarRating',
+    question: 'How would you rate your experience?',
     component: 'StarRating',
     buttonText: 'Next',
     validation: { required: false },
     props: { maxRating: '5' },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[6],
     icon: Star
   },
+
   {
     blockTypeId: 8,
-    label: 'DatePicker', 
-    question: 'Please select a date', 
+    label: 'DatePicker',
+    question: 'Please select a date',
     component: 'DatePicker',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[7],
     icon: CalendarCheck
   },
+
   {
     blockTypeId: 9,
-    label: 'Number', 
-    question: 'Please enter a number', 
+    label: 'Number',
+    question: 'Please enter a number',
     component: 'Number',
     buttonText: 'Next',
     validation: { required: false },
     props: { placeholder: '' },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[8],
     icon: Hash
   },
+
   {
     blockTypeId: 10,
-    label: 'OpinionScale', 
-    question: 'How likely are you to recommend us?', 
+    label: 'OpinionScale',
+    question: 'How likely are you to recommend us?',
     component: 'OpinionScale',
     buttonText: 'Next',
     validation: { required: false },
-    props: { start: '1', end: '10', leftLabel: 'Good', rightLabel: 'Bad' },
-    coverImageProps: { coverImage: '', layout: '' },
+    props: {
+      start: '1',
+      end: '10',
+      leftLabel: 'Good',
+      rightLabel: 'Bad'
+    },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[9],
     icon: Gauge
   },
+
   {
     blockTypeId: 11,
-    label: 'PhoneNumber', 
-    question: 'Please enter a phone number', 
+    label: 'PhoneNumber',
+    question: 'Please enter a phone number',
     component: 'PhoneNumber',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[10],
     icon: Phone
   },
+
   {
     blockTypeId: 12,
-    label: 'Statement', 
-    title: 'This is The Statement Block', 
+    label: 'Statement',
+    title: 'This is The Statement Block',
     description: 'This is where you would put your statement text here',
     component: 'Statement',
     buttonText: 'Next',
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[11],
     icon: ScrollText
   },
+
   {
     blockTypeId: 14,
-    label: 'Website URL', 
-    question: 'Please enter a URL', 
+    label: 'Website URL',
+    question: 'Please enter a URL',
     component: 'Website',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[13],
     icon: Link
   },
+
   {
     blockTypeId: 15,
-    label: 'Scheduler URL', 
+    label: 'Scheduler URL',
     component: 'Scheduler',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[14],
     icon: ToggleLeft
   },
+
   {
     blockTypeId: 16,
-    label: 'FileUploader', 
+    label: 'FileUploader',
     component: 'FileUploader',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[15],
     icon: Upload
   },
+
   {
     blockTypeId: 17,
-    label: 'Email', 
-    question: 'Your email address?', 
+    label: 'Email',
+    question: 'Your email address?',
     component: 'Email',
-    buttonText: 'Next', 
+    buttonText: 'Next',
     validation: { required: false },
     props: { placeholder: 'Your answer here...' },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[16],
     icon: Mail
   },
+
   {
     blockTypeId: 18,
-    label: 'Checkbox', 
-    question: 'Please check if....', 
+    label: 'Checkbox',
+    question: 'Please check if....',
     component: 'CheckboxBlock',
-    buttonText: 'Next', 
+    buttonText: 'Next',
     validation: { required: false },
-    props: { placeholder: 'Your answer here...' },
-    coverImageProps: { coverImage: '', layout: '' },
+    props: {},
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[17],
     icon: SquareCheck
   },
+
   {
     blockTypeId: 19,
-    label: 'MoodMeter', 
-    question: 'How did we make you feel?', 
+    label: 'MoodMeter',
+    question: 'How did we make you feel?',
     component: 'MoodMeter',
     buttonText: 'Next',
     validation: { required: false },
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[18],
     icon: Smile
   },
+
   {
     blockTypeId: 20,
     label: 'Timeslot Picker',
-    title: 'Timeslot Picker', 
+    title: 'Timeslot Picker',
     description: '',
     embed: '',
     component: 'TimeSlotPicker',
     textAlign: 'center',
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[20],
     icon: CalendarClock
   },
+
   {
     blockTypeId: 98,
-    label: 'Signature', 
-    title: 'Signature', 
+    label: 'Signature',
+    title: 'Signature',
     component: 'Signature',
     buttonText: 'Next',
     validation: { required: false },
     props: {},
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[12],
     icon: Signature
   },
+
   {
     blockTypeId: 99,
     label: 'ThankYou',
-    title: 'Thanks', 
+    title: 'Thanks',
     description: 'We will get back to you soon',
     embed: '',
     component: 'ThankYou',
     buttonText: 'Submit',
     textAlign: 'center',
-    coverImageProps: { coverImage: '', layout: '' },
+    coverImageProps: createCoverImageProps(),
     bgColor: bgColors[20],
     icon: PartyPopper
   }

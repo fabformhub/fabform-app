@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { ArrowDown, ArrowUp } from 'lucide-svelte';
+	import { ArrowDown, ArrowUp } from '@lucide/svelte';
 	import { FormView } from '$lib/fabform/form-builder';
 	import { SplashScreen } from '$lib/fabform/ui';
 	import { getForm, incrementFormViews, getBlocksByFormId } from '$lib/services/formService.js';

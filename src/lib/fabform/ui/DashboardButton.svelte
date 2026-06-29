@@ -1,5 +1,5 @@
 <script>
-  import { ArrowLeft } from 'lucide-svelte';
+  import { ArrowLeft } from '@lucide/svelte';
   import { goto } from '@mateothegreat/svelte5-router';
 
   function goDashboard() {

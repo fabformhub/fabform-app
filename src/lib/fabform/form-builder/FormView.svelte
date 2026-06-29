@@ -56,7 +56,7 @@ style={`
 
 <!--  default if no layout selected -->
 
-{#if layout === 'Wallpaper' || layout ===''} 
+{#if layout === 'wallpaper' || layout ===''} 
     <div
       class="flex items-center justify-center w-full min-h-screen bg-cover bg-center"
       style={`background-image: url(${coverImage})`}
@@ -64,7 +64,7 @@ style={`
       {@render blockContent()}
     </div>
 
-  {:else if layout === 'Stack' } 
+  {:else if layout === 'stack' } 
     <div class="flex flex-col w-full min-h-screen">
 
       {#if coverImage}
@@ -79,7 +79,7 @@ style={`
       </div>
     </div>
 
-  {:else if layout === 'Split-left'}
+  {:else if layout === 'split-left'}
     <div class="flex flex-col md:flex-row w-full min-h-screen">
 
       {#if coverImage}
@@ -95,7 +95,7 @@ style={`
 
     </div>
 
-  {:else if layout === 'Split-right'}
+  {:else if layout === 'split-right'}
     <div class="flex flex-col md:flex-row w-full min-h-screen">
 
       <div class="w-full md:w-1/2 flex items-center justify-center p-4">

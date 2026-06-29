@@ -1,5 +1,5 @@
 <script>
-  import {Link as LinkIcon} from 'lucide-svelte';  // Changed icon to Link
+  import {Link as LinkIcon} from '@lucide/svelte';  
   import { tooltip } from '$lib/utils/tooltip.js'; 
   import {Toast} from "$lib/fabform/ui";
 

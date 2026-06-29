@@ -1,7 +1,7 @@
 <script>
   import { getContext } from 'svelte';
-  import { blockTemplates } from "$lib/utils/blockTemplates.js";
-  import { X } from 'lucide-svelte';
+  import { blockRegistry} from "$lib/utils/blockRegistry.js";
+  import { X } from '@lucide/svelte';
 
   const { show, close } = $props();
   const notifyBlockPick = getContext('blockPickerClick') ?? (() => {});
@@ -51,7 +51,7 @@
                overflow-y-auto pr-1"
         style="max-height: calc(90vh - 80px);"
       >
-        {#each blockTemplates as block}
+        {#each blockRegistry as block}
           <button
             on:click={() => BlockPicked(block)}
             class={`relative flex flex-col items-center justify-center

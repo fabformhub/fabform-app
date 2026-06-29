@@ -1,5 +1,5 @@
 <script>
-    import { Rocket } from 'lucide-svelte';
+    import { Rocket } from '@lucide/svelte';
     import { onMount } from 'svelte';
   
     let progress = 0;

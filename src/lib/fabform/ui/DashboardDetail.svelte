@@ -1,6 +1,6 @@
 <script>
   import { goto } from '@mateothegreat/svelte5-router';
-  import { Eye } from 'lucide-svelte';
+  import { Eye } from '@lucide/svelte';
   import DropdownButton from './DropdownButton.svelte';
 
   export let form;

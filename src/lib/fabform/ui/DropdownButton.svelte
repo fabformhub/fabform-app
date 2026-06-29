@@ -1,14 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import {
-    MoreVertical as Dots,
-    Copy,
-    Trash,
-    SquarePen,
-    Link,
-    ExternalLink,
-    QrCode
-  } from 'lucide-svelte';
+  import { MoreVertical as Dots, Copy, Trash, SquarePen, Link, ExternalLink, QrCode } from '@lucide/svelte';
 
 import { clickOutside } from '$lib/utils/clickOutside';
 

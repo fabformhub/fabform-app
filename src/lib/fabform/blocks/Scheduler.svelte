@@ -1,5 +1,5 @@
 <script>
-  import { Calendar } from 'lucide-svelte';
+  import { Calendar } from '@lucide/svelte';
 
   const props = $props();
   let show = $state(false);

@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
   import { getResponsesByFormId, deleteResponseById } from '$lib/services/responseService.js';
   import { bgColors } from '$lib/fabform/constants/colors.js';
-  import { Inbox, Download, Trash } from 'lucide-svelte';
+  import { Inbox, Download, Trash } from '@lucide/svelte';
   import { DefaultLayout } from '$lib/fabform/layouts/';
-  import { blockTemplates } from '$lib/utils/blockTemplates.js';
+  import { blockRegistry } from '$lib/utils/blockRegistry.js';
 
   let { route } = $props();
   let formId = $state(route.result.path.params.id);
@@ -87,7 +87,7 @@
 
   // Helper to get the icon component for a blockTypeId
   const getBlockIcon = (blockTypeId) => {
-    const block = blockTemplates.find(b => b.blockTypeId === blockTypeId);
+    const block = blockRegistry.find(b => b.blockTypeId === blockTypeId);
     return block ? block.icon : null;
   };
 </script>

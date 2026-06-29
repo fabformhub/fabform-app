@@ -1,6 +1,5 @@
 <script>
   import { CopyLinkButton, Toast } from '$lib/fabform/ui';
-  import { Clipboard } from 'lucide-svelte';
   import { tooltip } from '$lib/utils/tooltip.js';
   import { DefaultLayout } from '$lib/fabform/layouts/';
   import { APP_URL } from '$lib/utils/global.js';

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { Ghost } from 'lucide-svelte';
+  import { Ghost } from '@lucide/svelte';
 
   let canvas;
   let animationId;

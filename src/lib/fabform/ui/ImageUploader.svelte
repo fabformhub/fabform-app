@@ -1,5 +1,5 @@
 <script>
-  import { CloudUpload, X, RefreshCw } from "lucide-svelte";
+  import { CloudUpload, X, RefreshCw } from "@lucide/svelte";
   import { onDestroy } from "svelte";
   import { uploadImage, deleteImage } from "$lib/storage";
 

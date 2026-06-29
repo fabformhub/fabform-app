@@ -8,10 +8,10 @@
   import { Dialog, RenameDialog, RenameSlugDialog, QRCodeDialog } from '$lib/fabform/dialogs';
   import { Navbar } from '$lib/fabform/layouts';
   import { openDialog } from '$lib/utils/dialog.svelte.js';
-  import { blockTemplates } from '$lib/utils/blockTemplates';
+  import { blockRegistry } from '$lib/utils/blockRegistry';
   import { APP_URL } from '$lib/utils/global.js';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
-  import { Plus, FileText } from 'lucide-svelte';
+  import { Plus, FileText } from '@lucide/svelte';
   import { formMeta } from '$lib/fabform/constants/formMeta.js';
 
   let forms = [];
@@ -103,8 +103,8 @@
 
     const formId = res.data.id;
 
-    await createBlock(formId, blockTemplates[0]);
-    await createBlock(formId, blockTemplates.at(-1));
+    await createBlock(formId, blockRegistry[0]);
+    await createBlock(formId, blockRegistry.at(-1));
 
     await fetchForms();
   }

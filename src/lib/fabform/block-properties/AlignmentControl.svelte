@@ -1,5 +1,5 @@
 <script>
-  import { AlignLeft, AlignCenter } from "lucide-svelte";
+  import { AlignLeft, AlignCenter } from "@lucide/svelte";
   let {textAlign = $bindable()} = $props();
 </script>
 

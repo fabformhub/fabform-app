@@ -1,6 +1,6 @@
 <script>
   import { supabase } from '$lib/supabaseClient';
-  import { CloudUpload, Trash2, FileText } from 'lucide-svelte';
+  import { CloudUpload, Trash2, FileText } from '@lucide/svelte';
   import { authService } from '$lib/services/authService.svelte.js';
 
   let { canAnswer = false } = $props();

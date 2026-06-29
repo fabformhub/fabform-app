@@ -1,5 +1,5 @@
 <script>
-  import { Hammer, PenTool, Link, Share2, BarChart2 } from "lucide-svelte";
+  import { Hammer, PenTool, Link, Share2, BarChart2 } from "@lucide/svelte";
   import { route } from '@mateothegreat/svelte5-router';
   import { DashboardButton, OpenFormLinkButton, CopyLinkButton } from '$lib/fabform/ui';
   import { APP_URL } from '$lib/utils/global.js';

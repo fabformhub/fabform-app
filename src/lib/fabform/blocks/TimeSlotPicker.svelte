@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { CalendarClock } from "lucide-svelte";
+  import { CalendarClock } from "@lucide/svelte";
 
   let { canAnswer = true, value = $bindable(), props } = $props();
 

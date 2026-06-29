@@ -1,5 +1,5 @@
 <script>
-  import { Calendar } from 'lucide-svelte';
+  import { Calendar } from '@lucide/svelte';
 
   // Destructure with defaults from $props directly
   let { value = $bindable(), canAnswer = false, props = {} } = $props();

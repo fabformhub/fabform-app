@@ -1,5 +1,5 @@
 <script>
-  import { Star } from 'lucide-svelte';
+  import { Star } from '@lucide/svelte';
   import { scale } from 'svelte/transition';
   let { canAnswer, value = $bindable(), props } = $props();
 

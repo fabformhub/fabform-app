@@ -1,14 +1,10 @@
 <script>
-  let { form = $bindable() } = $props();
-  import { loadGoogleFont } from "$lib/fontLoader";
-  import * as Sheet from "$lib/components/ui/sheet";
 
 // you could use my fabform controls and rip out sheet
 // import { Input, TextArea, Checkbox, Dropdown } from "$lib/fabform/ui";
 
-
   import { Button } from "$lib/components/ui/button";
-  import { Palette } from "lucide-svelte";
+  import { Palette } from "@lucide/svelte";
   import { Dropdown } from "$lib/fabform/ui/";
   import { ImageUploader } from "$lib/fabform/ui";
 
@@ -57,6 +53,7 @@
 
     loadGoogleFont(font);
   });
+
 </script>
 
 <!-- CENTERED TRIGGER -->

@@ -1,5 +1,5 @@
 <script>
-  import { CheckCircle, Info, AlertCircle } from 'lucide-svelte';
+  import { CheckCircle, Info, AlertCircle } from '@lucide/svelte';
 
   export let message = '';
   export let type = 'info'; // 'success', 'error', 'info'

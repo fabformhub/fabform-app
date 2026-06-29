@@ -1,6 +1,6 @@
 <script>
   import { getComponent } from '$lib/utils/getComponent.js';
-  import { AlertTriangle } from 'lucide-svelte';
+  import { AlertTriangle } from '@lucide/svelte';
 
   let {
     block = $bindable({}),

@@ -3,7 +3,7 @@
   import { goto, route } from '@mateothegreat/svelte5-router';
   import { clickOutside } from '$lib/utils/clickOutside.js'; 
   import { APP_URL } from '$lib/utils/global.js';
-  import { Mail, Key, LogOut, LogIn, User } from 'lucide-svelte';
+  import { Mail, Key, LogOut, LogIn, User } from '@lucide/svelte';
 
   const { state, logout } = authService;
   let showMenu = false;

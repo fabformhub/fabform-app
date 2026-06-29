@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { RefreshCw } from 'lucide-svelte';
+    import { RefreshCw } from '@lucide/svelte';
     let {value = $bindable(), formMode = true, props } = $props();
   
     let canvas;

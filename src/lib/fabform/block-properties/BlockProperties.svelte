@@ -1,8 +1,27 @@
 <script>
 let { block = $bindable() } = $props();
 import { Input, TextArea, Checkbox, Dropdown } from "$lib/fabform/ui";
-import { AlignmentControl, ChoicesControl } from ".";
+import { AlignmentControl } from ".";
 import { ImageUploader } from "$lib/fabform/ui";
+
+/*
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "$lib/components/ui/select";
+
+*/
+
+  const layoutOptions = [
+    { label: "Wallpaper", value: "wallpaper" },
+    { label: "Stack", value: "stack" },
+    { label: "Split Left", value: "split-left" },
+    { label: "Split Right", value: "split-right" }
+  ];
+
 </script>
 
 <!-- OUTER LAYOUT: ensures proper flex + height handling -->
@@ -119,13 +138,24 @@ import { ImageUploader } from "$lib/fabform/ui";
 				bind:image={block.meta.coverImageProps.coverImage}
 			/>
 
+<!--
+<Select value="wallpaper">
+  <SelectTrigger class="w-full">
+    <SelectValue placeholder="Select layout" />
+  </SelectTrigger>
+
+  <SelectContent>
+    {#each layoutOptions as option}
+      <SelectItem value={option.value}>
+        {option.label}
+      </SelectItem>
+    {/each}
+  </SelectContent>
+</Select> -->
+
 		{#if block?.meta?.coverImageProps?.coverImage}
 			<label class="block text-gray-700 font-medium mt-2">Layout</label>
 
-			<Dropdown
-				choices={["Wallpaper", "Stack", "Split-left", "Split-right"]}
-				bind:value={block.meta.coverImageProps.layout}
-			/>
-		{/if}
-	</div>
+{/if}
+</div>
 </div>

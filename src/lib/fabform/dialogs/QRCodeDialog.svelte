@@ -2,7 +2,7 @@
   import { dialog, closeDialog } from '$lib/utils/dialog.svelte.js';
   import { fade, scale } from 'svelte/transition';
   import { onMount, tick } from 'svelte';
-  import { Download } from 'lucide-svelte';
+  import { Download } from '@lucide/svelte';
 
   let canvas;
   let QRCode;

@@ -1,5 +1,5 @@
 <script>
-    import { ExternalLink } from 'lucide-svelte';
+    import { ExternalLink } from '@lucide/svelte';
     import { tooltip } from '$lib/utils/tooltip.js';
     let {url = ''} = $props();
   </script>
