@@ -1,54 +1,61 @@
+
 <script>
-  let {
-    choices = [],
-    value = $bindable(),
-    placeholder = "Select..."
-  } = $props();
+  import { ChevronDown, Check } from "@lucide/svelte";
+
+  let { options = [], value = $bindable(null) } = $props();
 
   let open = $state(false);
 
-  const selected = $derived(
-    choices.find(c => c.value === value)
-  );
-
-  function select(option) {
-    value = option.value; // IMPORTANT: store string only
+  function choose(v) {
+    value = v;
     open = false;
   }
 
-  function toggle() {
-    open = !open;
+  function getLabel() {
+    return options.find(o => o.value === value)?.label ?? "Select...";
   }
 </script>
 
 <div class="relative w-full">
-  <!-- Trigger -->
+  <!-- TRIGGER -->
   <button
     type="button"
-    class="w-full flex items-center justify-between px-3 py-2 border rounded-md bg-white hover:bg-gray-50"
-    on:click={toggle}
+    on:click={() => (open = !open)}
+    class="group flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition
+           hover:border-gray-300 hover:shadow-md active:scale-[0.99]"
   >
-    <span class="text-sm text-gray-700">
-      {selected?.label ?? placeholder}
-    </span>
+    <span class="text-gray-900 font-medium">{getLabel()}</span>
 
-    <svg class="w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.94a.75.75 0 111.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-    </svg>
+    <ChevronDown
+      class="w-4 h-4 text-gray-400 transition group-hover:text-gray-600 group-data-[open=true]:rotate-180"
+    />
   </button>
 
-  <!-- Dropdown -->
+  <!-- BACKDROP (subtle luxury feel) -->
   {#if open}
-    <div class="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg overflow-hidden">
-      {#each choices as option}
-        <button
-          type="button"
-          class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-          on:click={() => select(option)}
+    <div class="fixed inset-0 z-40" on:click={() => (open = false)}></div>
+
+    <!-- DROPDOWN -->
+    <ul
+      class="absolute bottom-full mb-2 z-50 w-full overflow-hidden rounded-xl border border-gray-200 bg-white/90 backdrop-blur-xl shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-bottom-2"
+    >
+      {#each options as opt}
+        {@const active = opt.value === value}
+
+        <li
+          on:click={() => choose(opt.value)}
+          class="flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition
+                 hover:bg-gray-50 active:bg-gray-100"
         >
-          {option.label}
-        </button>
+          <span class={active ? "text-gray-900 font-medium" : "text-gray-600"}>
+            {opt.label}
+          </span>
+
+          {#if active}
+            <Check class="w-4 h-4 text-black" />
+          {/if}
+        </li>
       {/each}
-    </div>
+    </ul>
   {/if}
 </div>

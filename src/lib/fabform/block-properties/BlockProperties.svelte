@@ -3,17 +3,7 @@ let { block = $bindable() } = $props();
 import { Input, TextArea, Checkbox, Dropdown } from "$lib/fabform/ui";
 import { AlignmentControl } from ".";
 import { ImageUploader } from "$lib/fabform/ui";
-
-/*
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem
-} from "$lib/components/ui/select";
-
-*/
+import ChoicesControl from "./ChoicesControl.svelte";
 
   const layoutOptions = [
     { label: "Wallpaper", value: "wallpaper" },
@@ -138,21 +128,10 @@ import {
 				bind:image={block.meta.coverImageProps.coverImage}
 			/>
 
-<!--
-<Select value="wallpaper">
-  <SelectTrigger class="w-full">
-    <SelectValue placeholder="Select layout" />
-  </SelectTrigger>
-
-  <SelectContent>
-    {#each layoutOptions as option}
-      <SelectItem value={option.value}>
-        {option.label}
-      </SelectItem>
-    {/each}
-  </SelectContent>
-</Select> -->
-
+<ChoicesControl
+  bind:value={block.meta.coverImageProps.layout}
+  options={layoutOptions}
+/>
 		{#if block?.meta?.coverImageProps?.coverImage}
 			<label class="block text-gray-700 font-medium mt-2">Layout</label>
 
