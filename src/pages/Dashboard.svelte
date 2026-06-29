@@ -12,6 +12,7 @@
   import { APP_URL } from '$lib/utils/global.js';
   import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
   import { Plus, FileText } from 'lucide-svelte';
+  import { formMeta } from '$lib/fabform/constants/formMeta.js';
 
   let forms = [];
   let formResponseCounts = {};
@@ -95,7 +96,7 @@
     const res = await createForm({
       name: "Untitled Form",
       user_id: userId,
-      meta: { ...uiMeta }
+      meta: formMeta 
     });
 
     if (!res.success) return;

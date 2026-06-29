@@ -1,8 +1,6 @@
 <script>
   import { BlockView } from '.';
-
   let { form, block, canAnswer = false, nextBlock = () => {}, errorMessage = '' } = $props();
-
   // form-level meta (single source of truth)
   const meta = $derived(form?.meta ?? {});
 
@@ -10,13 +8,12 @@
     block?.meta?.coverImageProps?.coverImage 
   );
 
-
 const layout = $derived(
     block?.meta?.coverImageProps?.layout 
   );
 
   const formBackgroundImage= $derived(
-    form?.meta?.backgroundImage
+    form?.meta?.bgImage
   );
 
   const formBackgroundColor= $derived(
@@ -33,7 +30,6 @@ const layout = $derived(
     }[meta?.fontSize] ?? 'text-base md:text-xl leading-relaxed'
   );
 
-
 </script>
 
 {#snippet blockContent()}
@@ -46,15 +42,17 @@ const layout = $derived(
   />
 {/snippet}
 <div
-  class={`w-full min-h-screen ${fontSizeClass}`}
-  style={`
-    background-image: url(${formBackgroundImage}); 
+class={`w-full min-h-screen ${fontSizeClass}`}
+style={`
+  background-color: ${formBackgroundColor};
+  ${formBackgroundImage ? `
+    background-image: url(${formBackgroundImage});
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-color: ${formBackgroundColor};
-  `}
->
+  ` : ""}
+`}>
+
 
 <!--  default if no layout selected -->
 

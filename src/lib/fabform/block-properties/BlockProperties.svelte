@@ -11,11 +11,6 @@ import { ImageUploader } from "$lib/fabform/ui";
 	<!-- SCROLL CONTAINER -->
 	<div class="flex-1 overflow-y-auto space-y-4 pb-6">
 
-		{#if block?.meta?.title !== undefined}
-			<label class="block text-gray-700 font-medium">Title</label>
-			<Input bind:value={block.meta.title} />
-		{/if}
-
 		{#if block?.meta?.question !== undefined}
 			<label class="block text-gray-700 font-medium">Question</label>
 			<Input bind:value={block.meta.question} />
