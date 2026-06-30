@@ -64,22 +64,31 @@ style={`
       {@render blockContent()}
     </div>
 
-  {:else if layout === 'stack' } 
-    <div class="flex flex-col w-full min-h-screen">
 
-      {#if coverImage}
-        <div
-          class="w-full h-48 md:h-72 bg-cover bg-center"
-          style={`background-image: url(${coverImage})`}
-        />
-      {/if}
+{:else if layout === 'stack'}
+  <div class="flex flex-col items-center min-h-screen">
 
-      <div class="flex flex-1 items-center justify-center p-4">
-        {@render blockContent()}
+    {#if coverImage}
+      <div class="w-[90%] max-w-5xl mt-24 md:mt-32 z-10 -mb-8">
+
+        <div class="relative w-full aspect-[21/9] md:aspect-[16/7] lg:aspect-[21/9] overflow-hidden shadow-xl">
+          <img
+            src={coverImage}
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </div>
+
       </div>
+    {/if}
+
+    <div class="w-full flex-1 flex items-center justify-center px-4">
+      {@render blockContent()}
     </div>
 
-  {:else if layout === 'split-left'}
+  </div>
+
+    {:else if layout === 'split-left'}
     <div class="flex flex-col md:flex-row w-full min-h-screen">
 
       {#if coverImage}

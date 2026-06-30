@@ -127,14 +127,12 @@ import ChoicesControl from "./ChoicesControl.svelte";
 				imageType="block"
 				bind:image={block.meta.coverImageProps.coverImage}
 			/>
-
+		{#if block?.meta?.coverImageProps?.coverImage}
+			<label class="block text-gray-700 font-medium mt-2">Layout</label>
 <ChoicesControl
   bind:value={block.meta.coverImageProps.layout}
   options={layoutOptions}
 />
-		{#if block?.meta?.coverImageProps?.coverImage}
-			<label class="block text-gray-700 font-medium mt-2">Layout</label>
-
 {/if}
 </div>
 </div>
